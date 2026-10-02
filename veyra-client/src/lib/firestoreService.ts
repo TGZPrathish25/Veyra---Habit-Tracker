@@ -1,0 +1,394 @@
+/**
+ * Firestore Client Service — Direct Cloud Firestore integration for Veyra
+ * Adheres to firestore.rules security model (scoped by request.auth.uid)
+ */
+import {
+  collection,
+  doc,
+  setDoc,
+  getDoc,
+  getDocs,
+  query,
+  where,
+  updateDoc,
+  deleteDoc,
+  addDoc,
+  serverTimestamp,
+  orderBy,
+  limit,
+  onSnapshot,
+} from 'firebase/firestore';
+import { db } from '@/config/firebase';
+
+export interface FirestoreUserProfile {
+  uid: string;
+  email?: string;
+  name?: string | null;
+  username?: string | null;
+  phoneNumber?: string | null;
+  avatarUrl?: string | null;
+  timezone?: string;
+  level?: number;
+  xp?: number;
+  currentStreak?: number;
+  longestStreak?: number;
+  createdAt?: unknown;
+  updatedAt?: unknown;
+}
+
+export interface FirestoreTask {
+  id?: string;
+  userId: string;
+  title: string;
+  category: 'DAILY' | 'WEEKLY' | 'MONTHLY';
+  cadence: 'DAILY' | 'WEEKDAYS' | 'WEEKENDS' | 'CUSTOM';
+  customDays?: number[];
+  color?: string;
+  icon?: string;
+  archived?: boolean;
+  createdAt?: unknown;
+  updatedAt?: unknown;
+}
+
+export interface FirestoreTaskOccurrence {
+  id?: string;
+  taskId: string;
+  userId: string;
+  date: string; // YYYY-MM-DD
+  completed: boolean;
+  completedAt?: unknown;
+  notes?: string;
+}
+
+export interface FirestoreWeeklyPlan {
+  id?: string;
+  userId: string;
+  weekStartDate: string; // YYYY-MM-DD
+  title: string;
+  targetCount: number;
+  completedCount: number;
+  createdAt?: unknown;
+}
+
+export interface FirestoreMonthlyGoal {
+  id?: string;
+  userId: string;
+  yearMonth: string; // YYYY-MM
+  title: string;
+  targetCount: number;
+  completedCount: number;
+  notes?: string;
+  createdAt?: unknown;
+}
+
+export const firestoreService = {
+  /**
+   * Sync/Create User Profile document in `users/{userId}`
+   */
+  async upsertUserProfile(profile: FirestoreUserProfile): Promise<void> {
+    if (!db) return;
+    const userRef = doc(db, 'users', profile.uid);
+    await setDoc(
+      userRef,
+      {
+        ...profile,
+        updatedAt: serverTimestamp(),
+      },
+      { merge: true }
+    );
+  },
+
+  /**
+   * Fetch User Profile document from `users/{userId}`
+   */
+  async getUserProfile(userId: string): Promise<FirestoreUserProfile | null> {
+    if (!db) return null;
+    const userRef = doc(db, 'users', userId);
+    const snap = await getDoc(userRef);
+    if (!snap.exists()) return null;
+    return snap.data() as FirestoreUserProfile;
+  },
+
+  /**
+   * Create a recurring Task
+   */
+  async createTask(userId: string, task: Omit<FirestoreTask, 'id' | 'userId'>): Promise<string | null> {
+    if (!db) return null;
+    const tasksColl = collection(db, 'tasks');
+    const docRef = await addDoc(tasksColl, {
+      ...task,
+      userId,
+      archived: false,
+      createdAt: serverTimestamp(),
+      updatedAt: serverTimestamp(),
+    });
+    return docRef.id;
+  },
+
+  /**
+   * Fetch all active tasks for user
+   */
+  async getUserTasks(userId: string): Promise<FirestoreTask[]> {
+    if (!db) return [];
+    const tasksColl = collection(db, 'tasks');
+    const q = query(tasksColl, where('userId', '==', userId), where('archived', '==', false));
+    const snapshot = await getDocs(q);
+    return snapshot.docs.map((docSnap) => ({
+      id: docSnap.id,
+      ...(docSnap.data() as Omit<FirestoreTask, 'id'>),
+    }));
+  },
+
+  /**
+   * Update task definition
+   */
+  async updateTask(taskId: string, updates: Partial<FirestoreTask>): Promise<void> {
+    if (!db) return;
+    const taskRef = doc(db, 'tasks', taskId);
+    await updateDoc(taskRef, {
+      ...updates,
+      updatedAt: serverTimestamp(),
+    });
+  },
+
+  /**
+   * Archive/delete task
+   */
+  async deleteTask(taskId: string): Promise<void> {
+    if (!db) return;
+    const taskRef = doc(db, 'tasks', taskId);
+    await deleteDoc(taskRef);
+  },
+
+  /**
+   * Record or toggle task completion occurrence for a specific date
+   */
+  async recordOccurrence(
+    userId: string,
+    taskId: string,
+    date: string,
+    completed: boolean
+  ): Promise<void> {
+    if (!db) return;
+    const occurrenceId = `${userId}_${taskId}_${date}`;
+    const occRef = doc(db, 'task_occurrences', occurrenceId);
+    await setDoc(
+      occRef,
+      {
+        userId,
+        taskId,
+        date,
+        completed,
+        completedAt: completed ? serverTimestamp() : null,
+      },
+      { merge: true }
+    );
+  },
+
+  /**
+   * Fetch occurrences for a given date
+   */
+  async getDailyOccurrences(userId: string, date: string): Promise<FirestoreTaskOccurrence[]> {
+    if (!db) return [];
+    const occColl = collection(db, 'task_occurrences');
+    const q = query(occColl, where('userId', '==', userId), where('date', '==', date));
+    const snapshot = await getDocs(q);
+    return snapshot.docs.map((d) => ({
+      id: d.id,
+      ...(d.data() as Omit<FirestoreTaskOccurrence, 'id'>),
+    }));
+  },
+
+  /**
+   * Save or update weekly plan
+   */
+  async saveWeeklyPlan(userId: string, plan: Omit<FirestoreWeeklyPlan, 'id' | 'userId'>): Promise<string | null> {
+    if (!db) return null;
+    const plansColl = collection(db, 'weekly_plans');
+    const docRef = await addDoc(plansColl, {
+      ...plan,
+      userId,
+      createdAt: serverTimestamp(),
+    });
+    return docRef.id;
+  },
+
+  /**
+   * Get user weekly plans
+   */
+  async getWeeklyPlans(userId: string): Promise<FirestoreWeeklyPlan[]> {
+    if (!db) return [];
+    const plansColl = collection(db, 'weekly_plans');
+    const q = query(plansColl, where('userId', '==', userId), orderBy('weekStartDate', 'desc'), limit(10));
+    const snapshot = await getDocs(q);
+    return snapshot.docs.map((d) => ({
+      id: d.id,
+      ...(d.data() as Omit<FirestoreWeeklyPlan, 'id'>),
+    }));
+  },
+
+  /**
+   * Save monthly goal
+   */
+  async saveMonthlyGoal(userId: string, goal: Omit<FirestoreMonthlyGoal, 'id' | 'userId'>): Promise<string | null> {
+    if (!db) return null;
+    const goalsColl = collection(db, 'monthly_goals');
+    const docRef = await addDoc(goalsColl, {
+      ...goal,
+      userId,
+      createdAt: serverTimestamp(),
+    });
+    return docRef.id;
+  },
+
+  /**
+   * Get monthly goals
+   */
+  async getMonthlyGoals(userId: string, yearMonth?: string): Promise<FirestoreMonthlyGoal[]> {
+    if (!db) return [];
+    const goalsColl = collection(db, 'monthly_goals');
+    const q = yearMonth
+      ? query(goalsColl, where('userId', '==', userId), where('yearMonth', '==', yearMonth))
+      : query(goalsColl, where('userId', '==', userId));
+    const snapshot = await getDocs(q);
+    return snapshot.docs.map((d) => ({
+      id: d.id,
+      ...(d.data() as Omit<FirestoreMonthlyGoal, 'id'>),
+    }));
+  },
+
+  /**
+   * Real-time listener for daily occurrences
+   */
+  onDailyOccurrencesSnapshot(
+    userId: string,
+    date: string,
+    callback: (occurrences: FirestoreTaskOccurrence[]) => void
+  ): () => void {
+    if (!db) return () => {};
+    const occColl = collection(db, 'task_occurrences');
+    const q = query(occColl, where('userId', '==', userId), where('date', '==', date));
+    return onSnapshot(q, (snapshot) => {
+      const data = snapshot.docs.map((d) => ({
+        id: d.id,
+        ...(d.data() as Omit<FirestoreTaskOccurrence, 'id'>),
+      }));
+      callback(data);
+    });
+  },
+
+  /**
+   * Gamification telemetry in users/{userId}/gamification/status
+   */
+  async getGamificationStatus(userId: string) {
+    if (!db) return null;
+    const ref = doc(db, 'users', userId, 'gamification', 'status');
+    const snap = await getDoc(ref);
+    if (!snap.exists()) {
+      return {
+        level: 1,
+        totalXp: 0,
+        currentLevelXp: 0,
+        nextLevelXp: 100,
+        progressPercentage: 0,
+      };
+    }
+    return snap.data() as {
+      level: number;
+      totalXp: number;
+      currentLevelXp: number;
+      nextLevelXp: number;
+      progressPercentage: number;
+    };
+  },
+
+  /**
+   * Add XP and calculate level progression directly in Firestore
+   */
+  async addXp(userId: string, xpDelta: number) {
+    if (!db) return null;
+    const ref = doc(db, 'users', userId, 'gamification', 'status');
+    const current = (await this.getGamificationStatus(userId)) || {
+      level: 1,
+      totalXp: 0,
+      currentLevelXp: 0,
+      nextLevelXp: 100,
+      progressPercentage: 0,
+    };
+    const currentTotal = typeof current.totalXp === 'number' && !isNaN(current.totalXp) ? current.totalXp : 0;
+    const newTotal = Math.max(0, currentTotal + xpDelta);
+    let level = 1;
+    while (100 * level * (level - 1) <= newTotal) {
+      level++;
+    }
+    level = Math.max(1, level - 1);
+    const prevLevelThreshold = 100 * level * (level - 1);
+    const nextLevelThreshold = 100 * (level + 1) * level;
+    const range = nextLevelThreshold - prevLevelThreshold;
+    const currentLvlXp = newTotal - prevLevelThreshold;
+    const pct = range > 0 ? Math.min(100, Math.round((currentLvlXp / range) * 100)) : 0;
+
+    const updated = {
+      level,
+      totalXp: newTotal,
+      currentLevelXp: currentLvlXp,
+      nextLevelXp: nextLevelThreshold,
+      progressPercentage: pct,
+      updatedAt: serverTimestamp(),
+    };
+
+    await setDoc(ref, updated, { merge: true });
+    return updated;
+  },
+
+  /**
+   * Get streaks
+   */
+  async getStreaks(userId: string) {
+    if (!db) return { dailyStreak: 0, longestStreak: 0 };
+    const ref = doc(db, 'users', userId, 'streaks', 'current');
+    const snap = await getDoc(ref);
+    if (!snap.exists()) return { dailyStreak: 1, longestStreak: 1 };
+    return snap.data() as { dailyStreak: number; longestStreak: number };
+  },
+
+  /**
+   * Notifications
+   */
+  async getNotifications(userId: string) {
+    if (!db) return [];
+    const notifsColl = collection(db, 'notifications');
+    const q = query(notifsColl, where('userId', '==', userId), orderBy('createdAt', 'desc'), limit(20));
+    try {
+      const snap = await getDocs(q);
+      return snap.docs.map((d) => ({ id: d.id, ...d.data() }));
+    } catch {
+      return [];
+    }
+  },
+
+  async markNotificationRead(notifId: string) {
+    if (!db) return;
+    const ref = doc(db, 'notifications', notifId);
+    await updateDoc(ref, { read: true, readAt: serverTimestamp() });
+  },
+
+  /**
+   * Provision default demo habits if a newly registered user has zero tasks
+   */
+  async provisionDefaultsIfEmpty(userId: string) {
+    if (!db) return;
+    const existing = await this.getUserTasks(userId);
+    if (existing.length === 0) {
+      const defaults = [
+        { title: 'Morning Hydration & Sunlight ☀️', cadence: 'DAILY' as const, category: 'DAILY' as const, color: '#38bdf8' },
+        { title: 'Deep Work Focus Sprint (45m) 🧠', cadence: 'DAILY' as const, category: 'DAILY' as const, color: '#a855f7' },
+        { title: 'Physical Movement / Gym 🏃', cadence: 'DAILY' as const, category: 'DAILY' as const, color: '#22c55e' },
+        { title: 'Evening Reflection & Gratitude 🌙', cadence: 'DAILY' as const, category: 'DAILY' as const, color: '#f59e0b' },
+      ];
+      for (const d of defaults) {
+        await this.createTask(userId, d);
+      }
+    }
+  },
+};

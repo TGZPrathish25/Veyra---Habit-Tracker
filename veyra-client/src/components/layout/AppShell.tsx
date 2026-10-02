@@ -1,0 +1,52 @@
+/** AppShell — responsive layout with desktop sidebar, mobile bottom nav, accessibility landmarks, and global alerts. */
+import React from 'react';
+import { Sidebar } from './Sidebar';
+import { TopBar } from './TopBar';
+import { MobileBottomNav } from './MobileBottomNav';
+import { DeadlinePopup } from '@/features/dashboard/components/DeadlinePopup';
+import { InstallAppPrompt } from '@/components/pwa/InstallAppPrompt';
+
+interface AppShellProps {
+  children: React.ReactNode;
+}
+
+export const AppShell: React.FC<AppShellProps> = ({ children }) => {
+  return (
+    <div className="min-h-screen" style={{ background: 'var(--color-bg)' }}>
+      {/* WCAG 2.1 AA Skip Navigation Link */}
+      <a
+        href="#main-content"
+        className="sr-only focus:not-sr-only focus:fixed focus:top-3 focus:left-3 z-50 px-4 py-2 bg-purple-600 text-white font-semibold rounded-xl shadow-2xl border border-purple-400 focus:outline-none focus:ring-2 focus:ring-white transition-all text-xs"
+      >
+        Skip to main content
+      </a>
+
+      {/* Desktop Persistent Sidebar */}
+      <Sidebar />
+
+      <div className="lg:ml-[var(--sidebar-width)] transition-[margin] duration-300 min-h-screen flex flex-col">
+        {/* Responsive Header TopBar */}
+        <TopBar />
+
+        {/* Main Accessible Content Landmark */}
+        <main
+          id="main-content"
+          tabIndex={-1}
+          role="main"
+          className="flex-1 p-[var(--page-padding)] pb-24 lg:pb-[var(--page-padding)] focus:outline-none"
+        >
+          {children}
+        </main>
+      </div>
+
+      {/* Mobile Fixed Glass BottomNav */}
+      <MobileBottomNav />
+
+      {/* Global Proactive Deadline Alerts */}
+      <DeadlinePopup />
+
+      {/* Progressive Web App Install Prompt Banner */}
+      <InstallAppPrompt />
+    </div>
+  );
+};

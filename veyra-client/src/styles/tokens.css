@@ -1,0 +1,76 @@
+/* CSS Design Tokens — colors, blur, radii, shadows (light + dark) */
+/* Responsive overrides for layout dimensions */
+
+:root {
+  /* Colors — Light */
+  --color-bg: hsl(220, 20%, 97%);
+  --color-surface: hsla(0, 0%, 100%, 0.6);
+  --color-surface-hover: hsla(0, 0%, 100%, 0.8);
+  --color-primary: hsl(252, 87%, 64%);
+  --color-primary-soft: hsl(252, 87%, 95%);
+  --color-accent: hsl(173, 80%, 46%);
+  --color-warning: hsl(38, 92%, 55%);
+  --color-danger: hsl(0, 84%, 62%);
+  --color-text: hsl(220, 20%, 15%);
+  --color-text-muted: hsl(220, 15%, 45%);
+  --color-border: hsla(0, 0%, 0%, 0.08);
+
+  /* Glass */
+  --glass-blur: 16px;
+  --glass-blur-heavy: 24px;
+  --glass-border: hsla(0, 0%, 100%, 0.15);
+  --glass-shadow: 0 8px 32px hsla(0, 0%, 0%, 0.08);
+  --glass-shadow-hover: 0 12px 40px hsla(0, 0%, 0%, 0.12);
+  --glass-radius: 16px;
+  --glass-radius-sm: 8px;
+  --glass-radius-lg: 24px;
+
+  /* Typography */
+  --font-sans: 'Inter', system-ui, -apple-system, sans-serif;
+  --text-xs: clamp(0.7rem, 0.65rem + 0.25vw, 0.75rem);
+  --text-sm: clamp(0.8rem, 0.75rem + 0.25vw, 0.875rem);
+  --text-base: clamp(0.875rem, 0.825rem + 0.25vw, 1rem);
+  --text-lg: clamp(1rem, 0.925rem + 0.375vw, 1.125rem);
+  --text-xl: clamp(1.125rem, 1rem + 0.625vw, 1.25rem);
+  --text-2xl: clamp(1.25rem, 1.1rem + 0.75vw, 1.5rem);
+  --text-3xl: clamp(1.5rem, 1.25rem + 1.25vw, 1.875rem);
+  --text-4xl: clamp(1.875rem, 1.5rem + 1.875vw, 2.25rem);
+  --text-5xl: clamp(2.25rem, 1.75rem + 2.5vw, 3rem);
+
+  /* Layout — responsive */
+  --page-padding: 1rem;
+  --sidebar-width: 0px;
+  --bottom-nav-height: 64px;
+  --topbar-height: 56px;
+
+  /* Animation */
+  --duration-fast: 150ms;
+  --duration-normal: 300ms;
+  --duration-slow: 500ms;
+  --ease-standard: cubic-bezier(0.4, 0, 0.2, 1);
+  --ease-decelerate: cubic-bezier(0, 0, 0.2, 1);
+}
+
+/* Dark mode */
+.dark {
+  --color-bg: hsl(225, 25%, 8%);
+  --color-surface: hsla(225, 25%, 15%, 0.5);
+  --color-surface-hover: hsla(225, 25%, 20%, 0.6);
+  --color-primary: hsl(252, 87%, 68%);
+  --color-primary-soft: hsl(252, 87%, 20%);
+  --color-text: hsl(220, 20%, 95%);
+  --color-text-muted: hsl(220, 15%, 60%);
+  --color-border: hsla(0, 0%, 100%, 0.06);
+  --glass-border: hsla(0, 0%, 100%, 0.08);
+  --glass-shadow: 0 8px 32px hsla(0, 0%, 0%, 0.25);
+}
+
+/* Desktop layout overrides */
+@media (min-width: 1024px) {
+  :root {
+    --page-padding: 2rem;
+    --sidebar-width: 260px;
+    --bottom-nav-height: 0px;
+    --topbar-height: 64px;
+  }
+}

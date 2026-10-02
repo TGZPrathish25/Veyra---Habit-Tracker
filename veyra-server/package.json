@@ -1,0 +1,57 @@
+{
+  "name": "veyra-server",
+  "version": "0.1.0",
+  "private": true,
+  "description": "Veyra backend — Express API with Prisma, PostgreSQL, and Socket.IO",
+  "type": "module",
+  "engines": {
+    "node": ">=20.0.0"
+  },
+  "scripts": {
+    "dev": "tsx watch src/server.ts",
+    "build": "tsc -p tsconfig.build.json",
+    "start": "node dist/server.js",
+    "lint": "eslint src/ tests/",
+    "typecheck": "tsc --noEmit",
+    "test": "vitest run",
+    "test:watch": "vitest",
+    "format": "prettier --write \"src/**/*.ts\" \"tests/**/*.ts\"",
+    "format:check": "prettier --check \"src/**/*.ts\" \"tests/**/*.ts\"",
+    "db:migrate": "prisma migrate dev",
+    "db:deploy": "prisma migrate deploy",
+    "db:seed": "tsx prisma/seed.ts",
+    "db:studio": "prisma studio",
+    "db:generate": "prisma generate"
+  },
+  "dependencies": {
+    "@prisma/client": "^6.0.0",
+    "cors": "^2.8.5",
+    "dotenv": "^18.0.5",
+    "express": "^4.21.0",
+    "express-rate-limit": "^7.4.0",
+    "firebase-admin": "^12.6.0",
+    "helmet": "^8.0.0",
+    "node-cron": "^3.0.3",
+    "pino": "^9.4.0",
+    "pino-pretty": "^11.3.0",
+    "socket.io": "^4.8.0",
+    "zod": "^3.23.0"
+  },
+  "devDependencies": {
+    "@eslint/js": "^9.12.0",
+    "@types/cors": "^2.8.17",
+    "@types/express": "^5.0.0",
+    "@types/node": "^20.17.0",
+    "@types/node-cron": "^3.0.11",
+    "@types/supertest": "^6.0.2",
+    "eslint": "^9.12.0",
+    "globals": "^15.10.0",
+    "prettier": "^3.3.0",
+    "prisma": "^6.0.0",
+    "supertest": "^7.0.0",
+    "tsx": "^4.19.0",
+    "typescript": "^5.6.0",
+    "typescript-eslint": "^8.8.0",
+    "vitest": "^2.1.0"
+  }
+}

@@ -1,0 +1,296 @@
+// Veyra — Prisma Schema
+// All domain models for the habit tracking platform
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+// ─── Auth & Users ──────────────────────────────────────────
+
+model User {
+  id             String   @id @default(cuid())
+  firebaseUid    String   @unique @map("firebase_uid")
+  email          String   @unique
+  name           String?
+  username       String?  @unique
+  displayName    String?  @map("display_name")
+  avatarUrl      String?  @map("avatar_url")
+  timezone       String   @default("UTC")
+  xp             Int      @default(0)
+  level          Int      @default(1)
+  createdAt      DateTime @default(now()) @map("created_at")
+  updatedAt      DateTime @updatedAt @map("updated_at")
+
+  // Relations
+  settings       UserSettings?
+  tasks          Task[]
+  taskOccurrences TaskOccurrence[]
+  weeklyPlans    WeeklyPlan[]
+  monthlyPlans   MonthlyPlan[]
+  gamification   Gamification?
+  streaks        Streak[]
+  achievements   UserAchievement[]
+  sentRequests   FriendRequest[]  @relation("SentRequests")
+  receivedRequests FriendRequest[] @relation("ReceivedRequests")
+  friendships    Friendship[]     @relation("UserFriendships")
+  friendOf       Friendship[]     @relation("FriendOfUser")
+  challengesCreated Challenge[]
+  challengeParticipations ChallengeParticipant[]
+  notifications  Notification[]
+  monthlySnapshots MonthlySnapshot[]
+
+  @@map("users")
+}
+
+model UserSettings {
+  id                    String  @id @default(cuid())
+  userId                String  @unique @map("user_id")
+  theme                 String  @default("dark")
+  friendVisibilityLevel Int     @default(2) @map("friend_visibility_level") // 1-4
+  leaderboardOptIn      Boolean @default(true) @map("leaderboard_opt_in")
+  deadlineAlertPrefs    Json?   @map("deadline_alert_prefs")
+  notificationPrefs     Json?   @map("notification_prefs")
+  challengePrefs        Json?   @map("challenge_prefs")
+  weekStartDay          Int     @default(1) @map("week_start_day") // 1 = Monday
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@map("user_settings")
+}
+
+// ─── Tasks ─────────────────────────────────────────────────
+
+model Task {
+  id          String   @id @default(cuid())
+  userId      String   @map("user_id")
+  title       String
+  description String?
+  emoji       String?
+  color       String?
+  isRecurring Boolean  @default(true) @map("is_recurring")
+  daysOfWeek  Int[]    @map("days_of_week") // 0-6 Sun-Sat
+  isActive    Boolean  @default(true) @map("is_active")
+  sortOrder   Int      @default(0) @map("sort_order")
+  createdAt   DateTime @default(now()) @map("created_at")
+  updatedAt   DateTime @updatedAt @map("updated_at")
+
+  user        User             @relation(fields: [userId], references: [id], onDelete: Cascade)
+  occurrences TaskOccurrence[]
+
+  @@map("tasks")
+}
+
+model TaskOccurrence {
+  id          String    @id @default(cuid())
+  taskId      String    @map("task_id")
+  userId      String    @map("user_id")
+  date        DateTime  @db.Date
+  completed   Boolean   @default(false)
+  completedAt DateTime? @map("completed_at")
+  xpAwarded   Int       @default(0) @map("xp_awarded")
+
+  task Task @relation(fields: [taskId], references: [id], onDelete: Cascade)
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([taskId, date])
+  @@map("task_occurrences")
+}
+
+// ─── Weekly Plans ──────────────────────────────────────────
+
+model WeeklyPlan {
+  id         String   @id @default(cuid())
+  userId     String   @map("user_id")
+  weekStart  DateTime @map("week_start") @db.Date
+  goals      Json     @default("[]")
+  reflection String?
+  isLocked   Boolean  @default(false) @map("is_locked")
+  createdAt  DateTime @default(now()) @map("created_at")
+  updatedAt  DateTime @updatedAt @map("updated_at")
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([userId, weekStart])
+  @@map("weekly_plans")
+}
+
+// ─── Monthly Plans ─────────────────────────────────────────
+
+model MonthlyPlan {
+  id         String   @id @default(cuid())
+  userId     String   @map("user_id")
+  year       Int
+  month      Int      // 1-12
+  goals      Json     @default("[]")
+  reflection String?
+  isLocked   Boolean  @default(false) @map("is_locked")
+  createdAt  DateTime @default(now()) @map("created_at")
+  updatedAt  DateTime @updatedAt @map("updated_at")
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([userId, year, month])
+  @@map("monthly_plans")
+}
+
+// ─── Gamification ──────────────────────────────────────────
+
+model Gamification {
+  id          String @id @default(cuid())
+  userId      String @unique @map("user_id")
+  totalXp     Int    @default(0) @map("total_xp")
+  level       Int    @default(1)
+  tasksCompleted Int @default(0) @map("tasks_completed")
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@map("gamification")
+}
+
+model Streak {
+  id          String   @id @default(cuid())
+  userId      String   @map("user_id")
+  type        String   // "daily", "weekly", "monthly"
+  current     Int      @default(0)
+  longest     Int      @default(0)
+  lastActiveDate DateTime? @map("last_active_date") @db.Date
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([userId, type])
+  @@map("streaks")
+}
+
+model Achievement {
+  id          String @id @default(cuid())
+  key         String @unique
+  title       String
+  description String
+  icon        String
+  xpReward    Int    @default(0) @map("xp_reward")
+  category    String // "tasks", "streaks", "social", "milestones"
+
+  userAchievements UserAchievement[]
+
+  @@map("achievements")
+}
+
+model UserAchievement {
+  id            String   @id @default(cuid())
+  userId        String   @map("user_id")
+  achievementId String   @map("achievement_id")
+  unlockedAt    DateTime @default(now()) @map("unlocked_at")
+
+  user        User        @relation(fields: [userId], references: [id], onDelete: Cascade)
+  achievement Achievement @relation(fields: [achievementId], references: [id], onDelete: Cascade)
+
+  @@unique([userId, achievementId])
+  @@map("user_achievements")
+}
+
+// ─── Friends ───────────────────────────────────────────────
+
+model FriendRequest {
+  id         String   @id @default(cuid())
+  senderId   String   @map("sender_id")
+  receiverId String   @map("receiver_id")
+  status     String   @default("pending") // "pending", "accepted", "rejected"
+  createdAt  DateTime @default(now()) @map("created_at")
+
+  sender   User @relation("SentRequests", fields: [senderId], references: [id], onDelete: Cascade)
+  receiver User @relation("ReceivedRequests", fields: [receiverId], references: [id], onDelete: Cascade)
+
+  @@unique([senderId, receiverId])
+  @@map("friend_requests")
+}
+
+model Friendship {
+  id           String @id @default(cuid())
+  userId       String @map("user_id")
+  friendId     String @map("friend_id")
+  privacyLevel String @default("basic") @map("privacy_level") // "none", "basic", "detailed", "full"
+  createdAt    DateTime @default(now()) @map("created_at")
+
+  user   User @relation("UserFriendships", fields: [userId], references: [id], onDelete: Cascade)
+  friend User @relation("FriendOfUser", fields: [friendId], references: [id], onDelete: Cascade)
+
+  @@unique([userId, friendId])
+  @@map("friendships")
+}
+
+// ─── Challenges ────────────────────────────────────────────
+
+model Challenge {
+  id          String   @id @default(cuid())
+  creatorId   String   @map("creator_id")
+  title       String
+  description String?
+  type        String   // "daily_streak", "task_count", "custom"
+  targetValue Int      @map("target_value")
+  startDate   DateTime @map("start_date") @db.Date
+  endDate     DateTime @map("end_date") @db.Date
+  isPublic    Boolean  @default(false) @map("is_public")
+  createdAt   DateTime @default(now()) @map("created_at")
+
+  creator      User                   @relation(fields: [creatorId], references: [id], onDelete: Cascade)
+  participants ChallengeParticipant[]
+
+  @@map("challenges")
+}
+
+model ChallengeParticipant {
+  id           String   @id @default(cuid())
+  challengeId  String   @map("challenge_id")
+  userId       String   @map("user_id")
+  progress     Int      @default(0)
+  joinedAt     DateTime @default(now()) @map("joined_at")
+
+  challenge Challenge @relation(fields: [challengeId], references: [id], onDelete: Cascade)
+  user      User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([challengeId, userId])
+  @@map("challenge_participants")
+}
+
+// ─── Notifications ─────────────────────────────────────────
+
+model Notification {
+  id        String   @id @default(cuid())
+  userId    String   @map("user_id")
+  type      String   // "friend_request", "challenge_invite", "achievement", "streak", etc.
+  title     String
+  body      String
+  data      Json?
+  read      Boolean  @default(false)
+  createdAt DateTime @default(now()) @map("created_at")
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@map("notifications")
+}
+
+// ─── History ───────────────────────────────────────────────
+
+model MonthlySnapshot {
+  id               String @id @default(cuid())
+  userId           String @map("user_id")
+  year             Int
+  month            Int
+  tasksCompleted   Int    @map("tasks_completed")
+  totalTasks       Int    @map("total_tasks")
+  completionRate   Float  @map("completion_rate")
+  xpEarned         Int    @map("xp_earned")
+  streakDays       Int    @map("streak_days")
+  data             Json?  // Additional snapshot data
+  createdAt        DateTime @default(now()) @map("created_at")
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([userId, year, month])
+  @@map("monthly_snapshots")
+}

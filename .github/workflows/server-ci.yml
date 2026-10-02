@@ -1,0 +1,74 @@
+name: Server CI
+
+on:
+  push:
+    branches: [main, develop]
+    paths:
+      - 'veyra-server/**'
+      - '.github/workflows/server-ci.yml'
+  pull_request:
+    branches: [main, develop]
+    paths:
+      - 'veyra-server/**'
+      - '.github/workflows/server-ci.yml'
+
+jobs:
+  validate:
+    name: Lint, Typecheck, Test, Build
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: veyra-server
+
+    services:
+      postgres:
+        image: postgres:16-alpine
+        env:
+          POSTGRES_DB: veyra_test
+          POSTGRES_USER: veyra
+          POSTGRES_PASSWORD: password
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd pg_isready
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
+
+    env:
+      DATABASE_URL: postgresql://veyra:password@localhost:5432/veyra_test?schema=public
+      PORT: 4000
+      NODE_ENV: test
+      CORS_ORIGIN: http://localhost:5173
+      FIREBASE_PROJECT_ID: test-project
+      FIREBASE_CLIENT_EMAIL: test@test-project.iam.gserviceaccount.com
+      FIREBASE_PRIVATE_KEY: "-----BEGIN PRIVATE KEY-----\nMIIEvgIBADANBgkqhkiG9w0BAQEFAASCBKgwggSkAgEAAoIBAQC3\n-----END PRIVATE KEY-----\n"
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Set up Node.js 20
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: 'npm'
+          cache-dependency-path: veyra-server/package-lock.json
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Generate Prisma Client
+        run: npx prisma generate
+
+      - name: Lint
+        run: npm run lint
+
+      - name: Typecheck
+        run: npm run typecheck
+
+      - name: Run tests
+        run: npm test -- --run
+
+      - name: Build server bundle
+        run: npm run build

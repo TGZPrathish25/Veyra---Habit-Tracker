@@ -1,0 +1,27 @@
+services:
+  - type: web
+    name: veyra-server
+    runtime: docker
+    dockerfilePath: ./Dockerfile
+    envVars:
+      - key: DATABASE_URL
+        fromDatabase:
+          name: veyra-db
+          property: connectionString
+      - key: NODE_ENV
+        value: production
+      - key: PORT
+        value: "3001"
+      - key: CLIENT_ORIGIN
+        sync: false
+      - key: FIREBASE_SERVICE_ACCOUNT
+        sync: false
+      - key: LOG_LEVEL
+        value: info
+    healthCheckPath: /health
+
+databases:
+  - name: veyra-db
+    plan: free
+    databaseName: veyra
+    user: veyra

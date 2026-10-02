@@ -1,0 +1,98 @@
+/* Glass surface recipes + @supports fallback */
+
+.glass {
+  background: var(--color-surface);
+  border: 1px solid var(--glass-border);
+  border-radius: var(--glass-radius);
+  box-shadow: var(--glass-shadow);
+}
+
+@supports (backdrop-filter: blur(1px)) {
+  .glass {
+    backdrop-filter: blur(var(--glass-blur));
+    -webkit-backdrop-filter: blur(var(--glass-blur));
+  }
+}
+
+@supports not (backdrop-filter: blur(1px)) {
+  .glass {
+    background: var(--color-surface-hover);
+  }
+}
+
+.glass-heavy {
+  background: var(--color-surface);
+  border: 1px solid var(--glass-border);
+  border-radius: var(--glass-radius-lg);
+  box-shadow: var(--glass-shadow);
+}
+
+@supports (backdrop-filter: blur(1px)) {
+  .glass-heavy {
+    backdrop-filter: blur(var(--glass-blur-heavy));
+    -webkit-backdrop-filter: blur(var(--glass-blur-heavy));
+  }
+}
+
+.glass:hover {
+  box-shadow: var(--glass-shadow-hover);
+}
+
+.glass-input {
+  background: var(--color-surface);
+  border: 1px solid var(--glass-border);
+  border-radius: var(--glass-radius-sm);
+  padding: 0.75rem 1rem;
+  min-height: 44px; /* Touch target */
+  font-size: var(--text-base);
+  color: var(--color-text);
+  transition: border-color var(--duration-fast) var(--ease-standard),
+              box-shadow var(--duration-fast) var(--ease-standard);
+}
+
+@supports (backdrop-filter: blur(1px)) {
+  .glass-input {
+    backdrop-filter: blur(var(--glass-blur));
+    -webkit-backdrop-filter: blur(var(--glass-blur));
+  }
+}
+
+.glass-input:focus {
+  outline: none;
+  border-color: var(--color-primary);
+  box-shadow: 0 0 0 3px var(--color-primary-soft);
+}
+
+.glass-button {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 44px; /* Touch target */
+  padding: 0.625rem 1.25rem;
+  border-radius: var(--glass-radius-sm);
+  font-weight: 500;
+  font-size: var(--text-sm);
+  cursor: pointer;
+  transition: all var(--duration-fast) var(--ease-standard);
+}
+
+.glass-button-primary {
+  background: var(--color-primary);
+  color: white;
+  border: none;
+}
+
+.glass-button-primary:hover {
+  filter: brightness(1.1);
+  transform: translateY(-1px);
+}
+
+.glass-button-ghost {
+  background: transparent;
+  color: var(--color-text);
+  border: 1px solid var(--glass-border);
+}
+
+.glass-button-ghost:hover {
+  background: var(--color-surface);
+}

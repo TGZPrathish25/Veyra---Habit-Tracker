@@ -1,0 +1,118 @@
+/** Daily recurring task CRUD, occurrences, completion toggle — unit tests. */
+import { describe, it, expect, beforeEach } from 'vitest';
+import { tasksService } from './tasks.service.js';
+import { tasksRepository } from './tasks.repository.js';
+import { ForbiddenError } from '../../lib/errors.js';
+
+describe('Tasks Module', () => {
+  const testUserId = 'usr_test_user_tasks';
+
+  beforeEach(async () => {
+    // Clean up or prepare test user tasks
+  });
+
+  it('creates and lists recurring tasks for a user', async () => {
+    const created = await tasksService.createTask(testUserId, {
+      title: 'Morning Meditation',
+      description: '10 minutes mindful breathing',
+      emoji: '🧘',
+      color: '#8b5cf6',
+      isRecurring: true,
+      daysOfWeek: [0, 1, 2, 3, 4, 5, 6],
+    });
+
+    expect(created).toBeDefined();
+    expect(created.title).toBe('Morning Meditation');
+    expect(created.emoji).toBe('🧘');
+    expect(created.userId).toBe(testUserId);
+    expect(created.isActive).toBe(true);
+
+    const tasks = await tasksService.getTasks(testUserId);
+    expect(tasks.some((t) => t.id === created.id)).toBe(true);
+  });
+
+  it('updates an existing task', async () => {
+    const task = await tasksService.createTask(testUserId, {
+      title: 'Read Book',
+      emoji: '📚',
+    });
+
+    const updated = await tasksService.updateTask(testUserId, task.id, {
+      title: 'Read 20 Pages of Book',
+      description: 'Atomic Habits',
+    });
+
+    expect(updated.title).toBe('Read 20 Pages of Book');
+    expect(updated.description).toBe('Atomic Habits');
+  });
+
+  it('deletes (deactivates) a task', async () => {
+    const task = await tasksService.createTask(testUserId, {
+      title: 'Workout',
+    });
+
+    await tasksService.deleteTask(testUserId, task.id);
+    const tasks = await tasksService.getTasks(testUserId);
+    expect(tasks.some((t) => t.id === task.id)).toBe(false);
+  });
+
+  it('lazily generates occurrences for active tasks on target date', async () => {
+    const task = await tasksService.createTask(testUserId, {
+      title: 'Drink 2L Water',
+      emoji: '💧',
+      daysOfWeek: [0, 1, 2, 3, 4, 5, 6],
+    });
+
+    const todayStr = new Date().toISOString().split('T')[0];
+    const res = await tasksService.getDailyOccurrences(testUserId, todayStr, 'UTC');
+
+    expect(res.date).toBe(todayStr);
+    expect(res.occurrences.length).toBeGreaterThan(0);
+    const occurrence = res.occurrences.find((o) => o.taskId === task.id);
+    expect(occurrence).toBeDefined();
+    expect(occurrence?.completed).toBe(false);
+  });
+
+  it('toggles task completion and awards XP', async () => {
+    const task = await tasksService.createTask(testUserId, {
+      title: 'Evening Walk',
+      emoji: '🚶',
+      daysOfWeek: [0, 1, 2, 3, 4, 5, 6],
+    });
+
+    const todayStr = new Date().toISOString().split('T')[0];
+    const initial = await tasksService.getDailyOccurrences(testUserId, todayStr, 'UTC');
+    const occ = initial.occurrences.find((o) => o.taskId === task.id)!;
+    expect(occ.completed).toBe(false);
+
+    // Toggle to completed
+    const result1 = await tasksService.toggleOccurrence(testUserId, occ.id, undefined, 'UTC');
+    expect(result1.occurrence.completed).toBe(true);
+    expect(result1.occurrence.completedAt).toBeDefined();
+    expect(result1.xpDelta).toBe(10);
+
+    // Toggle back to incomplete
+    const result2 = await tasksService.toggleOccurrence(testUserId, occ.id, undefined, 'UTC');
+    expect(result2.occurrence.completed).toBe(false);
+    expect(result2.occurrence.completedAt).toBeNull();
+    expect(result2.xpDelta).toBe(-10);
+  });
+
+  it('prevents modifying occurrences from past dates', async () => {
+    const pastDate = new Date();
+    pastDate.setDate(pastDate.getDate() - 3);
+    const pastDateStr = pastDate.toISOString().split('T')[0];
+
+    const task = await tasksService.createTask(testUserId, {
+      title: 'Historical Task',
+      daysOfWeek: [0, 1, 2, 3, 4, 5, 6],
+    });
+
+    const pastRes = await tasksService.getDailyOccurrences(testUserId, pastDateStr, 'UTC');
+    const pastOcc = pastRes.occurrences.find((o) => o.taskId === task.id)!;
+
+    await expect(
+      tasksService.toggleOccurrence(testUserId, pastOcc.id, true, 'UTC')
+    ).rejects.toThrow(ForbiddenError);
+  });
+});
