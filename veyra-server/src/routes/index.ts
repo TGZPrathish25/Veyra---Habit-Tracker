@@ -20,10 +20,12 @@ import { historyRouter } from '../modules/history/history.routes.js';
 import { aiRouter } from '../modules/ai/ai.routes.js';
 
 export function mountRoutes(app: Express): void {
-  // Health checks
+  // Health checks & uptime pings (lightweight, zero DB load, bypasses rate limit)
   const sendHealth = (_req: any, res: any) => {
-    res.json({ status: 'ok', timestamp: new Date().toISOString() });
+    res.status(200).json({ status: 'ok', timestamp: new Date().toISOString() });
   };
+  app.get('/', sendHealth);
+  app.get('/ping', sendHealth);
   app.get('/health', sendHealth);
   app.get('/api/v1/health', sendHealth);
 
