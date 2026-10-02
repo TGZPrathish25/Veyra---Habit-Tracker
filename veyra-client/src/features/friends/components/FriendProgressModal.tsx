@@ -28,7 +28,7 @@ const PRIVACY_EXPLANATION: Record<
   detailed: {
     title: 'Level 3: Habit Titles & Status',
     desc: 'This friend shares habit titles, emojis, and completion status. Detailed notes and timestamps remain private.',
-    badge: 'bg-purple-500/20 text-purple-300 border-purple-500/30',
+    badge: 'bg-blue-500/20 text-blue-400 border-blue-500/30',
   },
   full: {
     title: 'Level 4: Full Accountability Profile',
@@ -55,7 +55,7 @@ export const FriendProgressModal: React.FC<FriendProgressModalProps> = ({ friend
         {/* Top Header */}
         <div className="flex items-start justify-between gap-3 mb-4">
           <div className="flex items-center gap-3">
-            <div className="w-12 h-12 rounded-2xl bg-gradient-to-br from-purple-500/30 to-indigo-500/30 border border-purple-400/40 flex items-center justify-center text-white font-bold text-fluid-lg shadow-sm">
+            <div className="w-12 h-12 rounded-2xl bg-gradient-to-br from-blue-500/30 to-blue-600/30 border border-blue-500/40 flex items-center justify-center text-white font-bold text-fluid-lg shadow-sm">
               {progress?.name ? progress.name.charAt(0).toUpperCase() : 'F'}
             </div>
             <div>
@@ -68,7 +68,7 @@ export const FriendProgressModal: React.FC<FriendProgressModalProps> = ({ friend
 
           <button
             onClick={onClose}
-            className="p-1.5 rounded-xl text-zinc-400 hover:text-white hover:bg-white/10 transition-colors"
+            className="p-1.5 rounded-xl text-zinc-400 hover:text-gray-900 dark:hover:text-white hover:bg-white/10 transition-colors"
           >
             <X size={18} />
           </button>
@@ -76,7 +76,7 @@ export const FriendProgressModal: React.FC<FriendProgressModalProps> = ({ friend
 
         {isLoading ? (
           <div className="py-12 text-center text-zinc-400">
-            <div className="inline-block w-8 h-8 border-2 border-purple-400 border-t-transparent rounded-full animate-spin mb-3" />
+            <div className="inline-block w-8 h-8 border-2 border-blue-500 border-t-transparent rounded-full animate-spin mb-3" />
             <p className="text-fluid-sm">Loading friend's accountability view...</p>
           </div>
         ) : isError || !progress ? (
@@ -89,7 +89,7 @@ export const FriendProgressModal: React.FC<FriendProgressModalProps> = ({ friend
             <div className="p-3.5 rounded-2xl bg-white/[0.03] border border-white/10">
               <div className="flex items-center justify-between gap-2 mb-1.5">
                 <span className="text-[11px] font-bold uppercase tracking-wider text-zinc-300 flex items-center gap-1.5">
-                  <Shield size={13} className="text-purple-400" />
+                  <Shield size={13} className="text-blue-500" />
                   Active Privacy Level
                 </span>
                 <span
@@ -114,14 +114,14 @@ export const FriendProgressModal: React.FC<FriendProgressModalProps> = ({ friend
                   {progress.completionPercentage}%
                 </div>
                 {progress.completedTasks !== undefined && progress.totalTasks !== undefined && (
-                  <div className="text-fluid-xs text-purple-300 mt-1">
+                  <div className="text-fluid-xs text-blue-400 mt-1">
                     {progress.completedTasks} of {progress.totalTasks} habits finished
                   </div>
                 )}
               </div>
 
               {/* Visual Ring or Pill */}
-              <div className="w-16 h-16 rounded-2xl bg-purple-500/10 border border-purple-500/20 flex flex-col items-center justify-center text-purple-300 font-bold">
+              <div className="w-16 h-16 rounded-2xl bg-blue-500/10 border border-blue-500/20 flex flex-col items-center justify-center text-blue-400 font-bold">
                 <span className="text-fluid-base">{progress.completionPercentage}%</span>
                 <span className="text-[9px] uppercase tracking-wider text-zinc-400">Done</span>
               </div>

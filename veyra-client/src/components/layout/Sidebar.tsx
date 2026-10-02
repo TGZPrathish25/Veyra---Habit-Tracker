@@ -34,7 +34,6 @@ export const Sidebar: React.FC = () => {
     { to: '/weekly', label: 'Weekly Plan', icon: CalendarRange },
     { to: '/monthly', label: 'Monthly Goals', icon: Target },
     { to: '/calendar', label: 'Calendar', icon: Calendar },
-    { to: '/analytics', label: 'Analytics', icon: BarChart3 },
     { to: '/history', label: 'History', icon: History },
     { to: '/friends', label: 'Friends', icon: Users },
     { to: '/challenges', label: 'Challenges', icon: Trophy },
@@ -78,8 +77,8 @@ export const Sidebar: React.FC = () => {
               className={({ isActive }) =>
                 `flex items-center gap-3 px-3 py-2.5 rounded-xl text-fluid-sm font-medium transition-all ${
                   isActive
-                    ? 'bg-purple-500/20 text-purple-300 border border-purple-500/30'
-                    : 'text-gray-400 hover:text-white hover:bg-white/5 border border-transparent'
+                    ? 'bg-blue-500/20 text-blue-400 border border-blue-500/30'
+                    : 'text-gray-400 hover:text-gray-900 dark:hover:text-white hover:bg-white/5 border border-transparent'
                 }`
               }
             >
@@ -105,7 +104,7 @@ export const Sidebar: React.FC = () => {
                 <div className="text-fluid-xs font-semibold truncate text-white">
                   {user.name || 'User'}
                 </div>
-                <div className="text-[11px] text-purple-400">Level {user.level || 1}</div>
+                <div className="text-[11px] text-blue-500">Level {user.level || 1}</div>
               </div>
             </NavLink>
 

@@ -41,8 +41,8 @@ export const ChallengeCard: React.FC<ChallengeCardProps> = ({ challenge, onJoin 
     },
     custom: {
       label: 'Custom Sprint',
-      icon: <Trophy size={12} className="text-purple-400" />,
-      color: 'bg-purple-500/10 text-purple-300 border-purple-500/30',
+      icon: <Trophy size={12} className="text-blue-500" />,
+      color: 'bg-blue-500/10 text-blue-400 border-blue-500/30',
     },
   };
 
@@ -70,7 +70,7 @@ export const ChallengeCard: React.FC<ChallengeCardProps> = ({ challenge, onJoin 
         </div>
 
         {/* Title & Description */}
-        <h3 className="text-fluid-base font-bold text-white group-hover:text-purple-200 transition-colors mb-1">
+        <h3 className="text-fluid-base font-bold text-white group-hover:text-blue-300 transition-colors mb-1">
           {title}
         </h3>
         {description && (
@@ -96,7 +96,7 @@ export const ChallengeCard: React.FC<ChallengeCardProps> = ({ challenge, onJoin 
           <div className="mb-4 p-3 rounded-xl bg-white/[0.03] border border-white/5">
             <div className="flex items-center justify-between text-fluid-xs mb-1.5">
               <span className="font-semibold text-zinc-300">Your Progress</span>
-              <span className="font-bold text-purple-300">
+              <span className="font-bold text-blue-400">
                 {userProgress} / {targetValue}{' '}
                 <span className="text-[10px] text-zinc-400">({progressPercentage}%)</span>
               </span>
@@ -107,7 +107,7 @@ export const ChallengeCard: React.FC<ChallengeCardProps> = ({ challenge, onJoin 
                   'h-full rounded-full transition-all duration-500',
                   isCompleted
                     ? 'bg-gradient-to-r from-emerald-500 to-teal-400'
-                    : 'bg-gradient-to-r from-purple-500 to-indigo-500'
+                    : 'bg-gradient-to-r from-blue-500 to-blue-600'
                 )}
                 style={{ width: `${progressPercentage}%` }}
               />
@@ -125,7 +125,7 @@ export const ChallengeCard: React.FC<ChallengeCardProps> = ({ challenge, onJoin 
       <div className="flex items-center gap-2 pt-2">
         <Link
           to={`/challenges/${id}`}
-          className="flex-1 py-2 px-3 rounded-xl bg-white/5 hover:bg-white/10 text-zinc-200 hover:text-white border border-white/10 text-fluid-xs font-semibold transition-all flex items-center justify-center gap-1"
+          className="flex-1 py-2 px-3 rounded-xl bg-white/5 hover:bg-white/10 text-zinc-200 hover:text-gray-900 dark:hover:text-white border border-white/10 text-fluid-xs font-semibold transition-all flex items-center justify-center gap-1"
         >
           <span>View Leaderboard</span>
           <ArrowRight size={13} />
@@ -134,7 +134,7 @@ export const ChallengeCard: React.FC<ChallengeCardProps> = ({ challenge, onJoin 
         {!isJoined && onJoin && (
           <button
             onClick={() => onJoin(id)}
-            className="py-2 px-4 rounded-xl bg-purple-600/70 hover:bg-purple-600 text-white font-bold text-fluid-xs transition-all shadow-sm flex items-center gap-1.5"
+            className="py-2 px-4 rounded-xl bg-blue-700/70 hover:bg-blue-700 text-white font-bold text-fluid-xs transition-all shadow-sm flex items-center gap-1.5"
           >
             <Trophy size={13} />
             <span>Join</span>

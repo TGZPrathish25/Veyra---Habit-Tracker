@@ -74,7 +74,7 @@ export const ChallengeLeaderboard: React.FC<ChallengeLeaderboardProps> = ({
             <div className="flex items-center gap-3">
               {getRankBadge(rank)}
 
-              <div className="w-9 h-9 rounded-xl bg-purple-500/20 border border-purple-400/30 flex items-center justify-center text-purple-300 font-bold text-fluid-xs">
+              <div className="w-9 h-9 rounded-xl bg-blue-500/20 border border-blue-500/30 flex items-center justify-center text-blue-400 font-bold text-fluid-xs">
                 {p.userName.charAt(0).toUpperCase()}
               </div>
 
@@ -88,7 +88,7 @@ export const ChallengeLeaderboard: React.FC<ChallengeLeaderboardProps> = ({
                   )}
                 </div>
                 <div className="text-[11px] text-zinc-400 flex items-center gap-1.5">
-                  <span className="text-purple-300 flex items-center gap-0.5">
+                  <span className="text-blue-400 flex items-center gap-0.5">
                     <Zap size={10} /> Lv. {p.userLevel}
                   </span>
                 </div>
@@ -102,7 +102,7 @@ export const ChallengeLeaderboard: React.FC<ChallengeLeaderboardProps> = ({
                   <div
                     className={cn(
                       'h-full rounded-full transition-all duration-500',
-                      p.completed ? 'bg-emerald-400' : 'bg-purple-400'
+                      p.completed ? 'bg-emerald-400' : 'bg-blue-500'
                     )}
                     style={{ width: `${pct}%` }}
                   />

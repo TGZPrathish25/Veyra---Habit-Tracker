@@ -14,6 +14,7 @@ import { firestoreService } from '@/lib/firestoreService';
 import { useAuthStore } from '../store/authStore';
 import { authApi } from '../api';
 import type { User, UserSettings } from '../types';
+import { INDIA_TIMEZONE } from '@/lib/date';
 
 let appRecaptchaVerifier: RecaptchaVerifier | null = null;
 let activeConfirmationResult: ConfirmationResult | null = null;
@@ -29,8 +30,9 @@ export function useAuth() {
   const handleAuthSuccess = async (userData: User, userSettings: UserSettings | null, userToken: string) => {
     setAuth(userData, userSettings, userToken);
     try {
+      const firestoreUid = auth?.currentUser?.uid || userData.firebaseUid || userData.id;
       await firestoreService.upsertUserProfile({
-        uid: userData.id,
+        uid: firestoreUid,
         email: userData.email,
         name: userData.name,
         username: userData.username,
@@ -39,6 +41,10 @@ export function useAuth() {
         level: userData.level,
         xp: userData.xp,
       });
+
+      if (userSettings) {
+        await firestoreService.saveUserSettings(firestoreUid, userSettings as unknown as Record<string, unknown>);
+      }
     } catch (err) {
       console.debug('Firestore user profile sync:', err);
     }
@@ -61,7 +67,7 @@ export function useAuth() {
         {
           email,
           name: displayName,
-          timezone: Intl.DateTimeFormat().resolvedOptions().timeZone || 'UTC',
+          timezone: INDIA_TIMEZONE,
         },
         idToken
       );
@@ -99,7 +105,7 @@ export function useAuth() {
           email,
           name,
           username,
-          timezone: Intl.DateTimeFormat().resolvedOptions().timeZone || 'UTC',
+          timezone: INDIA_TIMEZONE,
         },
         idToken
       );
@@ -137,7 +143,7 @@ export function useAuth() {
           email,
           name,
           avatarUrl: photoURL,
-          timezone: Intl.DateTimeFormat().resolvedOptions().timeZone || 'UTC',
+          timezone: INDIA_TIMEZONE,
         },
         idToken
       );
@@ -213,7 +219,7 @@ export function useAuth() {
         {
           email,
           name: displayName,
-          timezone: Intl.DateTimeFormat().resolvedOptions().timeZone || 'UTC',
+          timezone: INDIA_TIMEZONE,
         },
         idToken
       );
@@ -249,7 +255,7 @@ export function useAuth() {
           email: 'demo@veyra.app',
           name: 'Demo User',
           username: 'demo',
-          timezone: 'America/New_York',
+          timezone: INDIA_TIMEZONE,
         },
         demoToken
       );

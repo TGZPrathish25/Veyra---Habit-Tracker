@@ -1,4 +1,5 @@
 import { prisma, tryPrisma } from '../../db/prisma.js';
+import { persistentStore } from '../../db/persistentStore.js';
 import type { StreakDTO } from './streaks.types.js';
 
 const memStreaks = new Map<string, StreakDTO>();
@@ -40,17 +41,28 @@ export class StreaksRepository {
           lastActiveDate: formatDateString(s.lastActiveDate),
         };
       },
-      () => {
+      async () => {
         const key = `${userId}_${type}`;
         let s = memStreaks.get(key);
         if (!s) {
-          s = {
-            userId,
-            type,
-            current: 0,
-            longest: 0,
-            lastActiveDate: null,
-          };
+          const stored = await persistentStore.getStreak(userId, type);
+          if (stored) {
+            s = {
+              userId: stored.userId,
+              type: stored.type as StreakDTO['type'],
+              current: stored.current,
+              longest: stored.longest,
+              lastActiveDate: stored.lastActiveDate,
+            };
+          } else {
+            s = {
+              userId,
+              type,
+              current: 0,
+              longest: 0,
+              lastActiveDate: null,
+            };
+          }
           memStreaks.set(key, s);
         }
         return s;
@@ -92,9 +104,16 @@ export class StreaksRepository {
           lastActiveDate: formatDateString(updated.lastActiveDate),
         };
       },
-      () => {
+      async () => {
         const key = `${streak.userId}_${streak.type}`;
         memStreaks.set(key, streak);
+        await persistentStore.saveStreak({
+          userId: streak.userId,
+          type: streak.type,
+          current: streak.current,
+          longest: streak.longest,
+          lastActiveDate: streak.lastActiveDate || null,
+        });
         return streak;
       }
     );

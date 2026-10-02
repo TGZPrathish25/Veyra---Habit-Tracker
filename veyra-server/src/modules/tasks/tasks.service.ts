@@ -10,19 +10,7 @@ import type {
 import { NotFoundError, ForbiddenError } from '../../lib/errors.js';
 import { gamificationService } from '../gamification/gamification.service.js';
 import { streaksService } from '../streaks/streaks.service.js';
-
-function getLocalDateString(timezone = 'UTC', dateObj = new Date()): string {
-  try {
-    return new Intl.DateTimeFormat('en-CA', {
-      timeZone: timezone,
-      year: 'numeric',
-      month: '2-digit',
-      day: '2-digit',
-    }).format(dateObj);
-  } catch {
-    return dateObj.toISOString().split('T')[0];
-  }
-}
+import { DEFAULT_TIMEZONE, getLocalDateString } from '../../lib/time.js';
 
 function parseDateOnly(dateStr: string): Date {
   // Midnight UTC for database Date column
@@ -70,7 +58,7 @@ export class TasksService {
   async getDailyOccurrences(
     userId: string,
     targetDateStr?: string,
-    userTimezone = 'UTC'
+    userTimezone = DEFAULT_TIMEZONE
   ): Promise<DailyOccurrencesResponse> {
     const todayStr = getLocalDateString(userTimezone);
     const dateStr = targetDateStr || todayStr;
@@ -82,11 +70,23 @@ export class TasksService {
 
     // 2. Fetch already generated occurrences for target date
     let existingOccurrences = await tasksRepository.findOccurrencesByDate(userId, targetDate);
+    // Ensure occurrences for deactivated tasks are filtered out
+    existingOccurrences = existingOccurrences.filter((o) => o.task && o.task.isActive);
+
+    // Ensure strict uniqueness by taskId
+    const seenTaskIds = new Set<string>();
+    const uniqueOccurrences: TaskOccurrenceDTO[] = [];
+    for (const occ of existingOccurrences) {
+      if (!seenTaskIds.has(occ.taskId)) {
+        seenTaskIds.add(occ.taskId);
+        uniqueOccurrences.push(occ);
+      }
+    }
+    existingOccurrences = uniqueOccurrences;
 
     // 3. Lazy generation: Find tasks scheduled for today that don't have occurrences yet
-    const existingTaskIds = new Set(existingOccurrences.map((o) => o.taskId));
     const missingTasks = activeTasks.filter((t) => {
-      if (existingTaskIds.has(t.id)) return false;
+      if (seenTaskIds.has(t.id)) return false;
       // Check if task is scheduled for this day of week
       return t.daysOfWeek.includes(dayOfWeek);
     });
@@ -98,7 +98,12 @@ export class TasksService {
         date: targetDate,
       }));
       const created = await tasksRepository.createOccurrences(newItems);
-      existingOccurrences = [...existingOccurrences, ...created];
+      for (const occ of created) {
+        if (!seenTaskIds.has(occ.taskId)) {
+          seenTaskIds.add(occ.taskId);
+          existingOccurrences.push(occ);
+        }
+      }
     }
 
     // Sort by task sortOrder or title
@@ -132,7 +137,7 @@ export class TasksService {
     userId: string,
     occurrenceId: string,
     completedOverride?: boolean,
-    userTimezone = 'UTC'
+    userTimezone = DEFAULT_TIMEZONE
   ): Promise<{ occurrence: TaskOccurrenceDTO; xpDelta: number }> {
     const occ = await tasksRepository.findOccurrenceById(occurrenceId);
     if (!occ) {

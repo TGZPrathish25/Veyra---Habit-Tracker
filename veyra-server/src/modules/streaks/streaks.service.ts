@@ -1,6 +1,7 @@
 /** Streaks business logic and calculation engine. */
 import { streaksRepository } from './streaks.repository.js';
 import type { StreakDTO, UserStreaksResponse } from './streaks.types.js';
+import { getIndianTodayDateString } from '../../lib/time.js';
 
 function getYesterdayDateStr(dateStr: string): string {
   const [y, m, d] = dateStr.split('-').map(Number);
@@ -26,7 +27,7 @@ export class StreaksService {
 
   async recordDailyActivity(
     userId: string,
-    activityDateStr = new Date().toISOString().split('T')[0]
+    activityDateStr = getIndianTodayDateString()
   ): Promise<{ streak: StreakDTO; increased: boolean; reset: boolean }> {
     const streak = await streaksRepository.getStreak(userId, 'daily');
     const yesterdayStr = getYesterdayDateStr(activityDateStr);

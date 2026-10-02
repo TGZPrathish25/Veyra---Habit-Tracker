@@ -10,6 +10,7 @@ import { GlassInput } from '@/components/glass/GlassInput';
 import { Trophy, Sparkles, Calendar, ArrowLeft, Target, Flame } from 'lucide-react';
 import { challengesApi } from '@/features/challenges/api/challengesApi';
 import type { ChallengeType } from '@/features/challenges/types';
+import { getIndianTodayDateString, shiftDateString } from '@/lib/date';
 
 export const CreateChallengePage: React.FC = () => {
   const navigate = useNavigate();
@@ -18,10 +19,8 @@ export const CreateChallengePage: React.FC = () => {
   const [type, setType] = useState<ChallengeType>('daily_streak');
   const [targetValue, setTargetValue] = useState<number>(14);
   const [rewardXp, setRewardXp] = useState<number>(250);
-  const [startDate, setStartDate] = useState(new Date().toISOString().split('T')[0]);
-  const [endDate, setEndDate] = useState(
-    new Date(Date.now() + 14 * 86400000).toISOString().split('T')[0]
-  );
+  const [startDate, setStartDate] = useState(() => getIndianTodayDateString());
+  const [endDate, setEndDate] = useState(() => shiftDateString(getIndianTodayDateString(), 14));
   const [isPublic, setIsPublic] = useState(true);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -63,7 +62,7 @@ export const CreateChallengePage: React.FC = () => {
       <div className="max-w-2xl mx-auto space-y-6">
         <Link
           to="/challenges"
-          className="inline-flex items-center gap-2 text-fluid-xs text-zinc-400 hover:text-white transition-colors"
+          className="inline-flex items-center gap-2 text-fluid-xs text-zinc-400 hover:text-gray-900 dark:hover:text-white transition-colors"
         >
           <ArrowLeft size={16} />
           <span>Back to Challenges</span>
@@ -100,7 +99,7 @@ export const CreateChallengePage: React.FC = () => {
               placeholder="Detail what participants must achieve each day to claim victory..."
               value={description}
               onChange={(e) => setDescription(e.target.value)}
-              className="w-full rounded-xl p-3 bg-black/40 border border-white/10 text-white text-fluid-xs placeholder:text-zinc-500 focus:outline-none focus:ring-2 focus:ring-purple-500 resize-none"
+              className="w-full rounded-xl p-3 bg-black/40 border border-white/10 text-white text-fluid-xs placeholder:text-zinc-500 focus:outline-none focus:ring-2 focus:ring-blue-500 resize-none"
             />
           </div>
 
@@ -122,11 +121,11 @@ export const CreateChallengePage: React.FC = () => {
                     onClick={() => setType(format.id)}
                     className={`p-3 rounded-2xl border text-left transition-all ${
                       isSelected
-                        ? 'border-purple-500 bg-purple-500/20 text-white'
-                        : 'border-white/5 bg-white/5 text-zinc-400 hover:text-white'
+                        ? 'border-blue-500 bg-blue-500/20 text-white'
+                        : 'border-white/5 bg-white/5 text-zinc-400 hover:text-gray-900 dark:hover:text-white'
                     }`}
                   >
-                    <Icon size={18} className={isSelected ? 'text-purple-300 mb-1' : 'mb-1'} />
+                    <Icon size={18} className={isSelected ? 'text-blue-400 mb-1' : 'mb-1'} />
                     <div className="text-fluid-xs font-bold text-white">{format.label}</div>
                     <div className="text-[10px] text-zinc-400">{format.desc}</div>
                   </button>
@@ -186,7 +185,7 @@ export const CreateChallengePage: React.FC = () => {
             <Link to="/challenges">
               <button
                 type="button"
-                className="text-fluid-xs text-zinc-400 hover:text-white transition-colors"
+                className="text-fluid-xs text-zinc-400 hover:text-gray-900 dark:hover:text-white transition-colors"
               >
                 Cancel
               </button>

@@ -1,4 +1,5 @@
 import { prisma, tryPrisma } from '../../db/prisma.js';
+import { persistentStore, type StoredUser, type StoredSettings } from '../../db/persistentStore.js';
 import type { Prisma } from '@prisma/client';
 
 export interface UserRecord {
@@ -26,40 +27,22 @@ export interface SettingsRecord {
   weekStartDay: number;
 }
 
-// In-memory fallback store for local development when PostgreSQL is not running
-const memUsers = new Map<string, UserRecord>();
-const memSettings = new Map<string, SettingsRecord>();
-
-// Pre-seed demo user in memory
-const demoSettings: SettingsRecord = {
-  theme: 'dark',
-  friendVisibilityLevel: 2,
-  leaderboardOptIn: true,
-  deadlineAlertPrefs: null,
-  notificationPrefs: null,
-  challengePrefs: null,
-  weekStartDay: 1,
-};
-
-const demoUser: UserRecord = {
-  id: 'usr_demo',
-  firebaseUid: 'demo',
-  email: 'demo@veyra.app',
-  name: 'Demo User',
-  username: 'demo',
-  avatarUrl: null,
-  timezone: 'America/New_York',
-  xp: 1250,
-  level: 5,
-  createdAt: new Date('2026-01-01'),
-  updatedAt: new Date(),
-  settings: demoSettings,
-};
-
-memUsers.set(demoUser.id, demoUser);
-memSettings.set(demoUser.id, demoSettings);
-
-
+function toUserRecord(u: StoredUser, settings?: StoredSettings | null): UserRecord {
+  return {
+    id: u.id,
+    firebaseUid: u.firebaseUid,
+    email: u.email,
+    name: u.name,
+    username: u.username,
+    avatarUrl: u.avatarUrl,
+    timezone: u.timezone,
+    xp: u.xp,
+    level: u.level,
+    createdAt: new Date(u.createdAt),
+    updatedAt: new Date(u.updatedAt),
+    settings: settings || null,
+  };
+}
 
 export class UsersRepository {
   async findById(id: string): Promise<UserRecord | null> {
@@ -71,10 +54,11 @@ export class UsersRepository {
         });
         return u as UserRecord | null;
       },
-      () => {
-        const u = memUsers.get(id);
+      async () => {
+        const u = await persistentStore.getUserById(id);
         if (!u) return null;
-        return { ...u, settings: memSettings.get(id) || null };
+        const s = await persistentStore.getSettings(id);
+        return toUserRecord(u, s);
       }
     );
   }
@@ -88,13 +72,11 @@ export class UsersRepository {
         });
         return u as UserRecord | null;
       },
-      () => {
-        for (const u of memUsers.values()) {
-          if (u.firebaseUid === firebaseUid) {
-            return { ...u, settings: memSettings.get(u.id) || null };
-          }
-        }
-        return null;
+      async () => {
+        const u = await persistentStore.getUserByFirebaseUid(firebaseUid);
+        if (!u) return null;
+        const s = await persistentStore.getSettings(u.id);
+        return toUserRecord(u, s);
       }
     );
   }
@@ -109,13 +91,11 @@ export class UsersRepository {
         });
         return u as UserRecord | null;
       },
-      () => {
-        for (const u of memUsers.values()) {
-          if (u.username?.toLowerCase() === normalized) {
-            return { ...u, settings: memSettings.get(u.id) || null };
-          }
-        }
-        return null;
+      async () => {
+        const u = await persistentStore.getUserByUsername(normalized);
+        if (!u) return null;
+        const s = await persistentStore.getSettings(u.id);
+        return toUserRecord(u, s);
       }
     );
   }
@@ -137,7 +117,7 @@ export class UsersRepository {
             name: data.name || null,
             username: data.username.toLowerCase(),
             avatarUrl: data.avatarUrl || null,
-            timezone: data.timezone || 'UTC',
+            timezone: data.timezone || 'Asia/Kolkata',
             settings: {
               create: {
                 theme: 'dark',
@@ -158,7 +138,7 @@ export class UsersRepository {
         });
         return u as UserRecord;
       },
-      () => {
+      async () => {
         const id = 'usr_' + Math.random().toString(36).substring(2, 11);
         const settings: SettingsRecord = {
           theme: 'dark',
@@ -169,23 +149,23 @@ export class UsersRepository {
           challengePrefs: null,
           weekStartDay: 1,
         };
-        const user: UserRecord = {
+        const nowIso = new Date().toISOString();
+        const storedUser: StoredUser = {
           id,
           firebaseUid: data.firebaseUid,
           email: data.email,
           name: data.name || null,
           username: data.username.toLowerCase(),
           avatarUrl: data.avatarUrl || null,
-          timezone: data.timezone || 'UTC',
+          timezone: data.timezone || 'Asia/Kolkata',
           xp: 0,
           level: 1,
-          createdAt: new Date(),
-          updatedAt: new Date(),
-          settings,
+          createdAt: nowIso,
+          updatedAt: nowIso,
         };
-        memUsers.set(id, user);
-        memSettings.set(id, settings);
-        return user;
+        await persistentStore.saveUser(storedUser);
+        await persistentStore.saveSettings(id, settings);
+        return toUserRecord(storedUser, settings);
       }
     );
   }
@@ -211,19 +191,20 @@ export class UsersRepository {
         });
         return u as UserRecord;
       },
-      () => {
-        const existing = memUsers.get(id);
-        if (!existing) throw new Error('User not found in memory');
-        const updated: UserRecord = {
+      async () => {
+        const existing = await persistentStore.getUserById(id);
+        if (!existing) throw new Error('User not found');
+        const updated: StoredUser = {
           ...existing,
           name: data.name !== undefined ? data.name : existing.name,
           username: data.username !== undefined ? data.username.toLowerCase() : existing.username,
           avatarUrl: data.avatarUrl !== undefined ? data.avatarUrl : existing.avatarUrl,
           timezone: data.timezone !== undefined ? data.timezone : existing.timezone,
-          updatedAt: new Date(),
+          updatedAt: new Date().toISOString(),
         };
-        memUsers.set(id, updated);
-        return { ...updated, settings: memSettings.get(id) || null };
+        await persistentStore.saveUser(updated);
+        const settings = await persistentStore.getSettings(id);
+        return toUserRecord(updated, settings);
       }
     );
   }
@@ -244,8 +225,8 @@ export class UsersRepository {
         }
         return s as unknown as SettingsRecord;
       },
-      () => {
-        let s = memSettings.get(userId);
+      async () => {
+        let s = await persistentStore.getSettings(userId);
         if (!s) {
           s = {
             theme: 'dark',
@@ -256,7 +237,7 @@ export class UsersRepository {
             challengePrefs: null,
             weekStartDay: 1,
           };
-          memSettings.set(userId, s);
+          await persistentStore.saveSettings(userId, s);
         }
         return s;
       }
@@ -290,8 +271,8 @@ export class UsersRepository {
         });
         return s as unknown as SettingsRecord;
       },
-      () => {
-        const current = memSettings.get(userId) || {
+      async () => {
+        const current = (await persistentStore.getSettings(userId)) || {
           theme: 'dark',
           friendVisibilityLevel: 2,
           leaderboardOptIn: true,
@@ -309,7 +290,7 @@ export class UsersRepository {
           challengePrefs: data.challengePrefs !== undefined ? data.challengePrefs : current.challengePrefs,
           weekStartDay: data.weekStartDay ?? current.weekStartDay,
         };
-        memSettings.set(userId, updated);
+        await persistentStore.saveSettings(userId, updated);
         return updated;
       }
     );

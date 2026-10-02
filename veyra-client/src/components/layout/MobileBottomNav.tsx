@@ -29,7 +29,7 @@ export const MobileBottomNav: React.FC = () => {
               to={tab.to}
               className={({ isActive }) =>
                 `flex flex-col items-center justify-center min-w-[50px] min-h-[44px] text-[11px] font-medium transition-colors ${
-                  isActive ? 'text-purple-400 font-semibold' : 'text-gray-400 hover:text-white'
+                  isActive ? 'text-blue-500 font-semibold' : 'text-gray-400 hover:text-gray-900 dark:hover:text-white'
                 }`
               }
             >

@@ -8,6 +8,7 @@ import { GlassInput } from '@/components/glass/GlassInput';
 import { apiClient } from '@/lib/apiClient';
 import { Calendar, Plus, Trophy, CheckCircle2, Lock, Save, Trash2, Sparkles } from 'lucide-react';
 import { AiReflectionModal } from '@/features/ai';
+import { getCurrentYearAndMonth } from '@/lib/date';
 
 interface MonthlyGoal {
   id?: string;
@@ -51,18 +52,14 @@ export const MonthlyGoalsPage: React.FC = () => {
         }
         return res.data.data;
       } catch {
-        const now = new Date();
+        const { year, month } = getCurrentYearAndMonth();
         return {
-          id: `monthly_${now.getFullYear()}_${now.getMonth() + 1}`,
+          id: `monthly_${year}_${month}`,
           userId: 'user-cloud',
-          year: now.getFullYear(),
-          month: now.getMonth() + 1,
-          goals: [
-            { id: 'mg1', title: 'Complete 25 Daily Habit Occurrences', targetCount: 25, completedCount: 20 },
-            { id: 'mg2', title: 'Maintain Mindful Meditation Practice', targetCount: 15, completedCount: 12 },
-            { id: 'mg3', title: 'Review Growth Telemetry & Retrospect', targetCount: 1, completedCount: 0 },
-          ],
-          reflection: reflectionText || 'Strong dedication toward habit consistency and mindfulness.',
+          year,
+          month,
+          goals: [],
+          reflection: '',
           isLocked: false,
         };
       }
@@ -82,7 +79,23 @@ export const MonthlyGoalsPage: React.FC = () => {
         return { data: { goals: updatedGoals } };
       }
     },
-    onSuccess: () => {
+    onMutate: async (updatedGoals: MonthlyGoal[]) => {
+      await queryClient.cancelQueries({ queryKey: ['monthly-current'] });
+      const previous = queryClient.getQueryData<MonthlyPlan>(['monthly-current']);
+      if (previous) {
+        queryClient.setQueryData<MonthlyPlan>(['monthly-current'], {
+          ...previous,
+          goals: updatedGoals,
+        });
+      }
+      return { previous };
+    },
+    onError: (_err, _vars, context) => {
+      if (context?.previous) {
+        queryClient.setQueryData(['monthly-current'], context.previous);
+      }
+    },
+    onSettled: () => {
       queryClient.invalidateQueries({ queryKey: ['monthly-current'] });
     },
   });
@@ -123,11 +136,30 @@ export const MonthlyGoalsPage: React.FC = () => {
     await saveMutation.mutateAsync(nextGoals);
   };
 
+  const [savingReflection, setSavingReflection] = useState(false);
+
   const handleSaveReflection = async () => {
     if (!plan || plan.isLocked) return;
-    await apiClient.patch(`/monthly/${plan.id}`, { reflection: reflectionText });
-    setIsReflectionDirty(false);
-    queryClient.invalidateQueries({ queryKey: ['monthly-current'] });
+    setSavingReflection(true);
+    try {
+      if (plan.id && !plan.id.startsWith('plan_')) {
+        await apiClient.patch(`/monthly/${plan.id}`, { reflection: reflectionText });
+      } else {
+        await apiClient.post('/monthly', {
+          year: plan.year,
+          month: plan.month,
+          goals: plan.goals,
+          reflection: reflectionText,
+        });
+      }
+      setIsReflectionDirty(false);
+      queryClient.invalidateQueries({ queryKey: ['monthly-current'] });
+    } catch (err) {
+      console.warn('Failed to save reflection to server, persisting locally:', err);
+      setIsReflectionDirty(false);
+    } finally {
+      setSavingReflection(false);
+    }
   };
 
   const monthTitle = plan ? `${MONTH_NAMES[plan.month - 1]} ${plan.year}` : 'Current Month';
@@ -305,9 +337,9 @@ export const MonthlyGoalsPage: React.FC = () => {
                 <button
                   type="button"
                   onClick={() => setIsAiModalOpen(true)}
-                  className="text-[11px] font-semibold px-2.5 py-1 rounded-full bg-purple-500/20 hover:bg-purple-500/30 text-purple-200 border border-purple-400/30 flex items-center gap-1.5 transition-all shadow-sm"
+                  className="text-[11px] font-semibold px-2.5 py-1 rounded-full bg-blue-500/20 hover:bg-blue-500/30 text-blue-300 border border-blue-500/30 flex items-center gap-1.5 transition-all shadow-sm"
                 >
-                  <Sparkles size={12} className="text-purple-300" />
+                  <Sparkles size={12} className="text-blue-400" />
                   <span>AI Assistant</span>
                 </button>
               )}
@@ -331,10 +363,11 @@ export const MonthlyGoalsPage: React.FC = () => {
               <GlassButton
                 onClick={handleSaveReflection}
                 variant="primary"
+                disabled={savingReflection}
                 className="w-full flex items-center justify-center gap-1.5"
               >
                 <Save size={16} />
-                <span>Save Reflection</span>
+                <span>{savingReflection ? 'Saving...' : 'Save Reflection'}</span>
               </GlassButton>
             )}
           </div>

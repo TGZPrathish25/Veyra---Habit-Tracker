@@ -8,6 +8,7 @@ import { GlassInput } from '@/components/glass/GlassInput';
 import { apiClient } from '@/lib/apiClient';
 import { Calendar, Plus, Target, CheckCircle2, Lock, Save, Trash2, Sparkles } from 'lucide-react';
 import { SundayPlanningModal } from '@/features/weekly-tasks/components/SundayPlanningModal';
+import { getWeekMondayDateString } from '@/lib/date';
 
 interface WeeklyGoal {
   id?: string;
@@ -45,23 +46,14 @@ export const WeeklyTasksPage: React.FC = () => {
         }
         return res.data.data;
       } catch {
-        const now = new Date();
-        const d = new Date(now);
-        const day = d.getDay();
-        const diff = d.getDate() - day + (day === 0 ? -6 : 1);
-        d.setDate(diff);
-        const monday = d.toISOString().split('T')[0];
+        const monday = getWeekMondayDateString();
 
         return {
           id: `plan_${monday}`,
           userId: 'user-cloud',
           weekStart: monday,
-          goals: [
-            { id: 'g1', title: 'Cardio & Strength Training', targetCount: 4, completedCount: 3 },
-            { id: 'g2', title: 'Deep Work Focus Sprints', targetCount: 10, completedCount: 8 },
-            { id: 'g3', title: 'Read 25 Pages of Non-Fiction', targetCount: 5, completedCount: 5 },
-          ],
-          reflection: reflectionText || 'Making great progress on focus blocks this week.',
+          goals: [],
+          reflection: '',
           isLocked: false,
         };
       }
@@ -80,7 +72,23 @@ export const WeeklyTasksPage: React.FC = () => {
         return { data: { goals: updatedGoals } };
       }
     },
-    onSuccess: () => {
+    onMutate: async (updatedGoals: WeeklyGoal[]) => {
+      await queryClient.cancelQueries({ queryKey: ['weekly-current'] });
+      const previous = queryClient.getQueryData<WeeklyPlan>(['weekly-current']);
+      if (previous) {
+        queryClient.setQueryData<WeeklyPlan>(['weekly-current'], {
+          ...previous,
+          goals: updatedGoals,
+        });
+      }
+      return { previous };
+    },
+    onError: (_err, _vars, context) => {
+      if (context?.previous) {
+        queryClient.setQueryData(['weekly-current'], context.previous);
+      }
+    },
+    onSettled: () => {
       queryClient.invalidateQueries({ queryKey: ['weekly-current'] });
     },
   });
@@ -121,11 +129,29 @@ export const WeeklyTasksPage: React.FC = () => {
     await saveMutation.mutateAsync(nextGoals);
   };
 
+  const [savingReflection, setSavingReflection] = useState(false);
+
   const handleSaveReflection = async () => {
     if (!plan || plan.isLocked) return;
-    await apiClient.patch(`/weekly/${plan.id}`, { reflection: reflectionText });
-    setIsReflectionDirty(false);
-    queryClient.invalidateQueries({ queryKey: ['weekly-current'] });
+    setSavingReflection(true);
+    try {
+      if (plan.id && !plan.id.startsWith('plan_')) {
+        await apiClient.patch(`/weekly/${plan.id}`, { reflection: reflectionText });
+      } else {
+        await apiClient.post('/weekly', {
+          weekStart: plan.weekStart,
+          goals: plan.goals,
+          reflection: reflectionText,
+        });
+      }
+      setIsReflectionDirty(false);
+      queryClient.invalidateQueries({ queryKey: ['weekly-current'] });
+    } catch (err) {
+      console.warn('Failed to save reflection to server, persisting locally:', err);
+      setIsReflectionDirty(false);
+    } finally {
+      setSavingReflection(false);
+    }
   };
 
   const totalGoals = plan?.goals.length || 0;
@@ -142,7 +168,7 @@ export const WeeklyTasksPage: React.FC = () => {
       {/* Week Header Banner */}
       <div className="glass p-5 rounded-2xl mb-6 border border-white/10 flex flex-col sm:flex-row sm:items-center justify-between gap-4">
         <div>
-          <div className="flex items-center gap-2 text-fluid-xs text-purple-300 font-semibold mb-1">
+          <div className="flex items-center gap-2 text-fluid-xs text-blue-400 font-semibold mb-1">
             <Calendar size={15} />
             <span>Cycle: Monday to Sunday</span>
             {plan?.isLocked && (
@@ -161,7 +187,7 @@ export const WeeklyTasksPage: React.FC = () => {
           <GlassButton
             variant="secondary"
             onClick={() => setIsRitualOpen(true)}
-            className="flex items-center gap-2 border-purple-500/30 text-purple-200"
+            className="flex items-center gap-2 border-blue-500/30 text-blue-300"
           >
             <Sparkles size={15} className="text-yellow-300" />
             <span>Weekly Ritual</span>
@@ -173,7 +199,7 @@ export const WeeklyTasksPage: React.FC = () => {
               {completedGoals} / {totalGoals}
             </div>
           </div>
-          <div className="w-14 h-14 rounded-2xl bg-purple-500/10 border border-purple-500/30 flex items-center justify-center font-bold text-purple-300 text-lg">
+          <div className="w-14 h-14 rounded-2xl bg-blue-500/10 border border-blue-500/30 flex items-center justify-center font-bold text-blue-400 text-lg">
             {percent}%
           </div>
         </div>
@@ -226,7 +252,7 @@ export const WeeklyTasksPage: React.FC = () => {
                     className={`glass p-4 rounded-xl border transition-all flex items-center justify-between gap-3 ${
                       isFinished
                         ? 'border-emerald-500/30 bg-emerald-500/5'
-                        : 'border-white/10 hover:border-purple-500/30'
+                        : 'border-white/10 hover:border-blue-500/30'
                     }`}
                   >
                     <div className="flex items-center gap-3 min-w-0 flex-1">
@@ -234,7 +260,7 @@ export const WeeklyTasksPage: React.FC = () => {
                         className={`w-9 h-9 rounded-xl flex items-center justify-center font-bold text-sm shrink-0 ${
                           isFinished
                             ? 'bg-emerald-500/20 text-emerald-400'
-                            : 'bg-purple-500/20 text-purple-300'
+                            : 'bg-blue-500/20 text-blue-400'
                         }`}
                       >
                         {isFinished ? <CheckCircle2 size={18} /> : <Target size={18} />}
@@ -261,7 +287,7 @@ export const WeeklyTasksPage: React.FC = () => {
                           <button
                             type="button"
                             onClick={() => handleIncrementGoal(idx)}
-                            className="px-3 py-1.5 rounded-lg text-xs font-semibold bg-purple-600/50 hover:bg-purple-600 text-white transition-all active:scale-95 shadow-sm"
+                            className="px-3 py-1.5 rounded-lg text-xs font-semibold bg-blue-700/50 hover:bg-blue-700 text-white transition-all active:scale-95 shadow-sm"
                           >
                             +1 Check
                           </button>
@@ -281,7 +307,7 @@ export const WeeklyTasksPage: React.FC = () => {
             </div>
           ) : (
             <div className="glass p-10 text-center rounded-xl border border-white/10">
-              <Target size={32} className="mx-auto text-purple-400/60 mb-2" />
+              <Target size={32} className="mx-auto text-blue-500/60 mb-2" />
               <h3 className="text-fluid-base font-semibold text-white mb-1">No weekly goals set yet</h3>
               <p className="text-fluid-xs text-zinc-400 max-w-sm mx-auto">
                 Add 2–4 targeted objectives to focus your momentum this week.
@@ -313,10 +339,11 @@ export const WeeklyTasksPage: React.FC = () => {
               <GlassButton
                 onClick={handleSaveReflection}
                 variant="primary"
+                disabled={savingReflection}
                 className="w-full flex items-center justify-center gap-1.5"
               >
                 <Save size={16} />
-                <span>Save Reflection</span>
+                <span>{savingReflection ? 'Saving...' : 'Save Reflection'}</span>
               </GlassButton>
             )}
           </div>

@@ -18,48 +18,7 @@ interface MemNotification {
 }
 
 // In-memory notifications storage
-const memNotifications: MemNotification[] = [
-  {
-    id: 'notif-1',
-    userId: 'demo-user-id',
-    type: 'streak',
-    title: '🔥 7-Day Streak Milestone!',
-    body: 'Incredible consistency! You have logged habits for 7 consecutive days.',
-    data: { streak: 7 },
-    read: false,
-    createdAt: new Date(Date.now() - 1000 * 60 * 30).toISOString(),
-  },
-  {
-    id: 'notif-2',
-    userId: 'demo-user-id',
-    type: 'friend_request',
-    title: '👋 Maya Chen sent you a friend request',
-    body: 'Maya wants to connect and share habit accountability progress.',
-    data: { senderId: 'demo-user-2', username: 'mayachen' },
-    read: false,
-    createdAt: new Date(Date.now() - 1000 * 60 * 120).toISOString(),
-  },
-  {
-    id: 'notif-3',
-    userId: 'demo-user-id',
-    type: 'achievement',
-    title: '🏆 Achievement Unlocked: First Step!',
-    body: 'You completed your first daily habit and earned +50 XP bonus.',
-    data: { achievementKey: 'FIRST_STEP', xp: 50 },
-    read: true,
-    createdAt: new Date(Date.now() - 1000 * 60 * 60 * 24).toISOString(),
-  },
-  {
-    id: 'notif-4',
-    userId: 'demo-user-id',
-    type: 'challenge_invite',
-    title: '🎯 Invited to 30-Day Morning Sprint',
-    body: 'Alex Rivera invited you to join the October consistency challenge.',
-    data: { challengeId: 'chal-1' },
-    read: true,
-    createdAt: new Date(Date.now() - 1000 * 60 * 60 * 48).toISOString(),
-  },
-];
+const memNotifications: MemNotification[] = [];
 
 export const notificationsRepository = {
   async findUserNotifications(

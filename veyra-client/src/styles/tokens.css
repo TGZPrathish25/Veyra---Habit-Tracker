@@ -1,26 +1,26 @@
 /* CSS Design Tokens — colors, blur, radii, shadows (light + dark) */
-/* Responsive overrides for layout dimensions */
+/* Deep navy / cobalt blue color theme */
 
 :root {
-  /* Colors — Light */
-  --color-bg: hsl(220, 20%, 97%);
-  --color-surface: hsla(0, 0%, 100%, 0.6);
-  --color-surface-hover: hsla(0, 0%, 100%, 0.8);
-  --color-primary: hsl(252, 87%, 64%);
-  --color-primary-soft: hsl(252, 87%, 95%);
-  --color-accent: hsl(173, 80%, 46%);
+  /* Colors — Light (warm cream / #f5f1e4 base) */
+  --color-bg: #f5f1e4;
+  --color-surface: hsla(43, 40%, 95%, 0.65);
+  --color-surface-hover: hsla(43, 40%, 97%, 0.85);
+  --color-primary: hsl(205, 100%, 42%);
+  --color-primary-soft: hsl(205, 80%, 90%);
+  --color-accent: hsl(195, 100%, 42%);
   --color-warning: hsl(38, 92%, 55%);
   --color-danger: hsl(0, 84%, 62%);
-  --color-text: hsl(220, 20%, 15%);
-  --color-text-muted: hsl(220, 15%, 45%);
-  --color-border: hsla(0, 0%, 0%, 0.08);
+  --color-text: hsl(35, 30%, 12%);
+  --color-text-muted: hsl(35, 15%, 40%);
+  --color-border: hsla(35, 30%, 20%, 0.1);
 
   /* Glass */
   --glass-blur: 16px;
   --glass-blur-heavy: 24px;
-  --glass-border: hsla(0, 0%, 100%, 0.15);
-  --glass-shadow: 0 8px 32px hsla(0, 0%, 0%, 0.08);
-  --glass-shadow-hover: 0 12px 40px hsla(0, 0%, 0%, 0.12);
+  --glass-border: hsla(40, 40%, 70%, 0.25);
+  --glass-shadow: 0 8px 32px hsla(35, 30%, 20%, 0.06);
+  --glass-shadow-hover: 0 12px 40px hsla(35, 30%, 20%, 0.12);
   --glass-radius: 16px;
   --glass-radius-sm: 8px;
   --glass-radius-lg: 24px;
@@ -51,18 +51,33 @@
   --ease-decelerate: cubic-bezier(0, 0, 0.2, 1);
 }
 
-/* Dark mode */
+/* Dark mode — deep navy / cobalt */
 .dark {
-  --color-bg: hsl(225, 25%, 8%);
-  --color-surface: hsla(225, 25%, 15%, 0.5);
-  --color-surface-hover: hsla(225, 25%, 20%, 0.6);
-  --color-primary: hsl(252, 87%, 68%);
-  --color-primary-soft: hsl(252, 87%, 20%);
-  --color-text: hsl(220, 20%, 95%);
-  --color-text-muted: hsl(220, 15%, 60%);
-  --color-border: hsla(0, 0%, 100%, 0.06);
-  --glass-border: hsla(0, 0%, 100%, 0.08);
-  --glass-shadow: 0 8px 32px hsla(0, 0%, 0%, 0.25);
+  --color-bg: hsl(216, 60%, 6%);
+  --color-surface: hsla(214, 55%, 13%, 0.55);
+  --color-surface-hover: hsla(214, 50%, 18%, 0.65);
+  --color-primary: hsl(205, 100%, 50%);
+  --color-primary-soft: hsl(205, 100%, 18%);
+  --color-text: hsl(210, 25%, 95%);
+  --color-text-muted: hsl(210, 20%, 58%);
+  --color-border: hsla(205, 80%, 60%, 0.08);
+  --glass-border: hsla(205, 80%, 60%, 0.1);
+  --glass-shadow: 0 8px 32px hsla(216, 80%, 4%, 0.35);
+}
+
+/* Ambient glow — vibrant dark with vivid blue backlight */
+.ambient {
+  --color-bg: hsl(218, 70%, 5%);
+  --color-surface: hsla(210, 60%, 14%, 0.6);
+  --color-surface-hover: hsla(210, 55%, 20%, 0.7);
+  --color-primary: hsl(200, 100%, 55%);
+  --color-primary-soft: hsl(200, 100%, 22%);
+  --color-text: hsl(200, 30%, 96%);
+  --color-text-muted: hsl(210, 25%, 62%);
+  --color-border: hsla(200, 100%, 60%, 0.12);
+  --glass-border: hsla(200, 100%, 60%, 0.15);
+  --glass-shadow: 0 8px 32px hsla(200, 100%, 30%, 0.2);
+  --glass-shadow-hover: 0 12px 40px hsla(200, 100%, 40%, 0.25);
 }
 
 /* Desktop layout overrides */

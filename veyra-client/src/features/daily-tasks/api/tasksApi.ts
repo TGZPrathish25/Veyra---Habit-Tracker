@@ -2,6 +2,7 @@
 import { apiClient } from '@/lib/apiClient';
 import { firestoreService } from '@/lib/firestoreService';
 import { useAuthStore } from '@/features/auth/store/authStore';
+import { getIndianTodayDateString } from '@/lib/date';
 import type { Task, TaskOccurrence, DailyOccurrencesResponse, CreateTaskPayload } from '../types';
 
 interface ApiResponse<T> {
@@ -25,7 +26,7 @@ export const tasksApi = {
           title: t.title,
           description: null,
           emoji: '⭐',
-          color: t.color || '#3b82f6',
+          color: t.color || '#0099e5',
           isRecurring: true,
           daysOfWeek: [1, 2, 3, 4, 5, 6, 7],
           isActive: !t.archived,
@@ -49,7 +50,7 @@ export const tasksApi = {
           title: payload.title,
           category: 'DAILY',
           cadence: 'DAILY',
-          color: payload.color || '#3b82f6',
+          color: payload.color || '#0099e5',
         });
         return {
           id: docId || `task_${Date.now()}`,
@@ -57,7 +58,7 @@ export const tasksApi = {
           title: payload.title,
           description: payload.description || null,
           emoji: payload.emoji || '⭐',
-          color: payload.color || '#3b82f6',
+          color: payload.color || '#0099e5',
           isRecurring: payload.isRecurring ?? true,
           daysOfWeek: payload.daysOfWeek || [1, 2, 3, 4, 5, 6, 7],
           isActive: true,
@@ -87,7 +88,7 @@ export const tasksApi = {
           title: payload.title || 'Updated Task',
           description: payload.description || null,
           emoji: payload.emoji || '⭐',
-          color: payload.color || '#3b82f6',
+          color: payload.color || '#0099e5',
           isRecurring: payload.isRecurring ?? true,
           daysOfWeek: payload.daysOfWeek || [1, 2, 3, 4, 5, 6, 7],
           isActive: true,
@@ -104,13 +105,18 @@ export const tasksApi = {
     try {
       await apiClient.delete(`/tasks/${id}`);
     } catch (err) {
+      console.warn('Backend deleteTask failed, attempting Firestore cleanup:', err);
+    }
+    try {
       await firestoreService.deleteTask(id);
+    } catch (err) {
+      console.warn('Firestore deleteTask fallback error:', err);
     }
   },
 
   getDailyOccurrences: async (date?: string): Promise<DailyOccurrencesResponse> => {
-    const targetDate = date || new Date().toISOString().split('T')[0];
-    const todayStr = new Date().toISOString().split('T')[0];
+    const targetDate = date || getIndianTodayDateString();
+    const todayStr = getIndianTodayDateString();
     try {
       const params = date ? { date } : {};
       const res = await apiClient.get<ApiResponse<DailyOccurrencesResponse>>('/tasks/occurrences', { params });
@@ -121,10 +127,11 @@ export const tasksApi = {
         // Fallback to Cloud Firestore
         await firestoreService.provisionDefaultsIfEmpty(user.id);
         const tasks = await firestoreService.getUserTasks(user.id);
+        const uniqueTasks = Array.from(new Map(tasks.map((t) => [t.id || t.title, t])).values());
         const occurrences = await firestoreService.getDailyOccurrences(user.id, targetDate);
         const occMap = new Map(occurrences.map((o) => [o.taskId, o]));
 
-        const synthesizedOccurrences: TaskOccurrence[] = tasks.map((t) => {
+        const synthesizedOccurrences: TaskOccurrence[] = uniqueTasks.map((t) => {
           const recorded = t.id ? occMap.get(t.id) : undefined;
           return {
             id: recorded?.id || `occ_${user.id}_${t.id}_${targetDate}`,
@@ -140,7 +147,7 @@ export const tasksApi = {
               title: t.title,
               description: null,
               emoji: '⭐',
-              color: t.color || '#3b82f6',
+              color: t.color || '#0099e5',
               isRecurring: true,
               daysOfWeek: [1, 2, 3, 4, 5, 6, 7],
               isActive: !t.archived,
@@ -188,7 +195,7 @@ export const tasksApi = {
       const user = useAuthStore.getState().user;
       if (user?.id) {
         const isCompleted = completed !== undefined ? completed : true;
-        const targetDate = new Date().toISOString().split('T')[0];
+        const targetDate = getIndianTodayDateString();
         await firestoreService.recordOccurrence(user.id, occurrenceId, targetDate, isCompleted);
         await firestoreService.addXp(user.id, isCompleted ? 10 : 0);
 

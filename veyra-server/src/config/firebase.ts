@@ -36,6 +36,14 @@ export function initFirebase(): void {
   }
 }
 
+export function getFirestoreAdmin(): admin.firestore.Firestore | null {
+  if (!initialized) {
+    initFirebase();
+  }
+  if (!initialized) return null;
+  return admin.firestore();
+}
+
 export interface DecodedAuthToken {
   uid: string;
   email?: string;

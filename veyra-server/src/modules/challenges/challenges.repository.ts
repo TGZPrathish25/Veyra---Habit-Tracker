@@ -33,63 +33,8 @@ interface MemParticipant {
   joinedAt: string;
 }
 
-const memChallenges: MemChallenge[] = [
-  {
-    id: 'chal-1',
-    creatorId: 'demo-user-1',
-    creatorName: 'Alex Rivera',
-    title: '30-Day Morning Consistency',
-    description: 'Build iron discipline by checking off your morning habits every day for 30 consecutive days.',
-    type: 'daily_streak',
-    targetValue: 30,
-    rewardXp: 350,
-    startDate: '2026-10-01',
-    endDate: '2026-10-31',
-    isPublic: true,
-    createdAt: new Date(Date.now() - 2 * 86400000).toISOString(),
-  },
-  {
-    id: 'chal-2',
-    creatorId: 'demo-user-2',
-    creatorName: 'Maya Chen',
-    title: 'Centurion: 100 Habits Sprint',
-    description: 'Complete 100 total habit check-ins before the end of the sprint cycle. All habits count!',
-    type: 'task_count',
-    targetValue: 100,
-    rewardXp: 500,
-    startDate: '2026-10-01',
-    endDate: '2026-10-25',
-    isPublic: true,
-    createdAt: new Date(Date.now() - 3 * 86400000).toISOString(),
-  },
-  {
-    id: 'chal-3',
-    creatorId: 'demo-user-id',
-    creatorName: 'You',
-    title: '7-Day Flawless Momentum',
-    description: 'Maintain a 100% completion rate for seven straight days.',
-    type: 'daily_streak',
-    targetValue: 7,
-    rewardXp: 200,
-    startDate: '2026-10-01',
-    endDate: '2026-10-08',
-    isPublic: true,
-    createdAt: new Date(Date.now() - 86400000).toISOString(),
-  },
-];
-
-const memParticipants: MemParticipant[] = [
-  // chal-1 participants
-  { id: 'cp-1', challengeId: 'chal-1', userId: 'demo-user-1', userName: 'Alex Rivera', userAvatar: null, userLevel: 4, progress: 14, joinedAt: '2026-10-01T08:00:00Z' },
-  { id: 'cp-2', challengeId: 'chal-1', userId: 'demo-user-2', userName: 'Maya Chen', userAvatar: null, userLevel: 6, progress: 21, joinedAt: '2026-10-01T09:30:00Z' },
-  { id: 'cp-3', challengeId: 'chal-1', userId: 'demo-user-id', userName: 'You', userAvatar: null, userLevel: 3, progress: 7, joinedAt: '2026-10-01T10:00:00Z' },
-  // chal-2 participants
-  { id: 'cp-4', challengeId: 'chal-2', userId: 'demo-user-2', userName: 'Maya Chen', userAvatar: null, userLevel: 6, progress: 48, joinedAt: '2026-10-01T09:30:00Z' },
-  { id: 'cp-5', challengeId: 'chal-2', userId: 'demo-user-1', userName: 'Alex Rivera', userAvatar: null, userLevel: 4, progress: 32, joinedAt: '2026-10-01T10:00:00Z' },
-  // chal-3 participants
-  { id: 'cp-6', challengeId: 'chal-3', userId: 'demo-user-id', userName: 'You', userAvatar: null, userLevel: 3, progress: 5, joinedAt: '2026-10-01T11:00:00Z' },
-  { id: 'cp-7', challengeId: 'chal-3', userId: 'demo-user-1', userName: 'Alex Rivera', userAvatar: null, userLevel: 4, progress: 4, joinedAt: '2026-10-01T11:30:00Z' },
-];
+const memChallenges: MemChallenge[] = [];
+const memParticipants: MemParticipant[] = [];
 
 export class ChallengesRepository {
   async listChallenges(userId?: string): Promise<ChallengeDTO[]> {
@@ -238,7 +183,7 @@ export class ChallengesRepository {
       },
       () => {
         const newChallenge: MemChallenge = {
-          id: `chal-${Date.now()}`,
+          id: `chal-${Date.now()}-${Math.random().toString(36).substring(2, 8)}`,
           creatorId,
           creatorName,
           title: data.title,
@@ -255,7 +200,7 @@ export class ChallengesRepository {
 
         // Creator automatically joins
         memParticipants.push({
-          id: `cp-${Date.now()}`,
+          id: `cp-${Date.now()}-${Math.random().toString(36).substring(2, 8)}`,
           challengeId: newChallenge.id,
           userId: creatorId,
           userName: creatorName,
@@ -396,7 +341,7 @@ export class ChallengesRepository {
         }
 
         const newParticipant: MemParticipant = {
-          id: `cp-${Date.now()}`,
+          id: `cp-${Date.now()}-${Math.random().toString(36).substring(2, 8)}`,
           challengeId,
           userId,
           userName,

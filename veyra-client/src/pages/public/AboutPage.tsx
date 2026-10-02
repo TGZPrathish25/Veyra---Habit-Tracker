@@ -27,13 +27,13 @@ export const AboutPage: React.FC = () => {
       <div className="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8 py-12 space-y-16 animate-fadeIn">
         {/* Hero Section */}
         <section className="text-center space-y-5">
-          <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-purple-500/10 border border-purple-500/20 text-purple-300 text-fluid-xs font-semibold">
+          <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-blue-500/10 border border-blue-500/20 text-blue-400 text-fluid-xs font-semibold">
             <Sparkles size={14} className="text-yellow-400" />
             <span>The Veyra Philosophy</span>
           </div>
           <h1 className="text-fluid-3xl sm:text-fluid-4xl font-extrabold text-white tracking-tight max-w-3xl mx-auto">
             Build your day.{' '}
-            <span style={{ background: 'linear-gradient(135deg, #a855f7, #ec4899)', WebkitBackgroundClip: 'text', WebkitTextFillColor: 'transparent' }}>
+            <span style={{ background: 'linear-gradient(135deg, #0088dd, #00a3e0)', WebkitBackgroundClip: 'text', WebkitTextFillColor: 'transparent' }}>
               Track your growth.
             </span>
           </h1>
@@ -65,8 +65,8 @@ export const AboutPage: React.FC = () => {
           </div>
 
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-            <div className="glass p-6 rounded-2xl border border-white/10 hover:border-purple-500/30 transition-all space-y-3">
-              <div className="w-10 h-10 rounded-xl bg-purple-500/20 text-purple-300 flex items-center justify-center font-bold">
+            <div className="glass p-6 rounded-2xl border border-white/10 hover:border-blue-500/30 transition-all space-y-3">
+              <div className="w-10 h-10 rounded-xl bg-blue-500/20 text-blue-400 flex items-center justify-center font-bold">
                 <ShieldCheck size={20} />
               </div>
               <h3 className="text-fluid-base font-semibold text-white">1. Sovereign Task Ownership</h3>
@@ -134,7 +134,7 @@ export const AboutPage: React.FC = () => {
             </div>
 
             <div className="glass p-5 rounded-2xl border border-white/10 space-y-2">
-              <Users size={24} className="text-purple-400" />
+              <Users size={24} className="text-blue-500" />
               <h4 className="text-fluid-sm font-semibold text-white">4-Tier Privacy Masking</h4>
               <p className="text-fluid-xs text-zinc-400">
                 Control exactly what friends see: Level 1 (Daily % only), Level 2 (Task Counts), Level 3 (Habit Titles), or Level 4 (Full).
@@ -146,7 +146,7 @@ export const AboutPage: React.FC = () => {
         {/* Technology Stack Details */}
         <section className="glass p-6 sm:p-8 rounded-2xl border border-white/10 space-y-6">
           <div className="flex items-center gap-3">
-            <div className="p-3 rounded-xl bg-purple-500/20 text-purple-300">
+            <div className="p-3 rounded-xl bg-blue-500/20 text-blue-400">
               <Code2 size={24} />
             </div>
             <div>
@@ -159,7 +159,7 @@ export const AboutPage: React.FC = () => {
 
           <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 text-fluid-xs">
             <div className="p-4 rounded-xl bg-black/30 border border-white/5 space-y-1.5">
-              <span className="font-bold text-purple-300">Frontend Layer</span>
+              <span className="font-bold text-blue-400">Frontend Layer</span>
               <p className="text-zinc-400">React 18, Vite, TypeScript, Tailwind CSS, TanStack Query 5, Zustand, Recharts, Lucide React</p>
             </div>
             <div className="p-4 rounded-xl bg-black/30 border border-white/5 space-y-1.5">

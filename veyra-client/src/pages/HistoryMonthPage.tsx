@@ -54,7 +54,7 @@ export const HistoryMonthPage: React.FC = () => {
           </p>
           <Link
             to="/history"
-            className="inline-flex items-center gap-2 px-5 py-2.5 rounded-xl bg-purple-600/80 hover:bg-purple-600 text-white text-fluid-xs font-semibold transition-all shadow-md"
+            className="inline-flex items-center gap-2 px-5 py-2.5 rounded-xl bg-blue-700/80 hover:bg-blue-700 text-white text-fluid-xs font-semibold transition-all shadow-md"
           >
             <ArrowLeft size={16} /> Return to History
           </Link>
@@ -81,7 +81,7 @@ export const HistoryMonthPage: React.FC = () => {
       <div className="mb-4">
         <Link
           to="/history"
-          className="inline-flex items-center gap-1.5 text-fluid-xs text-zinc-400 hover:text-purple-300 transition-colors font-medium"
+          className="inline-flex items-center gap-1.5 text-fluid-xs text-zinc-400 hover:text-blue-400 transition-colors font-medium"
         >
           <ArrowLeft size={14} /> Back to Archives
         </Link>
@@ -122,14 +122,14 @@ export const HistoryMonthPage: React.FC = () => {
 
       {/* KPI Cards */}
       <div className="grid grid-cols-2 sm:grid-cols-4 gap-4 mb-6">
-        <div className="glass p-4 rounded-2xl border border-purple-500/20 bg-purple-500/5">
-          <div className="text-[11px] font-bold uppercase tracking-wider text-purple-300">
+        <div className="glass p-4 rounded-2xl border border-blue-500/20 bg-blue-500/5">
+          <div className="text-[11px] font-bold uppercase tracking-wider text-blue-400">
             Completion Rate
           </div>
           <div className="text-fluid-2xl font-black text-white mt-1">{completionRate}%</div>
           <div className="w-full h-1.5 rounded-full bg-white/10 mt-2 overflow-hidden">
             <div
-              className="h-full bg-gradient-to-r from-purple-500 to-indigo-500 rounded-full"
+              className="h-full bg-gradient-to-r from-blue-500 to-blue-600 rounded-full"
               style={{ width: `${completionRate}%` }}
             />
           </div>
@@ -172,9 +172,9 @@ export const HistoryMonthPage: React.FC = () => {
       </div>
 
       {/* Monthly Reflection Section */}
-      <div className="glass p-5 rounded-2xl border border-white/10 mb-6 bg-gradient-to-r from-white/[0.02] to-purple-500/[0.02]">
+      <div className="glass p-5 rounded-2xl border border-white/10 mb-6 bg-gradient-to-r from-white/[0.02] to-blue-500/[0.02]">
         <div className="flex items-center gap-2 mb-2">
-          <BookOpen size={16} className="text-purple-400" />
+          <BookOpen size={16} className="text-blue-500" />
           <h2 className="text-fluid-base font-bold text-white">Monthly Reflection & Notes</h2>
         </div>
         {reflection ? (
@@ -184,7 +184,7 @@ export const HistoryMonthPage: React.FC = () => {
         ) : (
           <p className="text-fluid-xs text-zinc-400">
             No reflection recorded for this month. You can add reflections in your{' '}
-            <Link to="/monthly" className="text-purple-400 hover:underline">
+            <Link to="/monthly" className="text-blue-500 hover:underline">
               Monthly Goals
             </Link>{' '}
             page before the month closes.

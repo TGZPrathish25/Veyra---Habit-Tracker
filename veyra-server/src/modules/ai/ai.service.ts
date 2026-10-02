@@ -16,10 +16,10 @@ export const aiService = {
     const { year, month, customPrompt } = input;
     const snapshot = await historyRepository.getMonthSnapshot(userId, year, month);
 
-    const completionRate = snapshot ? snapshot.completionRate : 72;
-    const tasksCompleted = snapshot ? snapshot.tasksCompleted : 38;
-    const totalTasks = snapshot ? snapshot.totalTasks : 52;
-    const streakDays = snapshot ? snapshot.streakDays : 6;
+    const completionRate = snapshot ? snapshot.completionRate : 0;
+    const tasksCompleted = snapshot ? snapshot.tasksCompleted : 0;
+    const totalTasks = snapshot ? snapshot.totalTasks : 0;
+    const streakDays = snapshot ? snapshot.streakDays : 0;
     const monthName = snapshot ? snapshot.monthName : 'Current Month';
 
     // If Gemini API key is configured, attempt real inference

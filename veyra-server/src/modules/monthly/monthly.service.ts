@@ -1,4 +1,4 @@
-/** Monthly goals & plan business logic. */
+/** Monthly goals & plan business logic with Indian Standard Time support. */
 import { monthlyRepository } from './monthly.repository.js';
 import type {
   MonthlyPlanDTO,
@@ -7,25 +7,12 @@ import type {
   UpdateMonthlyPlanInput,
 } from './monthly.types.js';
 import { NotFoundError, ForbiddenError } from '../../lib/errors.js';
+import { DEFAULT_TIMEZONE, getCurrentYearAndMonth } from '../../lib/time.js';
 
-function getCurrentYearAndMonth(timezone = 'UTC'): { year: number; month: number } {
-  try {
-    const d = new Date();
-    const formatter = new Intl.DateTimeFormat('en-CA', {
-      timeZone: timezone,
-      year: 'numeric',
-      month: '2-digit',
-    });
-    const [y, m] = formatter.format(d).split('-').map(Number);
-    return { year: y, month: m };
-  } catch {
-    const d = new Date();
-    return { year: d.getUTCFullYear(), month: d.getUTCMonth() + 1 };
-  }
-}
+export { getCurrentYearAndMonth };
 
 export class MonthlyService {
-  async getCurrentPlan(userId: string, targetYear?: number, targetMonth?: number, timezone = 'UTC'): Promise<MonthlyPlanDTO> {
+  async getCurrentPlan(userId: string, targetYear?: number, targetMonth?: number, timezone = DEFAULT_TIMEZONE): Promise<MonthlyPlanDTO> {
     const { year: currentYear, month: currentMonth } = getCurrentYearAndMonth(timezone);
     const year = targetYear || currentYear;
     const month = targetMonth || currentMonth;
@@ -39,7 +26,7 @@ export class MonthlyService {
     return plan;
   }
 
-  async savePlan(userId: string, data: CreateMonthlyPlanInput, timezone = 'UTC'): Promise<MonthlyPlanDTO> {
+  async savePlan(userId: string, data: CreateMonthlyPlanInput, timezone = DEFAULT_TIMEZONE): Promise<MonthlyPlanDTO> {
     const { year: currentYear, month: currentMonth } = getCurrentYearAndMonth(timezone);
     const year = data.year || currentYear;
     const month = data.month || currentMonth;
@@ -70,11 +57,30 @@ export class MonthlyService {
     userId: string,
     year: number,
     month: number,
-    stats?: { tasksCompleted?: number; totalTasks?: number; xpEarned?: number; streakDays?: number }
+    stats?: {
+      tasksCompleted?: number;
+      totalTasks?: number;
+      xpEarned?: number;
+      streakDays?: number;
+    }
+  ): Promise<{ plan: MonthlyPlanDTO; snapshot: MonthlySnapshotDTO }> {
+    return this.lockAndSnapshot(userId, year, month, stats);
+  }
+
+  async lockAndSnapshot(
+    userId: string,
+    year: number,
+    month: number,
+    stats?: {
+      tasksCompleted?: number;
+      totalTasks?: number;
+      xpEarned?: number;
+      streakDays?: number;
+    }
   ): Promise<{ plan: MonthlyPlanDTO; snapshot: MonthlySnapshotDTO }> {
     const plan = await monthlyRepository.findByUserAndMonth(userId, year, month);
     if (!plan) {
-      throw new NotFoundError('Monthly plan not found');
+      throw new NotFoundError(`Monthly plan for ${year}-${month} not found`);
     }
 
     const updatedPlan = await monthlyRepository.updateMonthlyPlan(plan.id, { isLocked: true });

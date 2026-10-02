@@ -1,20 +1,13 @@
-/** Weekly plan business logic. */
+/** Weekly plan business logic with Indian Standard Time support. */
 import { weeklyRepository } from './weekly.repository.js';
 import type { WeeklyPlanDTO, CreateWeeklyPlanInput, UpdateWeeklyPlanInput } from './weekly.types.js';
 import { NotFoundError, ForbiddenError } from '../../lib/errors.js';
+import { DEFAULT_TIMEZONE, getWeekMondayDate } from '../../lib/time.js';
 
-export function getWeekMondayDate(dateStr?: string, _timezone = 'UTC'): Date {
-  const d = dateStr ? new Date(dateStr) : new Date();
-  const day = d.getDay(); // 0 = Sun, 1 = Mon... 6 = Sat
-  const diff = d.getDate() - day + (day === 0 ? -6 : 1);
-  const monday = new Date(d);
-  monday.setDate(diff);
-  const [y, m, dayOfMonth] = monday.toISOString().split('T')[0].split('-').map(Number);
-  return new Date(Date.UTC(y, m - 1, dayOfMonth));
-}
+export { getWeekMondayDate };
 
 export class WeeklyService {
-  async getCurrentPlan(userId: string, weekStartStr?: string, timezone = 'UTC'): Promise<WeeklyPlanDTO> {
+  async getCurrentPlan(userId: string, weekStartStr?: string, timezone = DEFAULT_TIMEZONE): Promise<WeeklyPlanDTO> {
     const monday = getWeekMondayDate(weekStartStr, timezone);
     let plan = await weeklyRepository.findByUserAndWeek(userId, monday);
     if (!plan) {
@@ -25,7 +18,7 @@ export class WeeklyService {
     return plan;
   }
 
-  async savePlan(userId: string, data: CreateWeeklyPlanInput, timezone = 'UTC'): Promise<WeeklyPlanDTO> {
+  async savePlan(userId: string, data: CreateWeeklyPlanInput, timezone = DEFAULT_TIMEZONE): Promise<WeeklyPlanDTO> {
     const monday = getWeekMondayDate(data.weekStart, timezone);
     const existing = await weeklyRepository.findByUserAndWeek(userId, monday);
     if (existing?.isLocked) {
@@ -48,13 +41,12 @@ export class WeeklyService {
     return weeklyRepository.updateWeeklyPlan(planId, data);
   }
 
-  async rolloverWeek(userId: string, timezone = 'UTC'): Promise<{ previousLocked: boolean; currentPlan: WeeklyPlanDTO }> {
-    const now = new Date();
+  async rolloverWeek(userId: string, timezone = DEFAULT_TIMEZONE): Promise<{ previousLocked: boolean; currentPlan: WeeklyPlanDTO }> {
     const currentMonday = getWeekMondayDate(undefined, timezone);
 
     // Calculate previous Monday
     const prevMonday = new Date(currentMonday);
-    prevMonday.setDate(prevMonday.getDate() - 7);
+    prevMonday.setUTCDate(prevMonday.getUTCDate() - 7);
 
     const prevPlan = await weeklyRepository.findByUserAndWeek(userId, prevMonday);
     let previousLocked = false;

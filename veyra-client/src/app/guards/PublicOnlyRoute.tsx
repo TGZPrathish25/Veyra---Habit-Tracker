@@ -14,7 +14,7 @@ export const PublicOnlyRoute: React.FC<PublicOnlyRouteProps> = ({ children }) =>
     return (
       <div className="min-h-screen flex items-center justify-center" style={{ background: 'var(--color-bg)' }}>
         <div
-          className="animate-spin rounded-full h-10 w-10 border-2 border-transparent border-t-purple-500"
+          className="animate-spin rounded-full h-10 w-10 border-2 border-transparent border-t-blue-500"
           style={{ borderTopColor: 'var(--color-primary)' }}
         />
       </div>

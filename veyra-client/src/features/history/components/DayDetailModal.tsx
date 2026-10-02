@@ -25,7 +25,7 @@ export const DayDetailModal: React.FC<DayDetailModalProps> = ({ day, onClose }) 
       >
         <div className="flex items-center justify-between mb-4">
           <div className="flex items-center gap-2">
-            <div className="p-2 rounded-xl bg-purple-500/20 text-purple-400">
+            <div className="p-2 rounded-xl bg-blue-500/20 text-blue-500">
               <Calendar size={18} />
             </div>
             <div>
@@ -39,7 +39,7 @@ export const DayDetailModal: React.FC<DayDetailModalProps> = ({ day, onClose }) 
           </div>
           <button
             onClick={onClose}
-            className="p-1.5 rounded-xl text-zinc-400 hover:text-white hover:bg-white/10 transition-colors"
+            className="p-1.5 rounded-xl text-zinc-400 hover:text-gray-900 dark:hover:text-white hover:bg-white/10 transition-colors"
           >
             <X size={18} />
           </button>

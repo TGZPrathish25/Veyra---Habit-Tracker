@@ -11,6 +11,7 @@ const envSchema = z.object({
   LOG_LEVEL: z.enum(['fatal', 'error', 'warn', 'info', 'debug', 'trace']).default('info'),
   GEMINI_API_KEY: z.string().optional(),
   ALLOW_DEV_AUTH: z.coerce.boolean().default(true),
+  APP_TIMEZONE: z.string().default('Asia/Kolkata'),
 });
 
 export type Env = z.infer<typeof envSchema>;

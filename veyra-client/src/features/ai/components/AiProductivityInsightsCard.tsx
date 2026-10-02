@@ -24,16 +24,16 @@ export const AiProductivityInsightsCard: React.FC<AiProductivityInsightsCardProp
   }
 
   return (
-    <div className="glass p-5 md:p-6 rounded-3xl border border-purple-500/20 bg-gradient-to-br from-purple-500/5 via-transparent to-indigo-500/5">
+    <div className="glass p-5 md:p-6 rounded-3xl border border-blue-500/20 bg-gradient-to-br from-blue-500/5 via-transparent to-blue-600/5">
       <div className="flex items-center justify-between mb-4">
         <div className="flex items-center gap-2.5">
-          <div className="p-2 rounded-xl bg-purple-500/20 text-purple-300 border border-purple-400/30">
+          <div className="p-2 rounded-xl bg-blue-500/20 text-blue-400 border border-blue-500/30">
             <Brain size={18} />
           </div>
           <div>
             <h3 className="text-fluid-base font-bold text-white flex items-center gap-2">
               <span>Productivity Intelligence</span>
-              <span className="text-[10px] uppercase font-black px-2 py-0.5 rounded-full bg-purple-500/20 text-purple-200 border border-purple-400/30">
+              <span className="text-[10px] uppercase font-black px-2 py-0.5 rounded-full bg-blue-500/20 text-blue-300 border border-blue-500/30">
                 AI Coach
               </span>
             </h3>
@@ -42,13 +42,13 @@ export const AiProductivityInsightsCard: React.FC<AiProductivityInsightsCardProp
         </div>
 
         <div className="text-right">
-          <div className="text-[10px] uppercase font-bold text-purple-300">Habit Velocity</div>
+          <div className="text-[10px] uppercase font-bold text-blue-400">Habit Velocity</div>
           <div className="text-fluid-xl font-black text-white">{summaryScore}/100</div>
         </div>
       </div>
 
       {/* Recommendation Banner */}
-      <div className="mb-4 p-3 rounded-2xl bg-purple-500/10 border border-purple-500/20 flex items-start gap-2.5 text-fluid-xs text-zinc-200">
+      <div className="mb-4 p-3 rounded-2xl bg-blue-500/10 border border-blue-500/20 flex items-start gap-2.5 text-fluid-xs text-zinc-200">
         <Lightbulb size={16} className="text-amber-300 shrink-0 mt-0.5" />
         <div>
           <span className="font-semibold text-white">Recommended Strategy: </span>
@@ -79,7 +79,7 @@ export const AiProductivityInsightsCard: React.FC<AiProductivityInsightsCardProp
               </div>
               <p className="text-[12px] text-zinc-300 mb-2 leading-relaxed">{ins.observation}</p>
             </div>
-            <div className="text-[11px] text-purple-300 bg-purple-500/10 p-2 rounded-xl border border-purple-500/20 italic">
+            <div className="text-[11px] text-blue-400 bg-blue-500/10 p-2 rounded-xl border border-blue-500/20 italic">
               💡 {ins.actionableTip}
             </div>
           </div>

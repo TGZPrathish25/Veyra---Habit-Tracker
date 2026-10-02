@@ -2,6 +2,7 @@
 import type { Request, Response, NextFunction } from 'express';
 import { monthlyService } from './monthly.service.js';
 import { createMonthlyPlanSchema, updateMonthlyPlanSchema } from './monthly.validators.js';
+import { DEFAULT_TIMEZONE } from '../../lib/time.js';
 
 export class MonthlyController {
   async getCurrentPlan(req: Request, res: Response, next: NextFunction): Promise<void> {
@@ -12,7 +13,7 @@ export class MonthlyController {
         req.user!.id,
         year,
         month,
-        req.user?.timezone || 'UTC'
+        req.user?.timezone || DEFAULT_TIMEZONE
       );
       res.json({
         status: 'success',
@@ -29,7 +30,7 @@ export class MonthlyController {
       const plan = await monthlyService.savePlan(
         req.user!.id,
         data,
-        req.user?.timezone || 'UTC'
+        req.user?.timezone || DEFAULT_TIMEZONE
       );
       res.json({
         status: 'success',

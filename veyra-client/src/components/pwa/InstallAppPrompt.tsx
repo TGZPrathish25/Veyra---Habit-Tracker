@@ -61,7 +61,7 @@ export const InstallAppPrompt: React.FC = () => {
     <aside
       role="banner"
       aria-label="Install Veyra Application"
-      className="fixed bottom-20 lg:bottom-6 left-4 sm:left-6 z-40 max-w-sm w-[calc(100%-2rem)] glass p-4 rounded-2xl border border-purple-500/30 bg-purple-950/40 shadow-2xl backdrop-blur-xl animate-slideUp"
+      className="fixed bottom-20 lg:bottom-6 left-4 sm:left-6 z-40 max-w-sm w-[calc(100%-2rem)] glass p-4 rounded-2xl border border-blue-500/30 bg-blue-950/40 shadow-2xl backdrop-blur-xl animate-slideUp"
     >
       <div className="flex items-start justify-between gap-2 mb-2">
         <div className="flex items-center gap-2">
@@ -71,7 +71,7 @@ export const InstallAppPrompt: React.FC = () => {
           >
             V
           </div>
-          <span className="text-fluid-xs font-bold text-purple-300 flex items-center gap-1">
+          <span className="text-fluid-xs font-bold text-blue-400 flex items-center gap-1">
             <Sparkles size={13} className="text-yellow-400" />
             Install Veyra App
           </span>
@@ -80,7 +80,7 @@ export const InstallAppPrompt: React.FC = () => {
           type="button"
           onClick={handleDismiss}
           aria-label="Dismiss install banner"
-          className="p-1 rounded-lg text-zinc-400 hover:text-white hover:bg-white/10 transition-colors"
+          className="p-1 rounded-lg text-zinc-400 hover:text-gray-900 dark:hover:text-white hover:bg-white/10 transition-colors"
         >
           <X size={15} />
         </button>
@@ -106,7 +106,7 @@ export const InstallAppPrompt: React.FC = () => {
           <button
             type="button"
             onClick={handleDismiss}
-            className="px-3 py-1.5 rounded-xl text-fluid-xs text-zinc-400 hover:text-white hover:bg-white/5 transition-colors"
+            className="px-3 py-1.5 rounded-xl text-fluid-xs text-zinc-400 hover:text-gray-900 dark:hover:text-white hover:bg-white/5 transition-colors"
           >
             Maybe Later
           </button>

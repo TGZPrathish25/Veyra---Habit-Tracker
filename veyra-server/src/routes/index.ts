@@ -21,9 +21,11 @@ import { aiRouter } from '../modules/ai/ai.routes.js';
 
 export function mountRoutes(app: Express): void {
   // Health checks
-  app.get('/health', (_req, res) => {
+  const sendHealth = (_req: any, res: any) => {
     res.json({ status: 'ok', timestamp: new Date().toISOString() });
-  });
+  };
+  app.get('/health', sendHealth);
+  app.get('/api/v1/health', sendHealth);
 
   app.get('/ready', async (_req, res) => {
     try {

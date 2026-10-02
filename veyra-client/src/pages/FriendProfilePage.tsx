@@ -27,7 +27,7 @@ const PRIVACY_EXPLANATION: Record<
   detailed: {
     title: 'Level 3: Habit Titles & Status',
     desc: 'This friend shares habit titles, emojis, and completion status. Detailed notes and timestamps remain private.',
-    badge: 'bg-purple-500/20 text-purple-300 border-purple-500/30',
+    badge: 'bg-blue-500/20 text-blue-400 border-blue-500/30',
   },
   full: {
     title: 'Level 4: Full Accountability Profile',
@@ -49,7 +49,7 @@ export const FriendProfilePage: React.FC = () => {
       <div className="max-w-4xl mx-auto space-y-6">
         <Link
           to="/friends"
-          className="inline-flex items-center gap-2 text-fluid-xs text-zinc-400 hover:text-white transition-colors"
+          className="inline-flex items-center gap-2 text-fluid-xs text-zinc-400 hover:text-gray-900 dark:hover:text-white transition-colors"
         >
           <ArrowLeft size={16} />
           <span>Back to Friends</span>
@@ -76,7 +76,7 @@ export const FriendProfilePage: React.FC = () => {
             {/* Header Card */}
             <div className="glass p-6 sm:p-8 rounded-3xl border border-white/10 flex flex-col sm:flex-row sm:items-center justify-between gap-6">
               <div className="flex items-center gap-4">
-                <div className="w-16 h-16 rounded-2xl bg-gradient-to-br from-purple-500/30 to-indigo-500/30 border border-purple-400/40 flex items-center justify-center text-white font-bold text-2xl shadow-lg">
+                <div className="w-16 h-16 rounded-2xl bg-gradient-to-br from-blue-500/30 to-blue-600/30 border border-blue-500/40 flex items-center justify-center text-white font-bold text-2xl shadow-lg">
                   {progress.name ? progress.name.charAt(0).toUpperCase() : 'F'}
                 </div>
                 <div>
@@ -101,8 +101,8 @@ export const FriendProfilePage: React.FC = () => {
                   </div>
                 </div>
 
-                <div className="px-4 py-3 rounded-2xl bg-purple-500/10 border border-purple-500/20 text-center">
-                  <div className="flex items-center justify-center gap-1 text-purple-400 text-xs font-bold mb-0.5">
+                <div className="px-4 py-3 rounded-2xl bg-blue-500/10 border border-blue-500/20 text-center">
+                  <div className="flex items-center justify-center gap-1 text-blue-500 text-xs font-bold mb-0.5">
                     <Zap size={14} />
                     <span>Level</span>
                   </div>
@@ -115,7 +115,7 @@ export const FriendProfilePage: React.FC = () => {
 
             {/* Privacy Explanation Banner */}
             <div className="glass p-4 rounded-2xl border border-white/5 bg-white/[0.02] flex items-center gap-3">
-              <Shield size={18} className="text-purple-400 flex-shrink-0" />
+              <Shield size={18} className="text-blue-500 flex-shrink-0" />
               <p className="text-fluid-xs text-zinc-300">{privacyMeta.desc}</p>
             </div>
 
@@ -123,7 +123,7 @@ export const FriendProfilePage: React.FC = () => {
             <div className="glass p-6 sm:p-8 rounded-3xl border border-white/10 space-y-4">
               <div className="flex items-center justify-between">
                 <h3 className="text-fluid-base font-bold text-white">Daily Habit Progress</h3>
-                <span className="text-fluid-xs font-bold text-purple-300">
+                <span className="text-fluid-xs font-bold text-blue-400">
                   {progress.completionPercentage}% Completed
                 </span>
               </div>
@@ -131,7 +131,7 @@ export const FriendProfilePage: React.FC = () => {
               {/* Progress bar */}
               <div className="w-full h-3 rounded-full bg-black/40 overflow-hidden p-0.5 border border-white/5">
                 <div
-                  className="h-full rounded-full transition-all duration-500 bg-gradient-to-r from-purple-500 to-indigo-400"
+                  className="h-full rounded-full transition-all duration-500 bg-gradient-to-r from-blue-500 to-blue-500"
                   style={{ width: `${progress.completionPercentage}%` }}
                 />
               </div>

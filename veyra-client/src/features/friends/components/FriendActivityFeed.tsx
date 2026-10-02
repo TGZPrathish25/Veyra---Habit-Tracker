@@ -15,9 +15,9 @@ const ACTION_ICONS: Record<string, { icon: React.ReactNode; color: string; bg: s
     bg: 'bg-orange-500/20 border-orange-500/30',
   },
   achievement: {
-    icon: <Award size={16} className="text-purple-400" />,
-    color: 'text-purple-400',
-    bg: 'bg-purple-500/20 border-purple-500/30',
+    icon: <Award size={16} className="text-blue-500" />,
+    color: 'text-blue-500',
+    bg: 'bg-blue-500/20 border-blue-500/30',
   },
   completed_day: {
     icon: <CheckCircle2 size={16} className="text-emerald-400" />,

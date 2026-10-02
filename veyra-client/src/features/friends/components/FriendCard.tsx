@@ -14,7 +14,7 @@ interface FriendCardProps {
 const PRIVACY_LABELS: Record<PrivacyLevel, { label: string; desc: string; badge: string }> = {
   basic: { label: 'L1: % Only', desc: 'Can only see your completion %', badge: 'bg-zinc-500/20 text-zinc-300 border-zinc-500/30' },
   counts: { label: 'L2: Counts', desc: 'Can see task counts + %', badge: 'bg-blue-500/20 text-blue-300 border-blue-500/30' },
-  detailed: { label: 'L3: Detailed', desc: 'Can see task titles and status', badge: 'bg-purple-500/20 text-purple-300 border-purple-500/30' },
+  detailed: { label: 'L3: Detailed', desc: 'Can see task titles and status', badge: 'bg-blue-500/20 text-blue-400 border-blue-500/30' },
   full: { label: 'L4: Full', desc: 'Can see full habits, streak, and notes', badge: 'bg-emerald-500/20 text-emerald-300 border-emerald-500/30' },
 };
 
@@ -50,7 +50,7 @@ export const FriendCard: React.FC<FriendCardProps> = ({
         {/* Top Header: Avatar + User Info + Options */}
         <div className="flex items-start justify-between gap-3 mb-3">
           <div className="flex items-center gap-3">
-            <div className="w-12 h-12 rounded-2xl bg-gradient-to-br from-purple-500/30 to-indigo-500/30 border border-purple-400/40 flex items-center justify-center text-white font-bold text-fluid-lg shadow-sm">
+            <div className="w-12 h-12 rounded-2xl bg-gradient-to-br from-blue-500/30 to-blue-600/30 border border-blue-500/40 flex items-center justify-center text-white font-bold text-fluid-lg shadow-sm">
               {friend.name ? friend.name.charAt(0).toUpperCase() : friend.username?.charAt(0).toUpperCase() || 'F'}
             </div>
             <div>
@@ -89,7 +89,7 @@ export const FriendCard: React.FC<FriendCardProps> = ({
                       disabled={isUpdating}
                       className={cn(
                         'w-full text-left px-2 py-1.5 rounded-lg text-fluid-xs transition-colors flex flex-col',
-                        privacyLevel === lvl ? 'bg-purple-500/20 text-purple-200 font-semibold' : 'text-zinc-300 hover:bg-white/5'
+                        privacyLevel === lvl ? 'bg-blue-500/20 text-blue-300 font-semibold' : 'text-zinc-300 hover:bg-white/5'
                       )}
                     >
                       <span>{PRIVACY_LABELS[lvl].label}</span>
@@ -120,7 +120,7 @@ export const FriendCard: React.FC<FriendCardProps> = ({
             <div className="text-fluid-sm font-bold text-white mt-0.5">{friend.currentStreak}d</div>
           </div>
           <div>
-            <div className="text-[10px] uppercase font-semibold text-purple-400 flex items-center justify-center gap-1">
+            <div className="text-[10px] uppercase font-semibold text-blue-500 flex items-center justify-center gap-1">
               <Zap size={11} /> Level
             </div>
             <div className="text-fluid-sm font-bold text-white mt-0.5">Lv. {friend.level}</div>
@@ -137,7 +137,7 @@ export const FriendCard: React.FC<FriendCardProps> = ({
       {/* Action: View Progress */}
       <button
         onClick={() => onViewProgress(friend.id)}
-        className="w-full mt-2 py-2 px-3 rounded-xl bg-white/5 hover:bg-purple-600/30 text-zinc-200 hover:text-white border border-white/10 hover:border-purple-400/40 text-fluid-xs font-semibold transition-all flex items-center justify-center gap-1.5 shadow-sm"
+        className="w-full mt-2 py-2 px-3 rounded-xl bg-white/5 hover:bg-blue-700/30 text-zinc-200 hover:text-gray-900 dark:hover:text-white border border-white/10 hover:border-blue-500/40 text-fluid-xs font-semibold transition-all flex items-center justify-center gap-1.5 shadow-sm"
       >
         <Eye size={13} />
         <span>View Accountability Progress</span>

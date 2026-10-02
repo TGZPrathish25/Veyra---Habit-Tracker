@@ -14,6 +14,7 @@ import {
   ArrowRight,
 } from 'lucide-react';
 import { Link } from 'react-router-dom';
+import { getCurrentYearAndMonth } from '@/lib/date';
 
 const MONTH_NAMES = [
   'January',
@@ -31,9 +32,8 @@ const MONTH_NAMES = [
 ];
 
 export const CalendarPage: React.FC = () => {
-  const today = new Date();
-  const [currentYear, setCurrentYear] = useState<number>(today.getFullYear());
-  const [currentMonth, setCurrentMonth] = useState<number>(today.getMonth() + 1);
+  const [currentYear, setCurrentYear] = useState<number>(() => getCurrentYearAndMonth().year);
+  const [currentMonth, setCurrentMonth] = useState<number>(() => getCurrentYearAndMonth().month);
   const [selectedDay, setSelectedDay] = useState<DayHistory | null>(null);
 
   const { snapshot, isLoading } = useMonthSnapshot(currentYear, currentMonth);
@@ -57,8 +57,9 @@ export const CalendarPage: React.FC = () => {
   };
 
   const handleGoToday = () => {
-    setCurrentYear(today.getFullYear());
-    setCurrentMonth(today.getMonth() + 1);
+    const { year, month } = getCurrentYearAndMonth();
+    setCurrentYear(year);
+    setCurrentMonth(month);
   };
 
   const monthName = MONTH_NAMES[currentMonth - 1];
@@ -74,7 +75,7 @@ export const CalendarPage: React.FC = () => {
       {/* Month Navigation & Control Bar */}
       <div className="glass p-4 rounded-2xl border border-white/10 mb-6 flex flex-col sm:flex-row items-center justify-between gap-4">
         <div className="flex items-center gap-3">
-          <div className="p-2.5 rounded-xl bg-purple-500/20 text-purple-400">
+          <div className="p-2.5 rounded-xl bg-blue-500/20 text-blue-500">
             <CalendarIcon size={22} />
           </div>
           <div>
@@ -90,7 +91,7 @@ export const CalendarPage: React.FC = () => {
         <div className="flex items-center gap-2">
           <button
             onClick={handleGoToday}
-            className="px-3 py-1.5 rounded-xl bg-white/5 hover:bg-white/10 text-zinc-300 hover:text-white border border-white/10 text-fluid-xs font-semibold transition-all"
+            className="px-3 py-1.5 rounded-xl bg-white/5 hover:bg-white/10 text-zinc-300 hover:text-gray-900 dark:hover:text-white border border-white/10 text-fluid-xs font-semibold transition-all"
           >
             Today
           </button>
@@ -98,14 +99,14 @@ export const CalendarPage: React.FC = () => {
             <button
               onClick={handlePrevMonth}
               aria-label="Previous Month"
-              className="p-1.5 rounded-lg text-zinc-400 hover:text-white hover:bg-white/10 transition-colors"
+              className="p-1.5 rounded-lg text-zinc-400 hover:text-gray-900 dark:hover:text-white hover:bg-white/10 transition-colors"
             >
               <ChevronLeft size={18} />
             </button>
             <button
               onClick={handleNextMonth}
               aria-label="Next Month"
-              className="p-1.5 rounded-lg text-zinc-400 hover:text-white hover:bg-white/10 transition-colors"
+              className="p-1.5 rounded-lg text-zinc-400 hover:text-gray-900 dark:hover:text-white hover:bg-white/10 transition-colors"
             >
               <ChevronRight size={18} />
             </button>
@@ -116,8 +117,8 @@ export const CalendarPage: React.FC = () => {
       {/* Month Quick Stats */}
       {snapshot && (
         <div className="grid grid-cols-2 sm:grid-cols-4 gap-4 mb-6">
-          <div className="glass p-3.5 rounded-2xl border border-purple-500/20 bg-purple-500/5">
-            <span className="text-[10px] font-bold uppercase tracking-wider text-purple-300">
+          <div className="glass p-3.5 rounded-2xl border border-blue-500/20 bg-blue-500/5">
+            <span className="text-[10px] font-bold uppercase tracking-wider text-blue-400">
               Completed Habits
             </span>
             <div className="text-fluid-xl font-bold text-white mt-0.5">
@@ -187,14 +188,14 @@ export const CalendarPage: React.FC = () => {
       {/* Archive link footer banner */}
       <div className="glass p-4 rounded-2xl border border-white/10 flex items-center justify-between">
         <div className="flex items-center gap-2">
-          <Sparkles size={16} className="text-purple-400" />
+          <Sparkles size={16} className="text-blue-500" />
           <span className="text-fluid-xs text-zinc-300">
             Want to see archived snapshots of past years and months?
           </span>
         </div>
         <Link
           to="/history"
-          className="text-fluid-xs font-semibold text-purple-400 hover:text-purple-300 inline-flex items-center gap-1"
+          className="text-fluid-xs font-semibold text-blue-500 hover:text-blue-400 inline-flex items-center gap-1"
         >
           Open Archives <ArrowRight size={13} />
         </Link>

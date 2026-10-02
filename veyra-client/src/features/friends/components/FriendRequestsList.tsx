@@ -39,14 +39,14 @@ export const FriendRequestsList: React.FC<FriendRequestsListProps> = ({ requests
           className="glass p-4 rounded-2xl border border-white/10 flex flex-col sm:flex-row sm:items-center justify-between gap-3 select-none"
         >
           <div className="flex items-center gap-3">
-            <div className="w-11 h-11 rounded-xl bg-purple-500/20 border border-purple-400/30 flex items-center justify-center text-purple-300 font-bold text-fluid-base">
+            <div className="w-11 h-11 rounded-xl bg-blue-500/20 border border-blue-500/30 flex items-center justify-center text-blue-400 font-bold text-fluid-base">
               {req.sender.name ? req.sender.name.charAt(0).toUpperCase() : 'U'}
             </div>
             <div>
               <div className="font-bold text-white text-fluid-sm">{req.sender.name || req.sender.username}</div>
               <div className="text-fluid-xs text-zinc-400">@{req.sender.username || 'user'}</div>
               <div className="flex items-center gap-2 mt-1 text-[11px] text-zinc-300">
-                <span className="flex items-center gap-0.5 text-purple-300 font-medium">
+                <span className="flex items-center gap-0.5 text-blue-400 font-medium">
                   <Zap size={11} /> Lv. {req.sender.level}
                 </span>
                 <span>•</span>

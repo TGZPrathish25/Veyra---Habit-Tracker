@@ -100,7 +100,7 @@ export const LevelUpModal: React.FC<LevelUpModalProps> = ({
                 <span className="w-1.5 h-1.5 rounded-full bg-amber-400" />
                 Total XP Accumulated
               </span>
-              <span className="text-purple-300 font-bold">{totalXp.toLocaleString()} XP</span>
+              <span className="text-blue-400 font-bold">{totalXp.toLocaleString()} XP</span>
             </div>
           )}
         </div>

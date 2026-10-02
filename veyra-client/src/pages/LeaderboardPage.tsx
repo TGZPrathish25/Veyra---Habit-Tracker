@@ -102,8 +102,8 @@ export const LeaderboardPage: React.FC = () => {
           className={cn(
             'px-4 py-2 rounded-xl text-fluid-xs font-bold transition-all flex items-center gap-2 border',
             activeTab === 'xp'
-              ? 'bg-purple-500/20 text-purple-200 border-purple-400/40 shadow-sm'
-              : 'text-zinc-400 border-transparent hover:text-white hover:bg-white/5'
+              ? 'bg-blue-500/20 text-blue-300 border-blue-500/40 shadow-sm'
+              : 'text-zinc-400 border-transparent hover:text-gray-900 dark:hover:text-white hover:bg-white/5'
           )}
         >
           <Award size={15} /> Top by Experience (XP)
@@ -114,7 +114,7 @@ export const LeaderboardPage: React.FC = () => {
             'px-4 py-2 rounded-xl text-fluid-xs font-bold transition-all flex items-center gap-2 border',
             activeTab === 'streak'
               ? 'bg-orange-500/20 text-orange-200 border-orange-400/40 shadow-sm'
-              : 'text-zinc-400 border-transparent hover:text-white hover:bg-white/5'
+              : 'text-zinc-400 border-transparent hover:text-gray-900 dark:hover:text-white hover:bg-white/5'
           )}
         >
           <Flame size={15} /> Longest Active Streaks
@@ -132,7 +132,7 @@ export const LeaderboardPage: React.FC = () => {
                 key={item.id}
                 className={cn(
                   'glass p-5 rounded-3xl border transition-all text-center relative overflow-hidden',
-                  item.isMe ? 'ring-2 ring-purple-500/50' : '',
+                  item.isMe ? 'ring-2 ring-blue-500/50' : '',
                   isFirst
                     ? 'border-amber-500/30 bg-amber-500/5 md:-translate-y-2'
                     : 'border-white/10'
@@ -146,19 +146,19 @@ export const LeaderboardPage: React.FC = () => {
 
                 <div className="flex justify-center mb-3">{getRankBadge(rank)}</div>
 
-                <div className="w-14 h-14 rounded-2xl mx-auto mb-3 bg-gradient-to-tr from-purple-600 to-indigo-500 text-white font-black text-fluid-lg flex items-center justify-center shadow-lg">
+                <div className="w-14 h-14 rounded-2xl mx-auto mb-3 bg-gradient-to-tr from-blue-700 to-blue-600 text-white font-black text-fluid-lg flex items-center justify-center shadow-lg">
                   {item.name.charAt(0).toUpperCase()}
                 </div>
 
                 <h3 className="text-fluid-base font-bold text-white truncate">
-                  {item.name} {item.isMe && <span className="text-purple-400">(You)</span>}
+                  {item.name} {item.isMe && <span className="text-blue-500">(You)</span>}
                 </h3>
                 <p className="text-[11px] text-zinc-400 mb-3">@{item.username}</p>
 
                 <div className="p-3 rounded-2xl bg-white/[0.03] border border-white/5 flex items-center justify-around">
                   <div>
                     <div className="text-[10px] uppercase font-bold text-zinc-400">Level</div>
-                    <div className="text-fluid-sm font-black text-purple-300">{item.level}</div>
+                    <div className="text-fluid-sm font-black text-blue-400">{item.level}</div>
                   </div>
                   <div>
                     <div className="text-[10px] uppercase font-bold text-zinc-400">
@@ -179,7 +179,7 @@ export const LeaderboardPage: React.FC = () => {
       <div className="glass rounded-3xl border border-white/10 overflow-hidden mb-6">
         <div className="p-4 border-b border-white/10 flex items-center justify-between">
           <h2 className="text-fluid-base font-bold text-white flex items-center gap-2">
-            <Users size={16} className="text-purple-400" />
+            <Users size={16} className="text-blue-500" />
             Full Standings
           </h2>
           <span className="text-fluid-xs text-zinc-400">{sortedEntries.length} Participants</span>
@@ -193,7 +193,7 @@ export const LeaderboardPage: React.FC = () => {
                 key={item.id}
                 className={cn(
                   'p-4 flex items-center justify-between gap-4 transition-colors',
-                  item.isMe ? 'bg-purple-500/10' : 'hover:bg-white/[0.02]'
+                  item.isMe ? 'bg-blue-500/10' : 'hover:bg-white/[0.02]'
                 )}
               >
                 <div className="flex items-center gap-3.5 min-w-0">
@@ -201,7 +201,7 @@ export const LeaderboardPage: React.FC = () => {
                     {rank <= 3 ? getRankBadge(rank) : `#${rank}`}
                   </div>
 
-                  <div className="w-10 h-10 rounded-xl bg-purple-600/30 border border-purple-400/30 flex items-center justify-center font-bold text-white shrink-0">
+                  <div className="w-10 h-10 rounded-xl bg-blue-700/30 border border-blue-500/30 flex items-center justify-center font-bold text-white shrink-0">
                     {item.name.charAt(0).toUpperCase()}
                   </div>
 
@@ -209,7 +209,7 @@ export const LeaderboardPage: React.FC = () => {
                     <div className="text-fluid-sm font-bold text-white truncate flex items-center gap-2">
                       <span>{item.name}</span>
                       {item.isMe && (
-                        <span className="text-[10px] px-2 py-0.5 rounded-full bg-purple-500/20 text-purple-300 border border-purple-500/30 font-semibold">
+                        <span className="text-[10px] px-2 py-0.5 rounded-full bg-blue-500/20 text-blue-400 border border-blue-500/30 font-semibold">
                           You
                         </span>
                       )}

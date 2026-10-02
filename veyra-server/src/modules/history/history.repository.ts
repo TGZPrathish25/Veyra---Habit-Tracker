@@ -1,5 +1,6 @@
 /** History and permanent monthly snapshot repository with Prisma and in-memory development fallback. */
 import { prisma, tryPrisma } from '../../db/prisma.js';
+import { getCurrentYearAndMonth } from '../../lib/time.js';
 import type {
   YearTreeDTO,
   MonthNodeDTO,
@@ -22,10 +23,8 @@ export class HistoryRepository {
           orderBy: [{ year: 'desc' }, { month: 'desc' }],
         });
 
-        // Current month plan
-        const now = new Date();
-        const curYear = now.getUTCFullYear();
-        const curMonth = now.getUTCMonth() + 1;
+        // Current month plan in Indian Standard Time
+        const { year: curYear, month: curMonth } = getCurrentYearAndMonth();
 
         const months: MonthNodeDTO[] = [];
         // Add current month if not yet locked in snapshot
@@ -35,10 +34,10 @@ export class HistoryRepository {
             month: curMonth,
             monthName: MONTH_NAMES[curMonth - 1],
             isLocked: false,
-            tasksCompleted: 42,
-            totalTasks: 50,
-            completionRate: 84,
-            xpEarned: 420,
+            tasksCompleted: 0,
+            totalTasks: 0,
+            completionRate: 0,
+            xpEarned: 0,
           });
         }
 
@@ -64,40 +63,21 @@ export class HistoryRepository {
         ];
       },
       () => {
+        const { year: curYear, month: curMonth } = getCurrentYearAndMonth();
         return [
           {
-            year: 2026,
-            totalCompleted: 305,
+            year: curYear,
+            totalCompleted: 0,
             months: [
               {
-                year: 2026,
-                month: 10,
-                monthName: 'October',
+                year: curYear,
+                month: curMonth,
+                monthName: MONTH_NAMES[curMonth - 1] || 'Current Month',
                 isLocked: false,
-                tasksCompleted: 42,
-                totalTasks: 50,
-                completionRate: 84,
-                xpEarned: 420,
-              },
-              {
-                year: 2026,
-                month: 9,
-                monthName: 'September',
-                isLocked: true,
-                tasksCompleted: 135,
-                totalTasks: 150,
-                completionRate: 90,
-                xpEarned: 1350,
-              },
-              {
-                year: 2026,
-                month: 8,
-                monthName: 'August',
-                isLocked: true,
-                tasksCompleted: 128,
-                totalTasks: 145,
-                completionRate: 88,
-                xpEarned: 1280,
+                tasksCompleted: 0,
+                totalTasks: 0,
+                completionRate: 0,
+                xpEarned: 0,
               },
             ],
           },
@@ -131,17 +111,20 @@ export class HistoryRepository {
           month,
           monthName: MONTH_NAMES[month - 1] || 'Month',
           isLocked,
-          tasksCompleted: snap?.tasksCompleted ?? 42,
-          totalTasks: snap?.totalTasks ?? 50,
-          completionRate: snap ? Math.round(snap.completionRate) : 84,
-          xpEarned: snap?.xpEarned ?? 420,
-          streakDays: snap?.streakDays ?? 12,
+          tasksCompleted: snap?.tasksCompleted ?? 0,
+          totalTasks: snap?.totalTasks ?? 0,
+          completionRate: snap ? Math.round(snap.completionRate) : 0,
+          xpEarned: snap?.xpEarned ?? 0,
+          streakDays: snap?.streakDays ?? 0,
           reflection: plan?.reflection || (snap ? 'Month successfully closed.' : null),
           days,
         };
       },
       () => {
-        const isOctober = month === 10;
+        const now = new Date();
+        const curYear = now.getUTCFullYear();
+        const curMonth = now.getUTCMonth() + 1;
+        const isCurrent = year === curYear && month === curMonth;
         const days = this.generateDaysForMonth(year, month);
         return {
           id: `snap-${year}-${month}`,
@@ -149,15 +132,13 @@ export class HistoryRepository {
           year,
           month,
           monthName: MONTH_NAMES[month - 1] || 'Month',
-          isLocked: !isOctober,
-          tasksCompleted: isOctober ? 42 : 135,
-          totalTasks: isOctober ? 50 : 150,
-          completionRate: isOctober ? 84 : 90,
-          xpEarned: isOctober ? 420 : 1350,
-          streakDays: isOctober ? 7 : 21,
-          reflection: isOctober
-            ? 'Making steady progress on deep work and daily hydration!'
-            : 'September was a powerhouse month for habits and physical consistency.',
+          isLocked: !isCurrent,
+          tasksCompleted: 0,
+          totalTasks: 0,
+          completionRate: 0,
+          xpEarned: 0,
+          streakDays: 0,
+          reflection: null,
           days,
         };
       }
@@ -165,52 +146,22 @@ export class HistoryRepository {
   }
 
   private generateDaysForMonth(year: number, month: number): DayHistoryDTO[] {
-    // Number of days in the given month
     const totalDays = new Date(Date.UTC(year, month, 0)).getUTCDate();
     const days: DayHistoryDTO[] = [];
-
-    const mockTasksCatalog = [
-      { title: 'Morning Meditation', emoji: '🧘' },
-      { title: 'Drink 2.5L Water', emoji: '💧' },
-      { title: '30m Code / Deep Work', emoji: '💻' },
-      { title: 'Read 20 Pages', emoji: '📚' },
-      { title: 'Evening Walk & Stretch', emoji: '🚶' },
-    ];
 
     for (let dayNum = 1; dayNum <= totalDays; dayNum++) {
       const dateObj = new Date(Date.UTC(year, month - 1, dayNum));
       const dateStr = dateObj.toISOString().split('T')[0];
       const dayOfWeek = WEEKDAY_NAMES[dateObj.getUTCDay()];
 
-      // For dates in the future relative to 2026-10-02, mark pending
-      const isPast = month < 10 || (month === 10 && dayNum <= 2);
-
-      let status: 'completed' | 'partial' | 'missed' = 'completed';
-      let completedCount = 5;
-
-      if (!isPast) {
-        status = 'missed';
-        completedCount = 0;
-      } else if (dayNum % 7 === 0) {
-        status = 'partial';
-        completedCount = 3;
-      } else if (dayNum % 13 === 0) {
-        status = 'missed';
-        completedCount = 1;
-      }
-
       days.push({
         date: dateStr,
         dayNumber: dayNum,
         dayOfWeek,
-        completedCount,
-        totalCount: 5,
-        status,
-        tasks: mockTasksCatalog.map((t, idx) => ({
-          title: t.title,
-          emoji: t.emoji,
-          completed: idx < completedCount,
-        })),
+        completedCount: 0,
+        totalCount: 0,
+        status: 'missed',
+        tasks: [],
       });
     }
 

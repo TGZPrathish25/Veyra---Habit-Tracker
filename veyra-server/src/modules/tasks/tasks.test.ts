@@ -3,6 +3,7 @@ import { describe, it, expect, beforeEach } from 'vitest';
 import { tasksService } from './tasks.service.js';
 import { tasksRepository } from './tasks.repository.js';
 import { ForbiddenError } from '../../lib/errors.js';
+import { getIndianTodayDateString, INDIA_TIMEZONE, shiftDateString } from '../../lib/time.js';
 
 describe('Tasks Module', () => {
   const testUserId = 'usr_test_user_tasks';
@@ -46,14 +47,39 @@ describe('Tasks Module', () => {
     expect(updated.description).toBe('Atomic Habits');
   });
 
-  it('deletes (deactivates) a task', async () => {
+  it('deletes (deactivates) a task and removes its occurrences from daily view', async () => {
     const task = await tasksService.createTask(testUserId, {
-      title: 'Workout',
+      title: 'Workout To Delete',
+      daysOfWeek: [0, 1, 2, 3, 4, 5, 6],
     });
+
+    const todayStr = getIndianTodayDateString();
+    const beforeDelete = await tasksService.getDailyOccurrences(testUserId, todayStr, INDIA_TIMEZONE);
+    expect(beforeDelete.occurrences.some((o) => o.taskId === task.id)).toBe(true);
 
     await tasksService.deleteTask(testUserId, task.id);
     const tasks = await tasksService.getTasks(testUserId);
     expect(tasks.some((t) => t.id === task.id)).toBe(false);
+
+    const afterDelete = await tasksService.getDailyOccurrences(testUserId, todayStr, INDIA_TIMEZONE);
+    expect(afterDelete.occurrences.some((o) => o.taskId === task.id)).toBe(false);
+  });
+
+  it('creates a task and ensures it appears exactly once in daily occurrences without duplicates', async () => {
+    const task = await tasksService.createTask(testUserId, {
+      title: 'Unique Task Check',
+      daysOfWeek: [0, 1, 2, 3, 4, 5, 6],
+    });
+
+    const todayStr = getIndianTodayDateString();
+    const res1 = await tasksService.getDailyOccurrences(testUserId, todayStr, INDIA_TIMEZONE);
+    const res2 = await tasksService.getDailyOccurrences(testUserId, todayStr, INDIA_TIMEZONE);
+
+    const matching1 = res1.occurrences.filter((o) => o.taskId === task.id);
+    const matching2 = res2.occurrences.filter((o) => o.taskId === task.id);
+
+    expect(matching1.length).toBe(1);
+    expect(matching2.length).toBe(1);
   });
 
   it('lazily generates occurrences for active tasks on target date', async () => {
@@ -63,8 +89,8 @@ describe('Tasks Module', () => {
       daysOfWeek: [0, 1, 2, 3, 4, 5, 6],
     });
 
-    const todayStr = new Date().toISOString().split('T')[0];
-    const res = await tasksService.getDailyOccurrences(testUserId, todayStr, 'UTC');
+    const todayStr = getIndianTodayDateString();
+    const res = await tasksService.getDailyOccurrences(testUserId, todayStr, INDIA_TIMEZONE);
 
     expect(res.date).toBe(todayStr);
     expect(res.occurrences.length).toBeGreaterThan(0);
@@ -80,39 +106,37 @@ describe('Tasks Module', () => {
       daysOfWeek: [0, 1, 2, 3, 4, 5, 6],
     });
 
-    const todayStr = new Date().toISOString().split('T')[0];
-    const initial = await tasksService.getDailyOccurrences(testUserId, todayStr, 'UTC');
+    const todayStr = getIndianTodayDateString();
+    const initial = await tasksService.getDailyOccurrences(testUserId, todayStr, INDIA_TIMEZONE);
     const occ = initial.occurrences.find((o) => o.taskId === task.id)!;
     expect(occ.completed).toBe(false);
 
     // Toggle to completed
-    const result1 = await tasksService.toggleOccurrence(testUserId, occ.id, undefined, 'UTC');
+    const result1 = await tasksService.toggleOccurrence(testUserId, occ.id, undefined, INDIA_TIMEZONE);
     expect(result1.occurrence.completed).toBe(true);
     expect(result1.occurrence.completedAt).toBeDefined();
     expect(result1.xpDelta).toBe(10);
 
     // Toggle back to incomplete
-    const result2 = await tasksService.toggleOccurrence(testUserId, occ.id, undefined, 'UTC');
+    const result2 = await tasksService.toggleOccurrence(testUserId, occ.id, undefined, INDIA_TIMEZONE);
     expect(result2.occurrence.completed).toBe(false);
     expect(result2.occurrence.completedAt).toBeNull();
     expect(result2.xpDelta).toBe(-10);
   });
 
   it('prevents modifying occurrences from past dates', async () => {
-    const pastDate = new Date();
-    pastDate.setDate(pastDate.getDate() - 3);
-    const pastDateStr = pastDate.toISOString().split('T')[0];
+    const pastDateStr = shiftDateString(getIndianTodayDateString(), -3, INDIA_TIMEZONE);
 
     const task = await tasksService.createTask(testUserId, {
       title: 'Historical Task',
       daysOfWeek: [0, 1, 2, 3, 4, 5, 6],
     });
 
-    const pastRes = await tasksService.getDailyOccurrences(testUserId, pastDateStr, 'UTC');
+    const pastRes = await tasksService.getDailyOccurrences(testUserId, pastDateStr, INDIA_TIMEZONE);
     const pastOcc = pastRes.occurrences.find((o) => o.taskId === task.id)!;
 
     await expect(
-      tasksService.toggleOccurrence(testUserId, pastOcc.id, true, 'UTC')
+      tasksService.toggleOccurrence(testUserId, pastOcc.id, true, INDIA_TIMEZONE)
     ).rejects.toThrow(ForbiddenError);
   });
 });

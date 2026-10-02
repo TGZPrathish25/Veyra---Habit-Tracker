@@ -30,7 +30,7 @@ export const ChallengeDetailPage: React.FC = () => {
     return (
       <AppShell>
         <div className="py-16 text-center text-zinc-400">
-          <div className="inline-block w-8 h-8 border-2 border-purple-400 border-t-transparent rounded-full animate-spin mb-3" />
+          <div className="inline-block w-8 h-8 border-2 border-blue-500 border-t-transparent rounded-full animate-spin mb-3" />
           <p className="text-fluid-sm">Loading challenge sprint...</p>
         </div>
       </AppShell>
@@ -48,7 +48,7 @@ export const ChallengeDetailPage: React.FC = () => {
           </p>
           <Link
             to="/challenges"
-            className="inline-flex items-center gap-1.5 px-4 py-2 rounded-xl text-fluid-xs font-semibold bg-purple-600 text-white"
+            className="inline-flex items-center gap-1.5 px-4 py-2 rounded-xl text-fluid-xs font-semibold bg-blue-700 text-white"
           >
             <ArrowLeft size={14} /> Back to Challenges
           </Link>
@@ -83,7 +83,7 @@ export const ChallengeDetailPage: React.FC = () => {
       <div className="mb-4">
         <Link
           to="/challenges"
-          className="inline-flex items-center gap-1.5 text-fluid-xs text-zinc-400 hover:text-white font-semibold transition-colors"
+          className="inline-flex items-center gap-1.5 text-fluid-xs text-zinc-400 hover:text-gray-900 dark:hover:text-white font-semibold transition-colors"
         >
           <ArrowLeft size={14} />
           <span>All Challenges</span>
@@ -92,12 +92,12 @@ export const ChallengeDetailPage: React.FC = () => {
 
       {/* Hero Header Card */}
       <div className="glass p-6 md:p-8 rounded-3xl border border-white/10 mb-6 relative overflow-hidden">
-        <div className="absolute -top-16 -right-16 w-56 h-56 bg-purple-500/10 rounded-full blur-3xl pointer-events-none" />
+        <div className="absolute -top-16 -right-16 w-56 h-56 bg-blue-500/10 rounded-full blur-3xl pointer-events-none" />
 
         <div className="flex flex-col md:flex-row md:items-start justify-between gap-4">
           <div>
             <div className="flex items-center gap-2 mb-2">
-              <span className="px-2.5 py-0.5 rounded-full text-[10px] font-bold uppercase tracking-wider bg-purple-500/20 text-purple-300 border border-purple-400/30 flex items-center gap-1">
+              <span className="px-2.5 py-0.5 rounded-full text-[10px] font-bold uppercase tracking-wider bg-blue-500/20 text-blue-400 border border-blue-500/30 flex items-center gap-1">
                 <Trophy size={11} />
                 <span>{challenge.type === 'daily_streak' ? 'Streak Challenge' : 'Habit Challenge'}</span>
               </span>
@@ -156,10 +156,10 @@ export const ChallengeDetailPage: React.FC = () => {
 
       {/* Your Progress Tracker (If Joined) */}
       {challenge.isJoined && (
-        <div className="glass p-6 rounded-3xl border border-purple-500/30 bg-purple-500/5 mb-6">
+        <div className="glass p-6 rounded-3xl border border-blue-500/30 bg-blue-500/5 mb-6">
           <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-4">
             <div>
-              <div className="text-fluid-xs font-bold uppercase tracking-wider text-purple-300 mb-0.5">
+              <div className="text-fluid-xs font-bold uppercase tracking-wider text-blue-400 mb-0.5">
                 Your Sprint Progress
               </div>
               <div className="text-fluid-xl font-extrabold text-white">
@@ -190,7 +190,7 @@ export const ChallengeDetailPage: React.FC = () => {
                 'h-full rounded-full transition-all duration-700 ease-out relative',
                 challenge.isCompleted
                   ? 'bg-gradient-to-r from-emerald-500 via-teal-400 to-cyan-400 shadow-[0_0_12px_rgba(16,185,129,0.5)]'
-                  : 'bg-gradient-to-r from-purple-500 via-indigo-500 to-cyan-400 shadow-[0_0_12px_rgba(147,51,234,0.5)]'
+                  : 'bg-gradient-to-r from-blue-500 via-blue-600 to-cyan-400 shadow-[0_0_12px_rgba(0,119,204,0.5)]'
               )}
               style={{ width: `${progressPercentage}%` }}
             >

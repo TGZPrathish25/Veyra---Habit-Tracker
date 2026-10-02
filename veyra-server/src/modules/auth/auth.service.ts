@@ -3,6 +3,7 @@ import { usersRepository, type UserRecord, type SettingsRecord } from '../users/
 import { NotFoundError, ConflictError } from '../../lib/errors.js';
 import type { SyncUserInput } from './auth.validators.js';
 import type { AuthResponseDTO, UserProfileDTO, UserSettingsDTO } from './auth.types.js';
+import { DEFAULT_TIMEZONE } from '../../lib/time.js';
 
 export class AuthService {
   async syncUser(firebaseUid: string, input: SyncUserInput): Promise<AuthResponseDTO> {
@@ -40,7 +41,7 @@ export class AuthService {
         name: input.name || input.email.split('@')[0],
         username: desiredUsername,
         avatarUrl: input.avatarUrl || null,
-        timezone: input.timezone || 'UTC',
+        timezone: input.timezone || DEFAULT_TIMEZONE,
       });
     }
 

@@ -24,98 +24,10 @@ interface MemFriendRequest {
   createdAt: string;
 }
 
-// In-memory demo friends catalog
-const demoUsersMap = new Map<string, FriendUserDTO>([
-  [
-    'demo-user-id',
-    {
-      id: 'demo-user-id',
-      name: 'Demo Adventurer',
-      username: 'demo_user',
-      avatarUrl: null,
-      level: 3,
-      totalXp: 850,
-      currentStreak: 7,
-    },
-  ],
-  [
-    'demo-user-1',
-    {
-      id: 'demo-user-1',
-      name: 'Alex Rivera',
-      username: 'alex_r',
-      avatarUrl: null,
-      level: 4,
-      totalXp: 1450,
-      currentStreak: 12,
-    },
-  ],
-  [
-    'demo-user-2',
-    {
-      id: 'demo-user-2',
-      name: 'Maya Chen',
-      username: 'mayachen',
-      avatarUrl: null,
-      level: 6,
-      totalXp: 3200,
-      currentStreak: 21,
-    },
-  ],
-  [
-    'demo-user-3',
-    {
-      id: 'demo-user-3',
-      name: 'Sam Thorne',
-      username: 'sam_t',
-      avatarUrl: null,
-      level: 2,
-      totalXp: 400,
-      currentStreak: 3,
-    },
-  ],
-]);
-
-const memFriendships: MemFriendship[] = [
-  {
-    id: 'fship-1',
-    userId: 'demo-user-id',
-    friendId: 'demo-user-1',
-    privacyLevel: 'detailed',
-    createdAt: new Date(Date.now() - 7 * 86400000).toISOString(),
-  },
-  {
-    id: 'fship-1-rev',
-    userId: 'demo-user-1',
-    friendId: 'demo-user-id',
-    privacyLevel: 'detailed',
-    createdAt: new Date(Date.now() - 7 * 86400000).toISOString(),
-  },
-  {
-    id: 'fship-2',
-    userId: 'demo-user-id',
-    friendId: 'demo-user-2',
-    privacyLevel: 'counts',
-    createdAt: new Date(Date.now() - 14 * 86400000).toISOString(),
-  },
-  {
-    id: 'fship-2-rev',
-    userId: 'demo-user-2',
-    friendId: 'demo-user-id',
-    privacyLevel: 'counts',
-    createdAt: new Date(Date.now() - 14 * 86400000).toISOString(),
-  },
-];
-
-const memRequests: MemFriendRequest[] = [
-  {
-    id: 'freq-1',
-    senderId: 'demo-user-3',
-    receiverId: 'demo-user-id',
-    status: 'pending',
-    createdAt: new Date(Date.now() - 3600000).toISOString(),
-  },
-];
+// In-memory friends catalog
+const demoUsersMap = new Map<string, FriendUserDTO>();
+const memFriendships: MemFriendship[] = [];
+const memRequests: MemFriendRequest[] = [];
 
 export class FriendsRepository {
   async findUserById(userId: string): Promise<FriendUserDTO | null> {
@@ -691,48 +603,21 @@ export class FriendsRepository {
   }
 
   async listActivityFeed(_userId: string): Promise<FriendActivityFeedDTO[]> {
-    return [
-      {
-        id: 'feed-1',
-        userId: 'demo-user-2',
-        userName: 'Maya Chen',
-        userAvatar: null,
-        userLevel: 6,
-        actionType: 'streak',
-        text: 'reached a blazing 21-day streak! 🔥',
-        timestamp: new Date(Date.now() - 25 * 60000).toISOString(),
-      },
-      {
-        id: 'feed-2',
-        userId: 'demo-user-1',
-        userName: 'Alex Rivera',
-        userAvatar: null,
-        userLevel: 4,
-        actionType: 'achievement',
-        text: 'unlocked the "Fortnight Focus" badge! ⚡',
-        timestamp: new Date(Date.now() - 3 * 3600000).toISOString(),
-      },
-      {
-        id: 'feed-3',
-        userId: 'demo-user-2',
-        userName: 'Maya Chen',
-        userAvatar: null,
-        userLevel: 6,
-        actionType: 'completed_day',
-        text: 'completed all scheduled habits for today! ⭐',
-        timestamp: new Date(Date.now() - 6 * 3600000).toISOString(),
-      },
-      {
-        id: 'feed-4',
-        userId: 'demo-user-1',
-        userName: 'Alex Rivera',
-        userAvatar: null,
-        userLevel: 4,
-        actionType: 'joined_challenge',
-        text: 'joined the "30-Day Morning Habit Challenge" 🏆',
-        timestamp: new Date(Date.now() - 24 * 3600000).toISOString(),
-      },
-    ];
+    return [];
+  }
+
+  seedTestUser(user: FriendUserDTO): void {
+    demoUsersMap.set(user.id, user);
+  }
+
+  seedTestFriendship(userId: string, friendId: string, privacyLevel: PrivacyLevel = 'detailed'): void {
+    memFriendships.push({
+      id: `fship_test_${Date.now()}_${Math.random().toString(36).substring(2, 7)}`,
+      userId,
+      friendId,
+      privacyLevel,
+      createdAt: new Date().toISOString(),
+    });
   }
 }
 

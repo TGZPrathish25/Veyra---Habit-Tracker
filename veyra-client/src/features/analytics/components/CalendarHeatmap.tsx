@@ -13,11 +13,11 @@ export const CalendarHeatmap: React.FC<CalendarHeatmapProps> = ({ data }) => {
       case 4:
         return 'bg-emerald-400 border-emerald-300/40 shadow-[0_0_8px_rgba(52,211,153,0.4)]';
       case 3:
-        return 'bg-purple-500 border-purple-400/40 shadow-[0_0_6px_rgba(168,85,247,0.3)]';
+        return 'bg-blue-500 border-blue-500/40 shadow-[0_0_6px_rgba(0,136,221,0.3)]';
       case 2:
-        return 'bg-purple-800/80 border-purple-700/40';
+        return 'bg-blue-900/80 border-blue-800/40';
       case 1:
-        return 'bg-purple-950/60 border-purple-900/30';
+        return 'bg-blue-950/60 border-blue-950/30';
       default:
         return 'bg-white/5 border-white/5';
     }

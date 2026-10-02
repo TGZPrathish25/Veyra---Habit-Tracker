@@ -1,6 +1,7 @@
 /** Deadline monitoring and urgency classification business logic. */
 import type { UrgencyLevel, TaskDeadlineStatus, DeadlineStatusResponse } from './deadlines.types.js';
 import { tasksRepository } from '../tasks/tasks.repository.js';
+import { DEFAULT_TIMEZONE, getLocalDateString } from '../../lib/time.js';
 
 export function calculateUrgency(now: Date, dueAt: Date): { minutesRemaining: number; urgency: UrgencyLevel } {
   const diffMs = dueAt.getTime() - now.getTime();
@@ -19,19 +20,18 @@ export function calculateUrgency(now: Date, dueAt: Date): { minutesRemaining: nu
 }
 
 export class DeadlinesService {
-  async getStatusForUser(userId: string, now = new Date()): Promise<DeadlineStatusResponse> {
-    const todayStr = now.toISOString().split('T')[0];
+  async getStatusForUser(userId: string, now = new Date(), timezone = DEFAULT_TIMEZONE): Promise<DeadlineStatusResponse> {
+    const todayStr = getLocalDateString(timezone, now);
     const occurrences = await tasksRepository.findOccurrencesByDate(userId, new Date(todayStr));
 
     const deadlines: TaskDeadlineStatus[] = [];
 
-    // End-of-day default deadline: 23:59:59 local/UTC
+    // End-of-day default deadline in IST (23:59:59 IST = 18:29:59 UTC)
     for (const occ of occurrences) {
       if (occ.completed) continue;
 
       const [y, m, d] = occ.date.split('-').map(Number);
-      // Default to 23:59 on the occurrence date
-      const dueAt = new Date(Date.UTC(y, m - 1, d, 23, 59, 59));
+      const dueAt = new Date(Date.UTC(y, m - 1, d, 18, 29, 59));
       const { minutesRemaining, urgency } = calculateUrgency(now, dueAt);
 
       deadlines.push({

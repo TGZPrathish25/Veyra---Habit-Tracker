@@ -34,13 +34,13 @@ export const NotificationCard: React.FC<NotificationCardProps> = ({
       case 'achievement':
         return <Trophy size={18} className="text-yellow-400" />;
       case 'friend_request':
-        return <Users size={18} className="text-purple-400" />;
+        return <Users size={18} className="text-blue-500" />;
       case 'challenge_invite':
         return <Target size={18} className="text-emerald-400" />;
       case 'deadline_urgent':
         return <Clock size={18} className="text-red-400" />;
       default:
-        return <Sparkles size={18} className="text-purple-300" />;
+        return <Sparkles size={18} className="text-blue-400" />;
     }
   };
 
@@ -61,14 +61,14 @@ export const NotificationCard: React.FC<NotificationCardProps> = ({
         'p-4 rounded-2xl border transition-all flex items-start justify-between gap-3 group',
         read
           ? 'bg-white/[0.02] border-white/5 opacity-80 hover:opacity-100 hover:bg-white/[0.04]'
-          : 'bg-purple-500/10 border-purple-500/30 shadow-[0_0_15px_rgba(168,85,247,0.1)]'
+          : 'bg-blue-500/10 border-blue-500/30 shadow-[0_0_15px_rgba(0,136,221,0.1)]'
       )}
     >
       <div className="flex items-start gap-3 min-w-0">
         <div
           className={cn(
             'p-2.5 rounded-xl border shrink-0',
-            read ? 'bg-white/5 border-white/10' : 'bg-purple-500/20 border-purple-400/30'
+            read ? 'bg-white/5 border-white/10' : 'bg-blue-500/20 border-blue-500/30'
           )}
         >
           {getTypeIcon(type)}
@@ -78,7 +78,7 @@ export const NotificationCard: React.FC<NotificationCardProps> = ({
           <div className="flex items-center gap-2 mb-1">
             <h4 className="text-fluid-xs font-bold text-white truncate">{title}</h4>
             {!read && (
-              <span className="w-2 h-2 rounded-full bg-purple-400 animate-pulse shrink-0" />
+              <span className="w-2 h-2 rounded-full bg-blue-500 animate-pulse shrink-0" />
             )}
           </div>
           <p className="text-[12px] text-zinc-300 leading-snug mb-1.5">{body}</p>

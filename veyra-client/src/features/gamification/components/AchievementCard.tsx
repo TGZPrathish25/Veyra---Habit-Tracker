@@ -32,7 +32,7 @@ export const AchievementCard: React.FC<AchievementCardProps> = ({ achievement, o
       className={cn(
         'group relative p-4 md:p-5 rounded-2xl transition-all duration-300 border flex flex-col justify-between select-none',
         unlocked
-          ? 'glass bg-gradient-to-br from-amber-500/10 via-purple-500/5 to-transparent border-amber-500/30 hover:border-amber-400/60 hover:shadow-[0_0_20px_rgba(245,158,11,0.15)] hover:-translate-y-0.5'
+          ? 'glass bg-gradient-to-br from-amber-500/10 via-blue-500/5 to-transparent border-amber-500/30 hover:border-amber-400/60 hover:shadow-[0_0_20px_rgba(245,158,11,0.15)] hover:-translate-y-0.5'
           : 'glass bg-white/[0.02] border-white/5 opacity-65 hover:opacity-85 hover:border-white/10'
       )}
     >

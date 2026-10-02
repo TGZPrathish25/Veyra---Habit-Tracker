@@ -7,6 +7,7 @@ import {
   getOccurrencesQuerySchema,
   toggleOccurrenceSchema,
 } from './tasks.validators.js';
+import { DEFAULT_TIMEZONE } from '../../lib/time.js';
 
 export class TasksController {
   async listTasks(req: Request, res: Response, next: NextFunction): Promise<void> {
@@ -67,7 +68,7 @@ export class TasksController {
       const result = await tasksService.getDailyOccurrences(
         req.user!.id,
         query.date,
-        req.user?.timezone || 'UTC'
+        req.user?.timezone || DEFAULT_TIMEZONE
       );
       res.json({
         status: 'success',
@@ -86,7 +87,7 @@ export class TasksController {
         req.user!.id,
         occId,
         body.completed,
-        req.user?.timezone || 'UTC'
+        req.user?.timezone || DEFAULT_TIMEZONE
       );
       res.json({
         status: 'success',

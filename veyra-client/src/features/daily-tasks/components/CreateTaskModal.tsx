@@ -81,7 +81,7 @@ export const CreateTaskModal: React.FC<CreateTaskModalProps> = ({ isOpen, onClos
           </div>
           <button
             onClick={onClose}
-            className="p-1.5 rounded-lg text-zinc-400 hover:text-white hover:bg-white/10 transition-colors"
+            className="p-1.5 rounded-lg text-zinc-400 hover:text-gray-900 dark:hover:text-white hover:bg-white/10 transition-colors"
           >
             <X size={18} />
           </button>
@@ -115,7 +115,7 @@ export const CreateTaskModal: React.FC<CreateTaskModalProps> = ({ isOpen, onClos
                   onClick={() => setSelectedEmoji(emoji)}
                   className={`w-10 h-10 rounded-xl text-lg flex items-center justify-center transition-all ${
                     selectedEmoji === emoji
-                      ? 'bg-purple-600/50 border border-purple-400 scale-110 shadow-lg'
+                      ? 'bg-blue-700/50 border border-blue-500 scale-110 shadow-lg'
                       : 'bg-white/5 hover:bg-white/10 border border-white/5'
                   }`}
                 >
@@ -151,8 +151,8 @@ export const CreateTaskModal: React.FC<CreateTaskModalProps> = ({ isOpen, onClos
                     onClick={() => toggleDay(day.value)}
                     className={`py-2 text-xs font-semibold rounded-lg transition-all ${
                       isSelected
-                        ? 'bg-purple-600/80 text-white shadow-sm'
-                        : 'bg-white/5 text-zinc-400 hover:text-white'
+                        ? 'bg-blue-700/80 text-white shadow-sm'
+                        : 'bg-white/5 text-zinc-400 hover:text-gray-900 dark:hover:text-white'
                     }`}
                   >
                     {day.label}
@@ -166,7 +166,7 @@ export const CreateTaskModal: React.FC<CreateTaskModalProps> = ({ isOpen, onClos
             <button
               type="button"
               onClick={onClose}
-              className="px-4 py-2 rounded-xl text-fluid-sm text-zinc-400 hover:text-white transition-colors"
+              className="px-4 py-2 rounded-xl text-fluid-sm text-zinc-400 hover:text-gray-900 dark:hover:text-white transition-colors"
             >
               Cancel
             </button>

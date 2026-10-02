@@ -92,6 +92,7 @@ export const firestoreService = {
       userRef,
       {
         ...profile,
+        timezone: profile.timezone || 'Asia/Kolkata',
         updatedAt: serverTimestamp(),
       },
       { merge: true }
@@ -107,6 +108,33 @@ export const firestoreService = {
     const snap = await getDoc(userRef);
     if (!snap.exists()) return null;
     return snap.data() as FirestoreUserProfile;
+  },
+
+  /**
+   * Save User Settings to `users/{userId}/settings/preferences`
+   */
+  async saveUserSettings(userId: string, settings: Record<string, unknown>): Promise<void> {
+    if (!db) return;
+    const settingsRef = doc(db, 'users', userId, 'settings', 'preferences');
+    await setDoc(
+      settingsRef,
+      {
+        ...settings,
+        updatedAt: serverTimestamp(),
+      },
+      { merge: true }
+    );
+  },
+
+  /**
+   * Fetch User Settings from `users/{userId}/settings/preferences`
+   */
+  async getUserSettings(userId: string): Promise<Record<string, unknown> | null> {
+    if (!db) return null;
+    const settingsRef = doc(db, 'users', userId, 'settings', 'preferences');
+    const snap = await getDoc(settingsRef);
+    if (!snap.exists()) return null;
+    return snap.data();
   },
 
   /**
@@ -374,21 +402,10 @@ export const firestoreService = {
   },
 
   /**
-   * Provision default demo habits if a newly registered user has zero tasks
+   * Provision default habits (no-op — clean slate for user)
    */
-  async provisionDefaultsIfEmpty(userId: string) {
-    if (!db) return;
-    const existing = await this.getUserTasks(userId);
-    if (existing.length === 0) {
-      const defaults = [
-        { title: 'Morning Hydration & Sunlight ☀️', cadence: 'DAILY' as const, category: 'DAILY' as const, color: '#38bdf8' },
-        { title: 'Deep Work Focus Sprint (45m) 🧠', cadence: 'DAILY' as const, category: 'DAILY' as const, color: '#a855f7' },
-        { title: 'Physical Movement / Gym 🏃', cadence: 'DAILY' as const, category: 'DAILY' as const, color: '#22c55e' },
-        { title: 'Evening Reflection & Gratitude 🌙', cadence: 'DAILY' as const, category: 'DAILY' as const, color: '#f59e0b' },
-      ];
-      for (const d of defaults) {
-        await this.createTask(userId, d);
-      }
-    }
+  async provisionDefaultsIfEmpty(_userId: string) {
+    // Clean slate: do not auto-seed dummy tasks
+    return;
   },
 };

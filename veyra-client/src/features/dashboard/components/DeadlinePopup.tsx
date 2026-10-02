@@ -133,7 +133,7 @@ export const DeadlinePopup: React.FC = () => {
           type="button"
           onClick={handleDismiss}
           aria-label="Dismiss deadline alert"
-          className="p-1 rounded-lg text-zinc-400 hover:text-white hover:bg-white/10 transition-colors"
+          className="p-1 rounded-lg text-zinc-400 hover:text-gray-900 dark:hover:text-white hover:bg-white/10 transition-colors"
         >
           <X size={15} />
         </button>
@@ -162,7 +162,7 @@ export const DeadlinePopup: React.FC = () => {
         <button
           type="button"
           onClick={handleDismiss}
-          className="px-3 py-1.5 rounded-xl text-fluid-xs text-zinc-400 hover:text-white hover:bg-white/5 transition-colors"
+          className="px-3 py-1.5 rounded-xl text-fluid-xs text-zinc-400 hover:text-gray-900 dark:hover:text-white hover:bg-white/5 transition-colors"
         >
           Snooze
         </button>

@@ -62,7 +62,7 @@ export const ProfilePage: React.FC = () => {
                 <h2 className="text-fluid-2xl font-bold" style={{ color: 'var(--color-text)' }}>
                   {user?.name || 'Veyra Adventurer'}
                 </h2>
-                <span className="px-2.5 py-0.5 rounded-full text-xs font-semibold bg-purple-500/20 text-purple-300 border border-purple-500/30 inline-block self-center sm:self-auto">
+                <span className="px-2.5 py-0.5 rounded-full text-xs font-semibold bg-blue-500/20 text-blue-400 border border-blue-500/30 inline-block self-center sm:self-auto">
                   Level {level}
                 </span>
               </div>
@@ -99,7 +99,7 @@ export const ProfilePage: React.FC = () => {
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
           <div className="glass p-5 rounded-2xl space-y-3">
             <h3 className="text-fluid-base font-semibold flex items-center gap-2" style={{ color: 'var(--color-text)' }}>
-              <UserIcon size={18} className="text-purple-400" />
+              <UserIcon size={18} className="text-blue-500" />
               <span>Account Info</span>
             </h3>
             <div className="space-y-2 text-fluid-sm">
@@ -109,7 +109,7 @@ export const ProfilePage: React.FC = () => {
               </div>
               <div className="flex items-center gap-2" style={{ color: 'var(--color-text-muted)' }}>
                 <Clock size={15} />
-                <span>{user?.timezone || 'UTC'}</span>
+                <span>{user?.timezone || 'Asia/Kolkata'} (IST, UTC+05:30)</span>
               </div>
               <div className="flex items-center gap-2" style={{ color: 'var(--color-text-muted)' }}>
                 <Shield size={15} />
@@ -120,7 +120,7 @@ export const ProfilePage: React.FC = () => {
 
           <div className="glass p-5 rounded-2xl space-y-3">
             <h3 className="text-fluid-base font-semibold flex items-center gap-2" style={{ color: 'var(--color-text)' }}>
-              <Award size={18} className="text-purple-400" />
+              <Award size={18} className="text-blue-500" />
               <span>Quick Actions</span>
             </h3>
             <div className="flex flex-col gap-2 pt-1">

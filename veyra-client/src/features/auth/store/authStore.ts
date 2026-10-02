@@ -42,11 +42,19 @@ export const useAuthStore = create<AuthStoreState>()(
         }),
       updateUser: (fields) =>
         set((state) => ({
-          user: state.user ? { ...state.user, ...fields } : null,
+          user: state.user ? { ...state.user, ...fields } : (fields as User),
         })),
       updateSettings: (fields) =>
         set((state) => ({
-          settings: state.settings ? { ...state.settings, ...fields } : null,
+          settings: state.settings
+            ? { ...state.settings, ...fields }
+            : ({
+                theme: 'dark',
+                friendVisibilityLevel: 2,
+                leaderboardOptIn: true,
+                weekStartDay: 1,
+                ...fields,
+              } as UserSettings),
         })),
       setLoading: (isLoading) => set({ isLoading }),
     }),

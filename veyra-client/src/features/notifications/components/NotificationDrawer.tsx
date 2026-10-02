@@ -36,7 +36,7 @@ export const NotificationDrawer: React.FC<NotificationDrawerProps> = ({ isOpen, 
         {/* Header */}
         <div className="flex items-center justify-between pb-4 border-b border-white/10 mb-4">
           <div className="flex items-center gap-2.5">
-            <div className="p-2 rounded-xl bg-purple-500/20 text-purple-300">
+            <div className="p-2 rounded-xl bg-blue-500/20 text-blue-400">
               <Bell size={18} />
             </div>
             <div>
@@ -51,14 +51,14 @@ export const NotificationDrawer: React.FC<NotificationDrawerProps> = ({ isOpen, 
             {unreadCount > 0 && (
               <button
                 onClick={() => markAllAsRead()}
-                className="text-[11px] text-purple-400 hover:text-purple-300 font-semibold flex items-center gap-1 transition-colors px-2 py-1 rounded-lg hover:bg-white/5"
+                className="text-[11px] text-blue-500 hover:text-blue-400 font-semibold flex items-center gap-1 transition-colors px-2 py-1 rounded-lg hover:bg-white/5"
               >
                 <CheckCheck size={14} /> Mark all
               </button>
             )}
             <button
               onClick={onClose}
-              className="p-1.5 rounded-xl text-zinc-400 hover:text-white hover:bg-white/10 transition-colors"
+              className="p-1.5 rounded-xl text-zinc-400 hover:text-gray-900 dark:hover:text-white hover:bg-white/10 transition-colors"
             >
               <X size={18} />
             </button>
@@ -98,7 +98,7 @@ export const NotificationDrawer: React.FC<NotificationDrawerProps> = ({ isOpen, 
           <Link
             to="/notifications"
             onClick={onClose}
-            className="w-full py-2.5 px-4 rounded-xl bg-white/5 hover:bg-purple-600/30 text-zinc-200 hover:text-white border border-white/10 hover:border-purple-400/40 text-fluid-xs font-semibold transition-all flex items-center justify-center gap-2"
+            className="w-full py-2.5 px-4 rounded-xl bg-white/5 hover:bg-blue-700/30 text-zinc-200 hover:text-gray-900 dark:hover:text-white border border-white/10 hover:border-blue-500/40 text-fluid-xs font-semibold transition-all flex items-center justify-center gap-2"
           >
             <span>View All Notifications Page</span>
             <ArrowRight size={14} />

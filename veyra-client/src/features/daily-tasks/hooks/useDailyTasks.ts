@@ -5,6 +5,7 @@ import type { DailyOccurrencesResponse, CreateTaskPayload } from '../types';
 import { playHabitChime } from '@/lib/sound';
 import { firestoreService } from '@/lib/firestoreService';
 import { useAuth } from '@/features/auth/hooks/useAuth';
+import { getIndianTodayDateString } from '@/lib/date';
 
 export function useDailyTasks(selectedDate?: string) {
   const { user } = useAuth();
@@ -69,7 +70,7 @@ export function useDailyTasks(selectedDate?: string) {
           .recordOccurrence(
             user.id,
             variables.occurrenceId,
-            selectedDate || new Date().toISOString().split('T')[0],
+            selectedDate || getIndianTodayDateString(),
             data.occurrence.completed
           )
           .catch(() => {});
@@ -91,17 +92,7 @@ export function useDailyTasks(selectedDate?: string) {
 
   const createTaskMutation = useMutation({
     mutationFn: (payload: CreateTaskPayload) => tasksApi.createTask(payload),
-    onSuccess: (createdTask) => {
-      if (user?.id && createdTask) {
-        firestoreService
-          .createTask(user.id, {
-            title: createdTask.title,
-            category: 'DAILY',
-            cadence: 'DAILY',
-            color: '#7c3aed',
-          })
-          .catch(() => {});
-      }
+    onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['daily-occurrences'] });
       queryClient.invalidateQueries({ queryKey: ['tasks-list'] });
     },
@@ -109,7 +100,35 @@ export function useDailyTasks(selectedDate?: string) {
 
   const deleteTaskMutation = useMutation({
     mutationFn: (taskId: string) => tasksApi.deleteTask(taskId),
-    onSuccess: () => {
+    onMutate: async (taskId: string) => {
+      await queryClient.cancelQueries({ queryKey });
+      const previous = queryClient.getQueryData<DailyOccurrencesResponse>(queryKey);
+      if (previous) {
+        const filteredOccs = previous.occurrences.filter(
+          (o) => o.taskId !== taskId && o.task?.id !== taskId && o.id !== taskId
+        );
+        const completedCount = filteredOccs.filter((o) => o.completed).length;
+        const total = filteredOccs.length;
+        const pct = total > 0 ? Math.round((completedCount / total) * 100) : 0;
+        queryClient.setQueryData<DailyOccurrencesResponse>(queryKey, {
+          ...previous,
+          occurrences: filteredOccs,
+          summary: {
+            ...previous.summary,
+            totalTasks: total,
+            completedTasks: completedCount,
+            completionPercentage: pct,
+          },
+        });
+      }
+      return { previous };
+    },
+    onError: (_err, _vars, context) => {
+      if (context?.previous) {
+        queryClient.setQueryData(queryKey, context.previous);
+      }
+    },
+    onSettled: () => {
       queryClient.invalidateQueries({ queryKey: ['daily-occurrences'] });
       queryClient.invalidateQueries({ queryKey: ['tasks-list'] });
     },
@@ -117,7 +136,9 @@ export function useDailyTasks(selectedDate?: string) {
 
   return {
     dailyData,
-    occurrences: dailyData?.occurrences || [],
+    occurrences: Array.from(
+      new Map((dailyData?.occurrences || []).map((o) => [o.taskId || o.id, o])).values()
+    ),
     summary: dailyData?.summary || {
       totalTasks: 0,
       completedTasks: 0,

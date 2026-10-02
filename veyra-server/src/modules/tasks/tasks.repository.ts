@@ -1,9 +1,11 @@
 import { prisma, tryPrisma } from '../../db/prisma.js';
+import { persistentStore } from '../../db/persistentStore.js';
 import type { TaskDTO, CreateTaskInput, UpdateTaskInput, TaskOccurrenceDTO } from './tasks.types.js';
 
 // In-memory storage for development when PostgreSQL is not running
 const memTasks = new Map<string, TaskDTO>();
 const memOccurrences = new Map<string, TaskOccurrenceDTO>();
+const memOccurrenceByTaskDate = new Map<string, string>();
 
 function formatDateString(d: Date): string {
   return d.toISOString().split('T')[0];
@@ -22,10 +24,21 @@ export class TasksRepository {
           daysOfWeek: t.daysOfWeek || [0, 1, 2, 3, 4, 5, 6],
         })) as TaskDTO[];
       },
-      () => {
-        return Array.from(memTasks.values())
-          .filter((t) => t.userId === userId && t.isActive)
-          .sort((a, b) => a.sortOrder - b.sortOrder || a.createdAt.getTime() - b.createdAt.getTime());
+      async () => {
+        let tasks = Array.from(memTasks.values()).filter((t) => t.userId === userId && t.isActive);
+        if (tasks.length === 0) {
+          const stored = await persistentStore.getTasksByUser(userId);
+          for (const s of stored) {
+            const t: TaskDTO = {
+              ...s,
+              createdAt: new Date(s.createdAt),
+              updatedAt: new Date(s.updatedAt),
+            };
+            memTasks.set(t.id, t);
+          }
+          tasks = Array.from(memTasks.values()).filter((t) => t.userId === userId && t.isActive);
+        }
+        return tasks.sort((a, b) => a.sortOrder - b.sortOrder || a.createdAt.getTime() - b.createdAt.getTime());
       }
     );
   }
@@ -69,8 +82,9 @@ export class TasksRepository {
           daysOfWeek: t.daysOfWeek || [0, 1, 2, 3, 4, 5, 6],
         } as TaskDTO;
       },
-      () => {
+      async () => {
         const id = 'tsk_' + Math.random().toString(36).substring(2, 11);
+        const now = new Date();
         const newTask: TaskDTO = {
           id,
           userId,
@@ -82,10 +96,24 @@ export class TasksRepository {
           daysOfWeek: data.daysOfWeek || [0, 1, 2, 3, 4, 5, 6],
           isActive: true,
           sortOrder: data.sortOrder || 0,
-          createdAt: new Date(),
-          updatedAt: new Date(),
+          createdAt: now,
+          updatedAt: now,
         };
         memTasks.set(id, newTask);
+        await persistentStore.saveTask({
+          id: newTask.id,
+          userId: newTask.userId,
+          title: newTask.title,
+          description: newTask.description,
+          emoji: newTask.emoji,
+          color: newTask.color,
+          isRecurring: newTask.isRecurring,
+          daysOfWeek: newTask.daysOfWeek,
+          isActive: newTask.isActive,
+          sortOrder: newTask.sortOrder,
+          createdAt: now.toISOString(),
+          updatedAt: now.toISOString(),
+        });
         return newTask;
       }
     );
@@ -106,9 +134,10 @@ export class TasksRepository {
           daysOfWeek: t.daysOfWeek || [0, 1, 2, 3, 4, 5, 6],
         } as TaskDTO;
       },
-      () => {
+      async () => {
         const existing = memTasks.get(taskId);
         if (!existing) throw new Error('Task not found');
+        const now = new Date();
         const updated: TaskDTO = {
           ...existing,
           title: data.title ?? existing.title,
@@ -119,9 +148,23 @@ export class TasksRepository {
           daysOfWeek: data.daysOfWeek ?? existing.daysOfWeek,
           isActive: data.isActive ?? existing.isActive,
           sortOrder: data.sortOrder ?? existing.sortOrder,
-          updatedAt: new Date(),
+          updatedAt: now,
         };
         memTasks.set(taskId, updated);
+        await persistentStore.saveTask({
+          id: updated.id,
+          userId: updated.userId,
+          title: updated.title,
+          description: updated.description,
+          emoji: updated.emoji,
+          color: updated.color,
+          isRecurring: updated.isRecurring,
+          daysOfWeek: updated.daysOfWeek,
+          isActive: updated.isActive,
+          sortOrder: updated.sortOrder,
+          createdAt: updated.createdAt.toISOString(),
+          updatedAt: now.toISOString(),
+        });
         return updated;
       }
     );
@@ -130,15 +173,31 @@ export class TasksRepository {
   async deleteTask(taskId: string): Promise<void> {
     return tryPrisma(
       async () => {
+        await prisma.taskOccurrence.deleteMany({
+          where: { taskId },
+        });
         await prisma.task.update({
           where: { id: taskId },
           data: { isActive: false },
         });
       },
-      () => {
+      async () => {
         const existing = memTasks.get(taskId);
         if (existing) {
           memTasks.set(taskId, { ...existing, isActive: false, updatedAt: new Date() });
+        }
+        await persistentStore.deleteTask(taskId);
+        for (const [key, occId] of Array.from(memOccurrenceByTaskDate.entries())) {
+          const occ = memOccurrences.get(occId);
+          if (occ && occ.taskId === taskId) {
+            memOccurrenceByTaskDate.delete(key);
+            memOccurrences.delete(occId);
+          }
+        }
+        for (const [occId, occ] of Array.from(memOccurrences.entries())) {
+          if (occ.taskId === taskId) {
+            memOccurrences.delete(occId);
+          }
         }
       }
     );
@@ -152,6 +211,9 @@ export class TasksRepository {
           where: {
             userId,
             date,
+            task: {
+              isActive: true,
+            },
           },
           include: {
             task: true,
@@ -178,10 +240,12 @@ export class TasksRepository {
         for (const occ of memOccurrences.values()) {
           if (occ.userId === userId && occ.date === dateStr) {
             const task = memTasks.get(occ.taskId);
-            results.push({
-              ...occ,
-              task,
-            });
+            if (task && task.isActive) {
+              results.push({
+                ...occ,
+                task,
+              });
+            }
           }
         }
         return results;
@@ -268,12 +332,13 @@ export class TasksRepository {
         }
         return created;
       },
-      () => {
+      async () => {
         const created: TaskOccurrenceDTO[] = [];
         for (const item of occurrences) {
           const dateStr = formatDateString(item.date);
           const key = `${item.taskId}_${dateStr}`;
-          let occ = memOccurrences.get(key);
+          const existingId = memOccurrenceByTaskDate.get(key);
+          let occ = existingId ? memOccurrences.get(existingId) : undefined;
           if (!occ) {
             occ = {
               id: 'occ_' + Math.random().toString(36).substring(2, 11),
@@ -285,8 +350,17 @@ export class TasksRepository {
               xpAwarded: 0,
               task: memTasks.get(item.taskId),
             };
-            memOccurrences.set(key, occ);
             memOccurrences.set(occ.id, occ);
+            memOccurrenceByTaskDate.set(key, occ.id);
+            await persistentStore.saveOccurrence({
+              id: occ.id,
+              taskId: occ.taskId,
+              userId: occ.userId,
+              date: occ.date,
+              completed: occ.completed,
+              completedAt: null,
+              xpAwarded: occ.xpAwarded,
+            });
           }
           created.push(occ);
         }
@@ -322,7 +396,7 @@ export class TasksRepository {
             : undefined,
         } as TaskOccurrenceDTO;
       },
-      () => {
+      async () => {
         const occ = memOccurrences.get(occurrenceId);
         if (!occ) throw new Error('Occurrence not found');
         const updated: TaskOccurrenceDTO = {
@@ -332,8 +406,15 @@ export class TasksRepository {
           xpAwarded: data.xpAwarded,
         };
         memOccurrences.set(occurrenceId, updated);
-        const compositeKey = `${occ.taskId}_${occ.date}`;
-        memOccurrences.set(compositeKey, updated);
+        await persistentStore.saveOccurrence({
+          id: updated.id,
+          taskId: updated.taskId,
+          userId: updated.userId,
+          date: updated.date,
+          completed: updated.completed,
+          completedAt: updated.completedAt ? updated.completedAt.toISOString() : null,
+          xpAwarded: updated.xpAwarded,
+        });
         return updated;
       }
     );

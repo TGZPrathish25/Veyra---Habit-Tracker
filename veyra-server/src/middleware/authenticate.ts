@@ -3,6 +3,7 @@ import type { Request, Response, NextFunction } from 'express';
 import { UnauthorizedError } from '../lib/errors.js';
 import { verifyFirebaseToken } from '../config/firebase.js';
 import { usersRepository } from '../modules/users/users.repository.js';
+import { DEFAULT_TIMEZONE } from '../lib/time.js';
 
 export const authenticate = async (req: Request, _res: Response, next: NextFunction): Promise<void> => {
   try {
@@ -33,7 +34,7 @@ export const authenticate = async (req: Request, _res: Response, next: NextFunct
         name: decoded.name || baseUsername,
         username,
         avatarUrl: decoded.picture || null,
-        timezone: 'UTC',
+        timezone: DEFAULT_TIMEZONE,
       });
     }
 

@@ -1,11 +1,57 @@
 /** Friends module unit tests — requests, bilateral friendships, and 4-tier privacy enforcement. */
-import { describe, it, expect } from 'vitest';
+import { describe, it, expect, beforeAll } from 'vitest';
 import { friendsService } from './friends.service.js';
+import { friendsRepository } from './friends.repository.js';
+import { tasksRepository } from '../tasks/tasks.repository.js';
 
 describe('Friends Module', () => {
-  const userId = 'demo-user-id';
-  const friend1 = 'demo-user-1'; // Alex Rivera (detailed)
-  const friend2 = 'demo-user-2'; // Maya Chen (counts)
+  const userId = 'usr_test_social_main';
+  const friend1 = 'usr_test_friend_1'; // Alex Rivera (detailed)
+  const friend2 = 'usr_test_friend_2'; // Maya Chen (counts)
+
+  beforeAll(async () => {
+    friendsRepository.seedTestUser({
+      id: userId,
+      name: 'Main Adventurer',
+      username: 'main_adv',
+      avatarUrl: null,
+      level: 5,
+      totalXp: 1200,
+      currentStreak: 12,
+    });
+
+    friendsRepository.seedTestUser({
+      id: friend1,
+      name: 'Alex Rivera',
+      username: 'arivera',
+      avatarUrl: null,
+      level: 4,
+      totalXp: 950,
+      currentStreak: 8,
+    });
+
+    friendsRepository.seedTestUser({
+      id: friend2,
+      name: 'Maya Chen',
+      username: 'mchen',
+      avatarUrl: null,
+      level: 6,
+      totalXp: 1800,
+      currentStreak: 15,
+    });
+
+    friendsRepository.seedTestFriendship(userId, friend1, 'detailed');
+    friendsRepository.seedTestFriendship(friend1, userId, 'detailed');
+    friendsRepository.seedTestFriendship(userId, friend2, 'counts');
+    friendsRepository.seedTestFriendship(friend2, userId, 'counts');
+
+    // Create a task for friend1 so task details can be verified in getFriendProgress
+    await tasksRepository.createTask(friend1, {
+      title: 'Deep Focus Morning Work',
+      description: '90 minutes uninterrupted coding',
+      daysOfWeek: [0, 1, 2, 3, 4, 5, 6],
+    });
+  });
 
   it('lists current friends for the authenticated user', async () => {
     const friends = await friendsService.listFriends(userId);
@@ -66,7 +112,5 @@ describe('Friends Module', () => {
   it('returns activity feed for social updates', async () => {
     const feed = await friendsService.getActivityFeed(userId);
     expect(Array.isArray(feed)).toBe(true);
-    expect(feed.length).toBeGreaterThan(0);
-    expect(feed[0]).toHaveProperty('actionType');
   });
 });

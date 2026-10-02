@@ -127,9 +127,9 @@ export const LoginPage: React.FC = () => {
             type="button"
             onClick={handleDemoLogin}
             disabled={isSubmitting}
-            className="w-full mb-4 py-2.5 px-4 rounded-xl border border-purple-500/30 bg-purple-500/10 hover:bg-purple-500/20 text-purple-200 transition-all text-fluid-sm font-medium flex items-center justify-center gap-2 min-h-[44px]"
+            className="w-full mb-4 py-2.5 px-4 rounded-xl border border-blue-500/30 bg-blue-500/10 hover:bg-blue-500/20 text-blue-300 transition-all text-fluid-sm font-medium flex items-center justify-center gap-2 min-h-[44px]"
           >
-            <Sparkles size={16} className="text-purple-400" />
+            <Sparkles size={16} className="text-blue-500" />
             <span>One-Click Demo Login</span>
           </button>
 
@@ -143,8 +143,8 @@ export const LoginPage: React.FC = () => {
               }}
               className={`flex-1 py-2 px-3 rounded-lg text-fluid-xs font-medium flex items-center justify-center gap-1.5 transition-all ${
                 authMethod === 'email'
-                  ? 'bg-purple-600/60 text-white shadow-sm'
-                  : 'text-zinc-400 hover:text-white'
+                  ? 'bg-blue-700/60 text-white shadow-sm'
+                  : 'text-zinc-400 hover:text-gray-900 dark:hover:text-white'
               }`}
             >
               <Mail size={14} />
@@ -158,8 +158,8 @@ export const LoginPage: React.FC = () => {
               }}
               className={`flex-1 py-2 px-3 rounded-lg text-fluid-xs font-medium flex items-center justify-center gap-1.5 transition-all ${
                 authMethod === 'phone'
-                  ? 'bg-purple-600/60 text-white shadow-sm'
-                  : 'text-zinc-400 hover:text-white'
+                  ? 'bg-blue-700/60 text-white shadow-sm'
+                  : 'text-zinc-400 hover:text-gray-900 dark:hover:text-white'
               }`}
             >
               <Phone size={14} />
@@ -247,7 +247,7 @@ export const LoginPage: React.FC = () => {
                 </form>
               ) : (
                 <form onSubmit={handleVerifyPhoneCode} className="space-y-4">
-                  <div className="p-3 rounded-xl bg-purple-500/10 border border-purple-500/20 text-fluid-xs text-purple-200">
+                  <div className="p-3 rounded-xl bg-blue-500/10 border border-blue-500/20 text-fluid-xs text-blue-300">
                     Verification code sent to{' '}
                     <span className="font-semibold text-white">{pendingPhoneNumber || phoneNumber}</span>
                   </div>
@@ -283,7 +283,7 @@ export const LoginPage: React.FC = () => {
                     type="button"
                     onClick={cancelPhoneAuth}
                     disabled={isSubmitting}
-                    className="w-full py-2 text-fluid-xs text-zinc-400 hover:text-white flex items-center justify-center gap-1 transition-colors"
+                    className="w-full py-2 text-fluid-xs text-zinc-400 hover:text-gray-900 dark:hover:text-white flex items-center justify-center gap-1 transition-colors"
                   >
                     <RotateCcw size={13} />
                     <span>Change phone number</span>

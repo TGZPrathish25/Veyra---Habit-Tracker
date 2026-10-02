@@ -23,16 +23,16 @@ export const HistoryPage: React.FC = () => {
 
       {/* Top Archive Summary Cards */}
       <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 mb-6">
-        <div className="glass p-4 rounded-2xl border border-purple-500/20 bg-purple-500/5 flex items-center justify-between">
+        <div className="glass p-4 rounded-2xl border border-blue-500/20 bg-blue-500/5 flex items-center justify-between">
           <div>
-            <div className="text-fluid-xs font-semibold uppercase tracking-wider text-purple-300">
+            <div className="text-fluid-xs font-semibold uppercase tracking-wider text-blue-400">
               Archived Months
             </div>
             <div className="text-fluid-2xl font-black text-white mt-0.5">
               {months.length}
             </div>
           </div>
-          <div className="w-12 h-12 rounded-xl bg-purple-500/20 border border-purple-500/30 flex items-center justify-center text-purple-300">
+          <div className="w-12 h-12 rounded-xl bg-blue-500/20 border border-blue-500/30 flex items-center justify-center text-blue-400">
             <Archive size={24} />
           </div>
         </div>
@@ -76,8 +76,8 @@ export const HistoryPage: React.FC = () => {
               className={cn(
                 'px-4 py-2 rounded-xl text-fluid-xs font-bold transition-all border',
                 selectedYear === y
-                  ? 'bg-purple-500/20 text-purple-200 border-purple-400/40 shadow-sm'
-                  : 'text-zinc-400 border-transparent hover:text-white hover:bg-white/5'
+                  ? 'bg-blue-500/20 text-blue-300 border-blue-500/40 shadow-sm'
+                  : 'text-zinc-400 border-transparent hover:text-gray-900 dark:hover:text-white hover:bg-white/5'
               )}
             >
               {y} Archive

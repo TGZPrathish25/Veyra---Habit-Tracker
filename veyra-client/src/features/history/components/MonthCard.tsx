@@ -42,7 +42,7 @@ export const MonthCard: React.FC<MonthCardProps> = ({ month }) => {
           </span>
         </div>
 
-        <h3 className="text-fluid-xl font-black text-white group-hover:text-purple-200 transition-colors mb-2">
+        <h3 className="text-fluid-xl font-black text-white group-hover:text-blue-300 transition-colors mb-2">
           {monthName}
         </h3>
 
@@ -50,7 +50,7 @@ export const MonthCard: React.FC<MonthCardProps> = ({ month }) => {
         <div className="mb-4">
           <div className="flex items-center justify-between text-fluid-xs mb-1.5">
             <span className="text-zinc-400">Completion Rate</span>
-            <span className="font-bold text-purple-300">{completionRate}%</span>
+            <span className="font-bold text-blue-400">{completionRate}%</span>
           </div>
           <div className="w-full h-2 rounded-full bg-white/10 overflow-hidden">
             <div
@@ -58,7 +58,7 @@ export const MonthCard: React.FC<MonthCardProps> = ({ month }) => {
                 'h-full rounded-full transition-all duration-500',
                 completionRate >= 90
                   ? 'bg-gradient-to-r from-emerald-500 to-teal-400'
-                  : 'bg-gradient-to-r from-purple-500 to-indigo-500'
+                  : 'bg-gradient-to-r from-blue-500 to-blue-600'
               )}
               style={{ width: `${completionRate}%` }}
             />
@@ -82,7 +82,7 @@ export const MonthCard: React.FC<MonthCardProps> = ({ month }) => {
 
       <Link
         to={`/history/${year}/${monthNum}`}
-        className="w-full py-2 px-3 rounded-xl bg-white/5 hover:bg-purple-600/30 text-zinc-200 hover:text-white border border-white/10 hover:border-purple-400/40 text-fluid-xs font-semibold transition-all flex items-center justify-center gap-1.5"
+        className="w-full py-2 px-3 rounded-xl bg-white/5 hover:bg-blue-700/30 text-zinc-200 hover:text-gray-900 dark:hover:text-white border border-white/10 hover:border-blue-500/40 text-fluid-xs font-semibold transition-all flex items-center justify-center gap-1.5"
       >
         <span>View Month Breakdown</span>
         <ArrowRight size={13} />

@@ -1,6 +1,6 @@
 /** Route table — lazy-loaded pages with ProtectedRoute and PublicOnlyRoute guards. */
 import React, { lazy, Suspense } from 'react';
-import { createBrowserRouter, RouterProvider } from 'react-router-dom';
+import { createBrowserRouter, RouterProvider, Navigate } from 'react-router-dom';
 import { ROUTES } from '@/config/routes';
 import { ProtectedRoute } from './guards/ProtectedRoute';
 import { PublicOnlyRoute } from './guards/PublicOnlyRoute';
@@ -21,7 +21,7 @@ const ChallengesPage = lazy(() => import('@/pages/ChallengesPage').then((m) => (
 const ChallengeDetailPage = lazy(() =>
   import('@/pages/ChallengeDetailPage').then((m) => ({ default: m.ChallengeDetailPage }))
 );
-const AnalyticsPage = lazy(() => import('@/pages/AnalyticsPage').then((m) => ({ default: m.AnalyticsPage })));
+
 const HistoryPage = lazy(() => import('@/pages/HistoryPage').then((m) => ({ default: m.HistoryPage })));
 const HistoryMonthPage = lazy(() =>
   import('@/pages/HistoryMonthPage').then((m) => ({ default: m.HistoryMonthPage }))
@@ -207,13 +207,7 @@ const router = createBrowserRouter([
   },
   {
     path: ROUTES.ANALYTICS,
-    element: (
-      <ProtectedRoute>
-        <Suspense fallback={<Loading />}>
-          <AnalyticsPage />
-        </Suspense>
-      </ProtectedRoute>
-    ),
+    element: <Navigate to={ROUTES.DASHBOARD} replace />,
   },
   {
     path: ROUTES.HISTORY,

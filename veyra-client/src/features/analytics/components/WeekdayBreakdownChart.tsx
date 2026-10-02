@@ -48,7 +48,7 @@ export const WeekdayBreakdownChart: React.FC<WeekdayBreakdownChartProps> = ({ da
                 return (
                   <div className="glass-heavy p-3 rounded-xl border border-white/20 shadow-xl text-fluid-xs">
                     <div className="font-bold text-white mb-1">{item.day}</div>
-                    <div className="text-purple-300 font-semibold">
+                    <div className="text-blue-400 font-semibold">
                       {item.completionRate}% Average Rate
                     </div>
                   </div>

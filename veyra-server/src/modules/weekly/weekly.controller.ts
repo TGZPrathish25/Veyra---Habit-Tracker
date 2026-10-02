@@ -2,6 +2,7 @@
 import type { Request, Response, NextFunction } from 'express';
 import { weeklyService } from './weekly.service.js';
 import { createWeeklyPlanSchema, updateWeeklyPlanSchema } from './weekly.validators.js';
+import { DEFAULT_TIMEZONE } from '../../lib/time.js';
 
 export class WeeklyController {
   async getCurrentPlan(req: Request, res: Response, next: NextFunction): Promise<void> {
@@ -10,7 +11,7 @@ export class WeeklyController {
       const plan = await weeklyService.getCurrentPlan(
         req.user!.id,
         weekStart,
-        req.user?.timezone || 'UTC'
+        req.user?.timezone || DEFAULT_TIMEZONE
       );
       res.json({
         status: 'success',
@@ -27,7 +28,7 @@ export class WeeklyController {
       const plan = await weeklyService.savePlan(
         req.user!.id,
         data,
-        req.user?.timezone || 'UTC'
+        req.user?.timezone || DEFAULT_TIMEZONE
       );
       res.json({
         status: 'success',
@@ -54,7 +55,7 @@ export class WeeklyController {
 
   async rollover(req: Request, res: Response, next: NextFunction): Promise<void> {
     try {
-      const result = await weeklyService.rolloverWeek(req.user!.id, req.user?.timezone || 'UTC');
+      const result = await weeklyService.rolloverWeek(req.user!.id, req.user?.timezone || DEFAULT_TIMEZONE);
       res.json({
         status: 'success',
         data: result,

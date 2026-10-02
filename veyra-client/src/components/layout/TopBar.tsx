@@ -34,7 +34,7 @@ export const TopBar: React.FC = () => {
             <span className="font-bold text-fluid-sm text-white tracking-tight">Veyra</span>
           </Link>
           <div className="hidden lg:block text-fluid-xs text-zinc-400">
-            Welcome to <span className="font-semibold text-purple-300">Veyra Productivity</span>
+            Welcome to <span className="font-semibold text-blue-400">Veyra Productivity</span>
           </div>
         </div>
 
@@ -57,11 +57,11 @@ export const TopBar: React.FC = () => {
             type="button"
             onClick={() => setIsDrawerOpen(true)}
             aria-label="Open notifications drawer"
-            className="relative p-2 rounded-xl text-zinc-300 hover:text-white hover:bg-white/10 border border-white/5 transition-all"
+            className="relative p-2 rounded-xl text-zinc-300 hover:text-gray-900 dark:hover:text-white hover:bg-white/10 border border-white/5 transition-all"
           >
             <Bell size={18} />
             {unreadCount > 0 && (
-              <span className="absolute -top-1 -right-1 w-4 h-4 rounded-full bg-purple-500 text-white text-[9px] font-black flex items-center justify-center shadow-lg border border-purple-300/40 animate-pulse">
+              <span className="absolute -top-1 -right-1 w-4 h-4 rounded-full bg-blue-500 text-white text-[9px] font-black flex items-center justify-center shadow-lg border border-blue-400/40 animate-pulse">
                 {unreadCount > 9 ? '9+' : unreadCount}
               </span>
             )}

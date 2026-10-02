@@ -20,11 +20,7 @@ export const SundayPlanningModal: React.FC<SundayPlanningModalProps> = ({
 }) => {
   const [step, setStep] = useState<1 | 2 | 3>(1);
   const [intention, setIntention] = useState('');
-  const [goals, setGoals] = useState<{ title: string; targetCount: number }[]>([
-    { title: 'Morning Movement / Workout', targetCount: 4 },
-    { title: 'Deep Work Focus Sprints', targetCount: 10 },
-    { title: 'Nightly Reading / Journaling', targetCount: 5 },
-  ]);
+  const [goals, setGoals] = useState<{ title: string; targetCount: number }[]>([]);
   const [newTitle, setNewTitle] = useState('');
   const [newCount, setNewCount] = useState(3);
 
@@ -74,7 +70,7 @@ export const SundayPlanningModal: React.FC<SundayPlanningModalProps> = ({
         {/* Glowing banner accent */}
         <div
           className="absolute top-0 inset-x-0 h-1.5"
-          style={{ background: 'linear-gradient(90deg, #8b5cf6, #ec4899, #3b82f6)' }}
+          style={{ background: 'linear-gradient(90deg, #0077cc, #00a3e0, #0099e5)' }}
         />
 
         {/* Close Button */}
@@ -82,7 +78,7 @@ export const SundayPlanningModal: React.FC<SundayPlanningModalProps> = ({
           type="button"
           onClick={onClose}
           aria-label="Close weekly ritual modal"
-          className="absolute top-4 right-4 p-2 rounded-xl text-zinc-400 hover:text-white hover:bg-white/10 transition-colors"
+          className="absolute top-4 right-4 p-2 rounded-xl text-zinc-400 hover:text-gray-900 dark:hover:text-white hover:bg-white/10 transition-colors"
         >
           <X size={18} />
         </button>
@@ -90,7 +86,7 @@ export const SundayPlanningModal: React.FC<SundayPlanningModalProps> = ({
         {step === 1 && (
           <div className="space-y-5">
             <div className="flex items-center gap-3">
-              <div className="p-3 rounded-xl bg-purple-500/20 text-purple-400">
+              <div className="p-3 rounded-xl bg-blue-500/20 text-blue-500">
                 <Compass size={24} />
               </div>
               <div>
@@ -113,7 +109,7 @@ export const SundayPlanningModal: React.FC<SundayPlanningModalProps> = ({
                 value={intention}
                 onChange={(e) => setIntention(e.target.value)}
                 placeholder="e.g. Focus on deep uninterrupted work blocks and prioritize evening recovery..."
-                className="w-full rounded-xl p-3 bg-black/40 border border-white/10 text-white text-fluid-sm placeholder:text-zinc-500 focus:outline-none focus:ring-2 focus:ring-purple-500 transition-all resize-none"
+                className="w-full rounded-xl p-3 bg-black/40 border border-white/10 text-white text-fluid-sm placeholder:text-zinc-500 focus:outline-none focus:ring-2 focus:ring-blue-500 transition-all resize-none"
               />
             </div>
 
@@ -155,7 +151,7 @@ export const SundayPlanningModal: React.FC<SundayPlanningModalProps> = ({
                 >
                   <span className="font-medium text-white">{goal.title}</span>
                   <div className="flex items-center gap-3">
-                    <span className="px-2 py-0.5 rounded-md bg-purple-500/20 text-purple-300 font-bold">
+                    <span className="px-2 py-0.5 rounded-md bg-blue-500/20 text-blue-400 font-bold">
                       {goal.targetCount}x target
                     </span>
                     <button
@@ -178,7 +174,7 @@ export const SundayPlanningModal: React.FC<SundayPlanningModalProps> = ({
                 placeholder="New sprint goal (e.g. Gym workout)"
                 value={newTitle}
                 onChange={(e) => setNewTitle(e.target.value)}
-                className="flex-1 rounded-xl px-3 py-2 bg-black/40 border border-white/10 text-white text-fluid-xs placeholder:text-zinc-500 focus:outline-none focus:ring-1 focus:ring-purple-500"
+                className="flex-1 rounded-xl px-3 py-2 bg-black/40 border border-white/10 text-white text-fluid-xs placeholder:text-zinc-500 focus:outline-none focus:ring-1 focus:ring-blue-500"
               />
               <input
                 type="number"
@@ -186,7 +182,7 @@ export const SundayPlanningModal: React.FC<SundayPlanningModalProps> = ({
                 max={50}
                 value={newCount}
                 onChange={(e) => setNewCount(parseInt(e.target.value) || 1)}
-                className="w-16 rounded-xl px-2 py-2 bg-black/40 border border-white/10 text-white text-center text-fluid-xs focus:outline-none focus:ring-1 focus:ring-purple-500"
+                className="w-16 rounded-xl px-2 py-2 bg-black/40 border border-white/10 text-white text-center text-fluid-xs focus:outline-none focus:ring-1 focus:ring-blue-500"
                 title="Target completions this week"
               />
               <GlassButton type="submit" variant="secondary" size="sm" className="px-3">
@@ -198,7 +194,7 @@ export const SundayPlanningModal: React.FC<SundayPlanningModalProps> = ({
               <button
                 type="button"
                 onClick={() => setStep(1)}
-                className="text-fluid-xs text-zinc-400 hover:text-white transition-colors"
+                className="text-fluid-xs text-zinc-400 hover:text-gray-900 dark:hover:text-white transition-colors"
               >
                 ← Back
               </button>
@@ -221,7 +217,7 @@ export const SundayPlanningModal: React.FC<SundayPlanningModalProps> = ({
             </div>
             <h3 className="text-fluid-xl font-bold text-white">Weekly Plan Activated! 🚀</h3>
             <p className="text-fluid-sm text-zinc-300 max-w-sm mx-auto">
-              Your sprint goals and intention are locked. You earned <strong className="text-purple-300">+25 XP</strong> for conducting your weekly kickoff!
+              Your sprint goals and intention are locked. You earned <strong className="text-blue-400">+25 XP</strong> for conducting your weekly kickoff!
             </p>
           </div>
         )}

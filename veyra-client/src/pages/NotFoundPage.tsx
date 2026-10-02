@@ -17,12 +17,12 @@ export const NotFoundPage: React.FC = () => {
           {/* Subtle gradient banner */}
           <div
             className="absolute top-0 inset-x-0 h-1.5"
-            style={{ background: 'linear-gradient(90deg, #8b5cf6, #3b82f6, #ec4899)' }}
+            style={{ background: 'linear-gradient(90deg, #0077cc, #0099e5, #00a3e0)' }}
           />
 
           {/* 404 Icon & Large Number */}
           <div className="mb-6 relative inline-block">
-            <div className="w-20 h-20 mx-auto rounded-3xl bg-purple-500/10 border border-purple-500/30 flex items-center justify-center text-purple-400 shadow-inner">
+            <div className="w-20 h-20 mx-auto rounded-3xl bg-blue-500/10 border border-blue-500/30 flex items-center justify-center text-blue-500 shadow-inner">
               <Compass size={40} className="animate-spin" style={{ animationDuration: '12s' }} />
             </div>
             <div className="text-fluid-4xl font-black text-white/10 absolute -bottom-4 inset-x-0 select-none">
@@ -49,7 +49,7 @@ export const NotFoundPage: React.FC = () => {
             <button
               type="button"
               onClick={() => navigate(-1)}
-              className="w-full sm:w-auto px-4 py-2.5 rounded-xl border border-white/10 bg-white/5 hover:bg-white/10 text-fluid-xs text-zinc-300 hover:text-white transition-all flex items-center justify-center gap-2"
+              className="w-full sm:w-auto px-4 py-2.5 rounded-xl border border-white/10 bg-white/5 hover:bg-white/10 text-fluid-xs text-zinc-300 hover:text-gray-900 dark:hover:text-white transition-all flex items-center justify-center gap-2"
             >
               <ArrowLeft size={16} />
               <span>Go Back</span>
@@ -58,7 +58,7 @@ export const NotFoundPage: React.FC = () => {
 
           {/* Quick Helpful Links */}
           <div className="mt-8 pt-6 border-t border-white/5 flex items-center justify-center gap-6 text-fluid-xs text-zinc-400">
-            <Link to="/daily" className="hover:text-purple-300 flex items-center gap-1.5 transition-colors">
+            <Link to="/daily" className="hover:text-blue-400 flex items-center gap-1.5 transition-colors">
               <Calendar size={13} />
               <span>Daily Tasks</span>
             </Link>

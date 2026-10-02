@@ -18,10 +18,11 @@ import {
   Lock,
   ListFilter,
 } from 'lucide-react';
+import { getIndianTodayDateString, shiftDateString } from '@/lib/date';
 
 export const DailyTasksPage: React.FC = () => {
   const [selectedDate, setSelectedDate] = useState<string>(() => {
-    return new Date().toISOString().split('T')[0];
+    return getIndianTodayDateString();
   });
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [filter, setFilter] = useState<'all' | 'pending' | 'completed'>('all');
@@ -35,20 +36,16 @@ export const DailyTasksPage: React.FC = () => {
     deleteTask,
   } = useDailyTasks(selectedDate);
 
-  const todayStr = new Date().toISOString().split('T')[0];
+  const todayStr = getIndianTodayDateString();
   const isToday = selectedDate === todayStr;
   const isPast = selectedDate < todayStr;
 
   const handlePrevDay = () => {
-    const d = new Date(selectedDate);
-    d.setDate(d.getDate() - 1);
-    setSelectedDate(d.toISOString().split('T')[0]);
+    setSelectedDate(shiftDateString(selectedDate, -1));
   };
 
   const handleNextDay = () => {
-    const d = new Date(selectedDate);
-    d.setDate(d.getDate() + 1);
-    setSelectedDate(d.toISOString().split('T')[0]);
+    setSelectedDate(shiftDateString(selectedDate, 1));
   };
 
   const handleJumpToToday = () => {
@@ -80,23 +77,23 @@ export const DailyTasksPage: React.FC = () => {
           <div className="flex items-center rounded-xl bg-white/5 border border-white/10 p-1">
             <button
               onClick={handlePrevDay}
-              className="p-1.5 rounded-lg text-zinc-400 hover:text-white hover:bg-white/10 transition-colors"
+              className="p-1.5 rounded-lg text-zinc-400 hover:text-gray-900 dark:hover:text-white hover:bg-white/10 transition-colors"
               title="Previous Day"
             >
               <ChevronLeft size={18} />
             </button>
             <div className="px-3 py-1 flex items-center gap-1.5 text-fluid-sm font-semibold text-white">
-              <Calendar size={15} className="text-purple-400" />
+              <Calendar size={15} className="text-blue-500" />
               <span>{formattedDateTitle}</span>
               {isToday && (
-                <span className="text-[10px] px-1.5 py-0.5 rounded-md bg-purple-500/30 text-purple-300 font-bold ml-1">
+                <span className="text-[10px] px-1.5 py-0.5 rounded-md bg-blue-500/30 text-blue-400 font-bold ml-1">
                   TODAY
                 </span>
               )}
             </div>
             <button
               onClick={handleNextDay}
-              className="p-1.5 rounded-lg text-zinc-400 hover:text-white hover:bg-white/10 transition-colors"
+              className="p-1.5 rounded-lg text-zinc-400 hover:text-gray-900 dark:hover:text-white hover:bg-white/10 transition-colors"
               title="Next Day"
             >
               <ChevronRight size={18} />
@@ -106,7 +103,7 @@ export const DailyTasksPage: React.FC = () => {
           {!isToday && (
             <button
               onClick={handleJumpToToday}
-              className="px-3 py-2 rounded-xl text-fluid-xs font-medium text-purple-300 bg-purple-500/10 hover:bg-purple-500/20 border border-purple-500/30 transition-all"
+              className="px-3 py-2 rounded-xl text-fluid-xs font-medium text-blue-400 bg-blue-500/10 hover:bg-blue-500/20 border border-blue-500/30 transition-all"
             >
               Today
             </button>
@@ -168,8 +165,8 @@ export const DailyTasksPage: React.FC = () => {
             onClick={() => setFilter('all')}
             className={`py-1.5 px-3 rounded-lg text-fluid-xs font-medium transition-all ${
               filter === 'all'
-                ? 'bg-purple-600/60 text-white shadow-sm'
-                : 'text-zinc-400 hover:text-white'
+                ? 'bg-blue-700/60 text-white shadow-sm'
+                : 'text-zinc-400 hover:text-gray-900 dark:hover:text-white'
             }`}
           >
             All ({occurrences.length})
@@ -178,8 +175,8 @@ export const DailyTasksPage: React.FC = () => {
             onClick={() => setFilter('pending')}
             className={`py-1.5 px-3 rounded-lg text-fluid-xs font-medium transition-all ${
               filter === 'pending'
-                ? 'bg-purple-600/60 text-white shadow-sm'
-                : 'text-zinc-400 hover:text-white'
+                ? 'bg-blue-700/60 text-white shadow-sm'
+                : 'text-zinc-400 hover:text-gray-900 dark:hover:text-white'
             }`}
           >
             Pending ({occurrences.filter((o) => !o.completed).length})
@@ -188,8 +185,8 @@ export const DailyTasksPage: React.FC = () => {
             onClick={() => setFilter('completed')}
             className={`py-1.5 px-3 rounded-lg text-fluid-xs font-medium transition-all ${
               filter === 'completed'
-                ? 'bg-purple-600/60 text-white shadow-sm'
-                : 'text-zinc-400 hover:text-white'
+                ? 'bg-blue-700/60 text-white shadow-sm'
+                : 'text-zinc-400 hover:text-gray-900 dark:hover:text-white'
             }`}
           >
             Completed ({occurrences.filter((o) => o.completed).length})
@@ -204,7 +201,7 @@ export const DailyTasksPage: React.FC = () => {
       {/* Task List */}
       {isLoading ? (
         <div className="glass p-12 text-center rounded-2xl">
-          <div className="inline-block w-8 h-8 border-2 border-purple-400 border-t-transparent rounded-full animate-spin mb-3" />
+          <div className="inline-block w-8 h-8 border-2 border-blue-500 border-t-transparent rounded-full animate-spin mb-3" />
           <p className="text-fluid-sm text-zinc-400">Loading habits for {formattedDateTitle}...</p>
         </div>
       ) : filteredOccurrences.length > 0 ? (
@@ -221,7 +218,7 @@ export const DailyTasksPage: React.FC = () => {
         </div>
       ) : (
         <div className="glass p-10 md:p-12 text-center rounded-2xl border border-white/10">
-          <div className="w-14 h-14 rounded-2xl bg-purple-500/10 border border-purple-500/20 text-purple-400 flex items-center justify-center mx-auto mb-4">
+          <div className="w-14 h-14 rounded-2xl bg-blue-500/10 border border-blue-500/20 text-blue-500 flex items-center justify-center mx-auto mb-4">
             <Sparkles size={28} />
           </div>
           <h3 className="text-fluid-base font-bold text-white mb-1">

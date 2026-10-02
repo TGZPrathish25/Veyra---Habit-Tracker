@@ -17,18 +17,20 @@ export const RegisterPage: React.FC = () => {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [confirmPassword, setConfirmPassword] = useState('');
-  const [timezone, setTimezone] = useState('UTC');
+  const [timezone, setTimezone] = useState('Asia/Kolkata');
 
   const [isCheckingUsername, setIsCheckingUsername] = useState(false);
   const [usernameStatus, setUsernameStatus] = useState<'idle' | 'available' | 'taken' | 'invalid'>('idle');
 
-  // Auto-detect client timezone
+  // Client timezone initialization (fixed to Asia/Kolkata)
   useEffect(() => {
     try {
       const detected = Intl.DateTimeFormat().resolvedOptions().timeZone;
-      if (detected) setTimezone(detected);
+      if (detected && detected.includes('Calcutta') || detected?.includes('Kolkata')) {
+        setTimezone('Asia/Kolkata');
+      }
     } catch {
-      // Keep UTC
+      // Keep Asia/Kolkata
     }
   }, []);
 
@@ -145,7 +147,7 @@ export const RegisterPage: React.FC = () => {
                   />
                   <div className="absolute right-2.5 top-1/2 -translate-y-1/2">
                     {isCheckingUsername ? (
-                      <Loader2 size={16} className="animate-spin text-purple-400" />
+                      <Loader2 size={16} className="animate-spin text-blue-500" />
                     ) : usernameStatus === 'available' ? (
                       <CheckCircle2 size={16} className="text-emerald-400" />
                     ) : usernameStatus === 'taken' || usernameStatus === 'invalid' ? (
@@ -206,7 +208,7 @@ export const RegisterPage: React.FC = () => {
 
             <div>
               <label className="block text-fluid-sm font-medium mb-1" style={{ color: 'var(--color-text)' }}>
-                Timezone (auto-detected)
+                Timezone (India - Asia/Kolkata)
               </label>
               <input
                 type="text"

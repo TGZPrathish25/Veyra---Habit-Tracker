@@ -63,20 +63,20 @@ export const AchievementsPage: React.FC = () => {
         </div>
 
         {/* Bonus XP Earned */}
-        <div className="glass p-5 rounded-2xl border border-purple-500/20 bg-purple-500/5 flex items-center justify-between">
+        <div className="glass p-5 rounded-2xl border border-blue-500/20 bg-blue-500/5 flex items-center justify-between">
           <div>
-            <div className="text-fluid-xs font-semibold uppercase tracking-wider text-purple-300 mb-1 flex items-center gap-1.5">
+            <div className="text-fluid-xs font-semibold uppercase tracking-wider text-blue-400 mb-1 flex items-center gap-1.5">
               <Sparkles size={14} />
               <span>Achievement XP</span>
             </div>
-            <div className="text-fluid-2xl font-black text-purple-200">
+            <div className="text-fluid-2xl font-black text-blue-300">
               +{unlockedXp.toLocaleString()} <span className="text-fluid-base font-normal text-zinc-400">XP</span>
             </div>
             <div className="text-fluid-xs text-zinc-400 mt-1">
               Boosted your player level
             </div>
           </div>
-          <div className="w-16 h-16 rounded-2xl bg-purple-500/10 border border-purple-500/20 flex items-center justify-center text-purple-400">
+          <div className="w-16 h-16 rounded-2xl bg-blue-500/10 border border-blue-500/20 flex items-center justify-center text-blue-500">
             <Sparkles size={32} />
           </div>
         </div>
@@ -109,7 +109,7 @@ export const AchievementsPage: React.FC = () => {
                 'px-4 py-2 rounded-xl text-fluid-xs font-semibold whitespace-nowrap transition-all duration-200 border',
                 active
                   ? 'bg-amber-500/20 text-amber-200 border-amber-400/40 shadow-[0_0_12px_rgba(245,158,11,0.2)]'
-                  : 'glass text-zinc-400 border-white/5 hover:text-white hover:border-white/20'
+                  : 'glass text-zinc-400 border-white/5 hover:text-gray-900 dark:hover:text-white hover:border-white/20'
               )}
             >
               {cat.label}

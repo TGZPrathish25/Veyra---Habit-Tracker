@@ -88,14 +88,7 @@ export class AnalyticsRepository {
           const d = new Date();
           d.setDate(d.getDate() - i);
           const dStr = d.toISOString().split('T')[0];
-          const randomFactor = (i * 7 + 13) % 10;
-          let level: 0 | 1 | 2 | 3 | 4 = 3;
-          if (randomFactor > 7) level = 4;
-          else if (randomFactor > 4) level = 3;
-          else if (randomFactor > 2) level = 2;
-          else level = 1;
-
-          result.push({ date: dStr, count: level * 2, level });
+          result.push({ date: dStr, count: 0, level: 0 });
         }
         return result;
       }
@@ -157,7 +150,7 @@ export class AnalyticsRepository {
 
     for (let i = 0; i < 7; i++) {
       const wStat = weekdayMap.get(i)!;
-      const rate = wStat.total > 0 ? Math.round((wStat.completed / wStat.total) * 100) : 80;
+      const rate = wStat.total > 0 ? Math.round((wStat.completed / wStat.total) * 100) : 0;
       if (rate > maxRate) {
         maxRate = rate;
         bestDayIdx = i;
@@ -170,26 +163,19 @@ export class AnalyticsRepository {
       });
     }
 
-    const categoryDistribution: CategoryStat[] = [
-      { category: 'Health & Wellness', count: 18, percentage: 35, color: '#10B981' },
-      { category: 'Deep Work & Coding', count: 14, percentage: 28, color: '#8B5CF6' },
-      { category: 'Mindfulness', count: 10, percentage: 20, color: '#3B82F6' },
-      { category: 'Fitness & Movement', count: 9, percentage: 17, color: '#F59E0B' },
-    ];
-
-    const averageRate = totalScheduled > 0 ? Math.round((totalCompleted / totalScheduled) * 100) : 82;
+    const averageRate = totalScheduled > 0 ? Math.round((totalCompleted / totalScheduled) * 100) : 0;
 
     return {
       period,
       averageCompletionRate: averageRate,
-      totalTasksCompleted: totalCompleted || 42,
-      totalTasksScheduled: totalScheduled || 50,
-      currentStreak: currentStreak || 7,
-      bestStreak: Math.max(bestStreak, 14),
-      topProductiveDay: WEEKDAY_NAMES[bestDayIdx],
+      totalTasksCompleted: totalCompleted,
+      totalTasksScheduled: totalScheduled,
+      currentStreak: currentStreak || 0,
+      bestStreak: bestStreak || 0,
+      topProductiveDay: totalCompleted > 0 ? WEEKDAY_NAMES[bestDayIdx] : 'None',
       trends,
       weekdayBreakdown,
-      categoryDistribution,
+      categoryDistribution: [],
     };
   }
 
@@ -199,61 +185,43 @@ export class AnalyticsRepository {
     period: '7d' | '30d' | '90d'
   ): AnalyticsSummaryDTO {
     const trends: DailyTrendPoint[] = [];
-    let totalCompleted = 0;
-    let totalScheduled = 0;
 
     for (let i = numDays - 1; i >= 0; i--) {
       const d = new Date();
       d.setDate(d.getDate() - i);
       const dStr = d.toISOString().split('T')[0];
-      const scheduled = 5;
-      // Realistic high consistency curve with weekend dips
       const dayIdx = d.getDay();
-      const isWeekend = dayIdx === 0 || dayIdx === 6;
-      const completed = isWeekend ? (i % 2 === 0 ? 4 : 3) : (i % 5 === 0 ? 4 : 5);
-
-      totalScheduled += scheduled;
-      totalCompleted += completed;
 
       trends.push({
         date: dStr,
         dayOfWeek: WEEKDAY_NAMES[dayIdx],
-        completed,
-        total: scheduled,
-        completionRate: Math.round((completed / scheduled) * 100),
+        completed: 0,
+        total: 0,
+        completionRate: 0,
       });
     }
 
     const weekdayBreakdown: WeekdayStat[] = [
-      { day: 'Mon', dayIndex: 1, completionRate: 92, totalOccurrences: 25 },
-      { day: 'Tue', dayIndex: 2, completionRate: 96, totalOccurrences: 25 },
-      { day: 'Wed', dayIndex: 3, completionRate: 88, totalOccurrences: 25 },
-      { day: 'Thu', dayIndex: 4, completionRate: 90, totalOccurrences: 25 },
-      { day: 'Fri', dayIndex: 5, completionRate: 84, totalOccurrences: 25 },
-      { day: 'Sat', dayIndex: 6, completionRate: 76, totalOccurrences: 25 },
-      { day: 'Sun', dayIndex: 0, completionRate: 80, totalOccurrences: 25 },
+      { day: 'Mon', dayIndex: 1, completionRate: 0, totalOccurrences: 0 },
+      { day: 'Tue', dayIndex: 2, completionRate: 0, totalOccurrences: 0 },
+      { day: 'Wed', dayIndex: 3, completionRate: 0, totalOccurrences: 0 },
+      { day: 'Thu', dayIndex: 4, completionRate: 0, totalOccurrences: 0 },
+      { day: 'Fri', dayIndex: 5, completionRate: 0, totalOccurrences: 0 },
+      { day: 'Sat', dayIndex: 6, completionRate: 0, totalOccurrences: 0 },
+      { day: 'Sun', dayIndex: 0, completionRate: 0, totalOccurrences: 0 },
     ];
-
-    const categoryDistribution: CategoryStat[] = [
-      { category: 'Health & Wellness', count: 32, percentage: 34, color: '#10B981' },
-      { category: 'Productivity & Work', count: 26, percentage: 28, color: '#8B5CF6' },
-      { category: 'Mind & Reading', count: 20, percentage: 21, color: '#3B82F6' },
-      { category: 'Fitness & Sport', count: 16, percentage: 17, color: '#F59E0B' },
-    ];
-
-    const averageRate = Math.round((totalCompleted / totalScheduled) * 100);
 
     return {
       period,
-      averageCompletionRate: averageRate,
-      totalTasksCompleted: totalCompleted,
-      totalTasksScheduled: totalScheduled,
-      currentStreak: 7,
-      bestStreak: 15,
-      topProductiveDay: 'Tuesday',
+      averageCompletionRate: 0,
+      totalTasksCompleted: 0,
+      totalTasksScheduled: 0,
+      currentStreak: 0,
+      bestStreak: 0,
+      topProductiveDay: 'None',
       trends,
       weekdayBreakdown,
-      categoryDistribution,
+      categoryDistribution: [],
     };
   }
 }

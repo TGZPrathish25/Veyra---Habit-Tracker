@@ -3,45 +3,71 @@ node_modules/
 .pnp
 .pnp.js
 
-# Build outputs
+# Build & Bundle outputs
 dist/
 build/
+out/
+.output/
 *.tsbuildinfo
+.turbo/
+.vercel/
 
-# Environment & Secrets
-.env
-.env.local
-.env.*.local
+# Environment Variables & Secrets (NEVER commit actual secret keys or .env files)
+.env*
 !.env.example
-!.env.production.example
+!.env.*.example
+!*.env.example
 *serviceAccount*.json
 *service-account*.json
 *credentials*.json
+*.pem
+*.key
 
-# Prisma
+# Prisma & Database
 veyra-server/prisma/migrations/**/migration_lock.toml
+*.sqlite
+*.sqlite3
+*.db
 
-# Testing
+# Testing & Coverage
 coverage/
+.nyc_output/
 
-# IDE
-.vscode/
+# IDE & Editor Configs
+.vscode/*
+!.vscode/extensions.json
+!.vscode/settings.json
 .idea/
 *.swp
 *.swo
 *~
-.DS_Store
-Thumbs.db
+*.sublime-project
+*.sublime-workspace
 
-# Logs
+# OS Artifacts
+.DS_Store
+.DS_Store?
+._*
+.Spotlight-V100
+.Trashes
+ehthumbs.db
+Thumbs.db
+desktop.ini
+
+# Logs & Debugging
 logs/
 *.log
 npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
 pnpm-debug.log*
+lerna-debug.log*
+firestore-debug.log
+ui-debug.log
 
-# Docker
-docker-compose.override.yml
-
-# OS
-.DS_Store
-desktop.ini
+# Temporary Scratch & Artifact Storage
+.tempmediaStorage/
+.system_generated/
+.firebase/
+scratch/
+.eslintcache

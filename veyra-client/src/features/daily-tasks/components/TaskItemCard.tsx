@@ -23,7 +23,7 @@ export const TaskItemCard: React.FC<TaskItemCardProps> = ({
       className={`glass p-4 rounded-xl transition-all duration-200 flex items-center justify-between gap-3 border ${
         completed
           ? 'border-emerald-500/30 bg-emerald-500/5'
-          : 'border-white/10 hover:border-purple-500/30 hover:bg-white/5'
+          : 'border-white/10 hover:border-blue-500/30 hover:bg-white/5'
       }`}
     >
       <div className="flex items-center gap-3.5 flex-1 min-w-0">
@@ -37,7 +37,7 @@ export const TaskItemCard: React.FC<TaskItemCardProps> = ({
               ? 'bg-gradient-to-tr from-emerald-500 to-teal-400 text-white shadow-md shadow-emerald-500/20'
               : isReadOnly
               ? 'border border-white/20 bg-white/5 opacity-50 cursor-not-allowed'
-              : 'border border-white/20 hover:border-purple-400 bg-white/5 active:scale-95'
+              : 'border border-white/20 hover:border-blue-500 bg-white/5 active:scale-95'
           }`}
           title={isReadOnly ? 'Historical entries cannot be modified' : completed ? 'Mark incomplete' : 'Mark complete'}
         >
@@ -75,12 +75,17 @@ export const TaskItemCard: React.FC<TaskItemCardProps> = ({
           </span>
         )}
 
-        {onDelete && task && !isReadOnly && (
+        {onDelete && !isReadOnly && (
           <button
             type="button"
-            onClick={() => onDelete(task.id)}
+            onClick={(e) => {
+              e.stopPropagation();
+              const idToDelete = task?.id || occurrence.taskId;
+              if (idToDelete) onDelete(idToDelete);
+            }}
             className="p-1.5 rounded-lg text-zinc-500 hover:text-red-400 hover:bg-red-500/10 transition-colors"
             title="Delete habit"
+            aria-label="Delete habit"
           >
             <Trash2 size={15} />
           </button>

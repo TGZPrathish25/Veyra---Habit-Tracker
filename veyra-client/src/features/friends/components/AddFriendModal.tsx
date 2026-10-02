@@ -56,7 +56,7 @@ export const AddFriendModal: React.FC<AddFriendModalProps> = ({
       >
         <div className="flex items-center justify-between mb-4">
           <div className="flex items-center gap-2">
-            <div className="p-2 rounded-xl bg-purple-500/20 text-purple-400">
+            <div className="p-2 rounded-xl bg-blue-500/20 text-blue-500">
               <UserPlus size={20} />
             </div>
             <div>
@@ -66,7 +66,7 @@ export const AddFriendModal: React.FC<AddFriendModalProps> = ({
           </div>
           <button
             onClick={onClose}
-            className="p-1.5 rounded-xl text-zinc-400 hover:text-white hover:bg-white/10 transition-colors"
+            className="p-1.5 rounded-xl text-zinc-400 hover:text-gray-900 dark:hover:text-white hover:bg-white/10 transition-colors"
           >
             <X size={18} />
           </button>
@@ -100,7 +100,7 @@ export const AddFriendModal: React.FC<AddFriendModalProps> = ({
                 required
               />
               <p className="text-[11px] text-zinc-400 mt-1">
-                Tip: Try connecting with demo user <span className="text-purple-300 font-semibold">sam_t</span> or <span className="text-purple-300 font-semibold">mayachen</span>.
+                Tip: Try connecting with demo user <span className="text-blue-400 font-semibold">sam_t</span> or <span className="text-blue-400 font-semibold">mayachen</span>.
               </p>
             </div>
 

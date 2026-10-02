@@ -61,7 +61,7 @@ export const CompletionTrendChart: React.FC<CompletionTrendChartProps> = ({ data
                     <div className="font-bold text-white mb-1">
                       {item.date} ({item.dayOfWeek})
                     </div>
-                    <div className="text-purple-300 font-semibold">
+                    <div className="text-blue-400 font-semibold">
                       {item.completionRate}% Completion
                     </div>
                     <div className="text-zinc-400 text-[11px]">
