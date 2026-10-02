@@ -2,15 +2,18 @@
 node_modules/
 .pnp
 .pnp.js
+.yarn/install-state.gz
 
 # Build & Bundle outputs
 dist/
+dist-ssr/
 build/
 out/
 .output/
 *.tsbuildinfo
 .turbo/
 .vercel/
+*.local
 
 # Environment Variables & Secrets (NEVER commit actual secret keys or .env files)
 .env*
@@ -22,24 +25,38 @@ out/
 *credentials*.json
 *.pem
 *.key
+*.cert
 
-# Prisma & Database
+# Prisma, Database & Local Storage
 veyra-server/prisma/migrations/**/migration_lock.toml
 *.sqlite
 *.sqlite3
+*.sqlite-journal
 *.db
+*.db-journal
+data/
 
 # Testing & Coverage
 coverage/
 .nyc_output/
+.vitest/
+
+# Vite & Bundler Cache
+.vite/
+.cache/
 
 # IDE & Editor Configs
 .vscode/*
 !.vscode/extensions.json
 !.vscode/settings.json
 .idea/
+*.suo
+*.ntvs*
+*.njsproj
+*.sln
 *.swp
 *.swo
+*.sw?
 *~
 *.sublime-project
 *.sublime-workspace
@@ -70,4 +87,6 @@ ui-debug.log
 .system_generated/
 .firebase/
 scratch/
+temp/
+tmp/
 .eslintcache
