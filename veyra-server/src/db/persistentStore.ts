@@ -127,6 +127,8 @@ class PersistentStore {
           tasks: parsed.tasks || {},
           occurrences: parsed.occurrences || {},
           streaks: parsed.streaks || {},
+          challenges: parsed.challenges || {},
+          participants: parsed.participants || {},
         };
       }
     } catch (err) {
@@ -435,6 +437,70 @@ class PersistentStore {
       } catch (err) {
         console.debug('Cloud Firestore getStreak:', err);
       }
+    }
+    return null;
+  }
+
+  // --- Challenges ---
+
+  public async saveChallenge(chal: any): Promise<void> {
+    this.data.challenges[chal.id] = chal;
+    this.scheduleSave();
+
+    const db = getFirestoreAdmin();
+    if (db) {
+      try {
+        await db.collection('challenges').doc(chal.id).set(chal, { merge: true });
+      } catch (err) {
+        console.debug('Cloud Firestore challenge write:', err);
+      }
+    }
+  }
+
+  public async getChallenges(): Promise<any[]> {
+    return Object.values(this.data.challenges);
+  }
+
+  public async getChallengeById(id: string): Promise<any | null> {
+    return this.data.challenges[id] || null;
+  }
+
+  public async saveParticipant(part: any): Promise<void> {
+    this.data.participants[part.id] = part;
+    this.scheduleSave();
+
+    const db = getFirestoreAdmin();
+    if (db) {
+      try {
+        await db.collection('challenge_participants').doc(part.id).set(part, { merge: true });
+      } catch (err) {
+        console.debug('Cloud Firestore participant write:', err);
+      }
+    }
+  }
+
+  public async getParticipants(): Promise<any[]> {
+    return Object.values(this.data.participants);
+  }
+
+  public async getParticipantsByChallenge(challengeId: string): Promise<any[]> {
+    return Object.values(this.data.participants).filter((p) => p.challengeId === challengeId);
+  }
+
+  public async updateParticipantProgress(participantId: string, progress: number): Promise<any | null> {
+    const p = this.data.participants[participantId];
+    if (p) {
+      p.progress = progress;
+      this.scheduleSave();
+      const db = getFirestoreAdmin();
+      if (db) {
+        try {
+          await db.collection('challenge_participants').doc(participantId).set({ progress }, { merge: true });
+        } catch (err) {
+          console.debug('Cloud Firestore participant progress write:', err);
+        }
+      }
+      return p;
     }
     return null;
   }

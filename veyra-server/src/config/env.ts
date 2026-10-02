@@ -10,7 +10,7 @@ const envSchema = z.object({
   CLIENT_ORIGIN: z.string().default('http://localhost:5173'),
   LOG_LEVEL: z.enum(['fatal', 'error', 'warn', 'info', 'debug', 'trace']).default('info'),
   GEMINI_API_KEY: z.string().optional(),
-  ALLOW_DEV_AUTH: z.coerce.boolean().default(true),
+  ALLOW_DEV_AUTH: z.string().default('true').transform((v) => v.toLowerCase() === 'true'),
   APP_TIMEZONE: z.string().default('Asia/Kolkata'),
 });
 

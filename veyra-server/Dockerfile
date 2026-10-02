@@ -1,5 +1,6 @@
 # Stage 1: Build
 FROM node:20-alpine AS builder
+RUN apk add --no-cache openssl
 WORKDIR /app
 COPY package.json package-lock.json* ./
 RUN npm ci
@@ -11,6 +12,7 @@ RUN npm run build
 
 # Stage 2: Production dependencies
 FROM node:20-alpine AS deps
+RUN apk add --no-cache openssl
 WORKDIR /app
 COPY package.json package-lock.json* ./
 RUN npm ci --omit=dev
@@ -19,6 +21,7 @@ RUN npx prisma generate
 
 # Stage 3: Runtime
 FROM node:20-alpine AS runner
+RUN apk add --no-cache openssl
 WORKDIR /app
 RUN addgroup --system --gid 1001 veyra && \
     adduser --system --uid 1001 veyra

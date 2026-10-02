@@ -1,5 +1,5 @@
-/** Challenges persistence layer with Prisma and in-memory development fallback. */
 import { prisma, tryPrisma } from '../../db/prisma.js';
+import { persistentStore } from '../../db/persistentStore.js';
 import type {
   ChallengeDTO,
   ChallengeParticipantDTO,
@@ -70,7 +70,20 @@ export class ChallengesRepository {
           };
         });
       },
-      () => {
+      async () => {
+        const storedChals = (await persistentStore.getChallenges()) as MemChallenge[];
+        for (const sc of storedChals) {
+          if (!memChallenges.some((c) => c.id === sc.id)) {
+            memChallenges.push(sc);
+          }
+        }
+        const storedParts = (await persistentStore.getParticipants()) as MemParticipant[];
+        for (const sp of storedParts) {
+          if (!memParticipants.some((p) => p.id === sp.id)) {
+            memParticipants.push(sp);
+          }
+        }
+
         return memChallenges.map((c) => {
           const parts = memParticipants.filter((p) => p.challengeId === c.id);
           const userPart = userId ? parts.find((p) => p.userId === userId) : null;
@@ -197,9 +210,10 @@ export class ChallengesRepository {
           createdAt: new Date().toISOString(),
         };
         memChallenges.unshift(newChallenge);
+        persistentStore.saveChallenge(newChallenge);
 
         // Creator automatically joins
-        memParticipants.push({
+        const creatorParticipant: MemParticipant = {
           id: `cp-${Date.now()}-${Math.random().toString(36).substring(2, 8)}`,
           challengeId: newChallenge.id,
           userId: creatorId,
@@ -208,7 +222,9 @@ export class ChallengesRepository {
           userLevel: 3,
           progress: 0,
           joinedAt: new Date().toISOString(),
-        });
+        };
+        memParticipants.push(creatorParticipant);
+        persistentStore.saveParticipant(creatorParticipant);
 
         return {
           ...newChallenge,
@@ -351,6 +367,7 @@ export class ChallengesRepository {
           joinedAt: new Date().toISOString(),
         };
         memParticipants.push(newParticipant);
+        persistentStore.saveParticipant(newParticipant);
 
         return {
           id: newParticipant.id,
@@ -427,6 +444,7 @@ export class ChallengesRepository {
         if (!p) return null;
 
         p.progress = newProgress;
+        persistentStore.updateParticipantProgress(p.id, newProgress);
         const targetValue = challenge.targetValue;
         return {
           id: p.id,

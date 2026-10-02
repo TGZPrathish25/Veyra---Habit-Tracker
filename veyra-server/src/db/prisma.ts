@@ -3,7 +3,8 @@ import { PrismaClient } from '@prisma/client';
 
 export const prisma = new PrismaClient();
 
-let dbAvailable: boolean | null = null;
+let dbAvailable: boolean | null =
+  process.env.NODE_ENV === 'test' && !process.env.TEST_WITH_POSTGRES ? false : null;
 
 export async function tryPrisma<T>(op: () => Promise<T>, fallback: () => T | Promise<T>): Promise<T> {
   if (dbAvailable === false) {

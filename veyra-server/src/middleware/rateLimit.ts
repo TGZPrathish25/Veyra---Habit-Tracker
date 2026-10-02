@@ -5,7 +5,7 @@ const isDev = env.NODE_ENV === 'development';
 
 export const defaultRateLimit = rateLimit({
   windowMs: 15 * 60 * 1000, // 15 minutes
-  max: isDev ? 100000 : 100,
+  max: isDev ? 100000 : 600,
   standardHeaders: true,
   legacyHeaders: false,
   skip: (req) =>

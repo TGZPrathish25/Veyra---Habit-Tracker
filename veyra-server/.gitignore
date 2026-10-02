@@ -27,3 +27,6 @@ prisma/migrations/**/migration_lock.toml
 
 # Coverage
 coverage/
+
+# Local Data Store
+data/

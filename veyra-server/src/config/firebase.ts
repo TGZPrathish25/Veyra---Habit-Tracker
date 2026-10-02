@@ -37,6 +37,7 @@ export function initFirebase(): void {
 }
 
 export function getFirestoreAdmin(): admin.firestore.Firestore | null {
+  if (process.env.NODE_ENV === 'test' && !process.env.TEST_WITH_FIRESTORE) return null;
   if (!initialized) {
     initFirebase();
   }
