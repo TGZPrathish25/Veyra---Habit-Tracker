@@ -6,10 +6,13 @@ CREATE TABLE "users" (
     "id" TEXT NOT NULL,
     "firebase_uid" TEXT NOT NULL,
     "email" TEXT NOT NULL,
+    "name" TEXT,
     "username" TEXT,
     "display_name" TEXT,
     "avatar_url" TEXT,
     "timezone" TEXT NOT NULL DEFAULT 'UTC',
+    "xp" INTEGER NOT NULL DEFAULT 0,
+    "level" INTEGER NOT NULL DEFAULT 1,
     "created_at" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
     "updated_at" TIMESTAMP(3) NOT NULL,
 
@@ -20,11 +23,13 @@ CREATE TABLE "users" (
 CREATE TABLE "user_settings" (
     "id" TEXT NOT NULL,
     "user_id" TEXT NOT NULL,
-    "theme" TEXT NOT NULL DEFAULT 'system',
-    "default_privacy_level" TEXT NOT NULL DEFAULT 'friends',
-    "email_notifications" BOOLEAN NOT NULL DEFAULT true,
-    "push_notifications" BOOLEAN NOT NULL DEFAULT true,
-    "week_start_day" INTEGER NOT NULL DEFAULT 0,
+    "theme" TEXT NOT NULL DEFAULT 'dark',
+    "friend_visibility_level" INTEGER NOT NULL DEFAULT 2,
+    "leaderboard_opt_in" BOOLEAN NOT NULL DEFAULT true,
+    "deadline_alert_prefs" JSONB,
+    "notification_prefs" JSONB,
+    "challenge_prefs" JSONB,
+    "week_start_day" INTEGER NOT NULL DEFAULT 1,
 
     CONSTRAINT "user_settings_pkey" PRIMARY KEY ("id")
 );
