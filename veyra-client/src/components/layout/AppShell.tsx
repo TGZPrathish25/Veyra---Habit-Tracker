@@ -1,8 +1,8 @@
-/** AppShell — responsive layout with desktop sidebar, mobile bottom nav, accessibility landmarks, and global alerts. */
-import React from 'react';
+import React, { useState } from 'react';
 import { Sidebar } from './Sidebar';
 import { TopBar } from './TopBar';
 import { MobileBottomNav } from './MobileBottomNav';
+import { MobileNavDrawer } from './MobileNavDrawer';
 import { DeadlinePopup } from '@/features/dashboard/components/DeadlinePopup';
 import { InstallAppPrompt } from '@/components/pwa/InstallAppPrompt';
 
@@ -11,6 +11,8 @@ interface AppShellProps {
 }
 
 export const AppShell: React.FC<AppShellProps> = ({ children }) => {
+  const [isMobileNavOpen, setIsMobileNavOpen] = useState(false);
+
   return (
     <div className="min-h-screen" style={{ background: 'var(--color-bg)' }}>
       {/* WCAG 2.1 AA Skip Navigation Link */}
@@ -21,12 +23,12 @@ export const AppShell: React.FC<AppShellProps> = ({ children }) => {
         Skip to main content
       </a>
 
-      {/* Desktop Persistent Sidebar */}
+      {/* Desktop Persistent Sidebar (Unchanged, only visible on lg+) */}
       <Sidebar />
 
       <div className="lg:ml-[var(--sidebar-width)] transition-[margin] duration-300 min-h-screen flex flex-col">
-        {/* Responsive Header TopBar */}
-        <TopBar />
+        {/* Responsive Header TopBar with Mobile Hamburger Trigger */}
+        <TopBar onOpenMobileNav={() => setIsMobileNavOpen(true)} />
 
         {/* Main Accessible Content Landmark */}
         <main
@@ -39,8 +41,14 @@ export const AppShell: React.FC<AppShellProps> = ({ children }) => {
         </main>
       </div>
 
-      {/* Mobile Fixed Glass BottomNav */}
-      <MobileBottomNav />
+      {/* Mobile Fixed Glass BottomNav with More Trigger */}
+      <MobileBottomNav onOpenMobileNav={() => setIsMobileNavOpen(true)} />
+
+      {/* Mobile Left Section Slide-Out Navigation Bar */}
+      <MobileNavDrawer
+        isOpen={isMobileNavOpen}
+        onClose={() => setIsMobileNavOpen(false)}
+      />
 
       {/* Global Proactive Deadline Alerts */}
       <DeadlinePopup />

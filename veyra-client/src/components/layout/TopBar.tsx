@@ -1,13 +1,17 @@
 /** TopBar — responsive app header with notification bell, streak badge, and user drawer. */
 import React, { useState } from 'react';
 import { Link } from 'react-router-dom';
-import { Bell, Flame, User as UserIcon } from 'lucide-react';
+import { Bell, Flame, User as UserIcon, Menu } from 'lucide-react';
 import { useAuth } from '@/features/auth/hooks/useAuth';
 import { useStreaks } from '@/features/gamification';
 import { useNotifications, NotificationDrawer } from '@/features/notifications';
 import { cn } from '@/lib/cn';
 
-export const TopBar: React.FC = () => {
+interface TopBarProps {
+  onOpenMobileNav?: () => void;
+}
+
+export const TopBar: React.FC<TopBarProps> = ({ onOpenMobileNav }) => {
   const { user } = useAuth();
   const { dailyStreak } = useStreaks();
   const { unreadCount } = useNotifications();
@@ -22,8 +26,18 @@ export const TopBar: React.FC = () => {
           borderColor: 'var(--glass-border)',
         }}
       >
-        {/* Left: Mobile Brand / Title */}
+        {/* Left: Mobile Hamburger & Brand / Desktop Welcome Title */}
         <div className="flex items-center gap-2.5">
+          {/* Mobile Left Section Nav Bar Toggle Button */}
+          <button
+            type="button"
+            onClick={onOpenMobileNav}
+            aria-label="Open navigation menu"
+            className="lg:hidden p-2 rounded-xl text-zinc-300 hover:text-white bg-white/5 hover:bg-white/10 border border-white/10 active:scale-95 transition-all flex items-center justify-center"
+          >
+            <Menu size={18} />
+          </button>
+
           <Link to="/dashboard" className="flex items-center gap-2 lg:hidden">
             <div
               className="w-7 h-7 rounded-lg flex items-center justify-center font-bold text-xs text-white shadow-sm"
