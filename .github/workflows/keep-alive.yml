@@ -1,0 +1,23 @@
+name: Keep Backend Alive
+
+on:
+  schedule:
+    # Run every 10 minutes
+    - cron: '*/10 * * * *'
+  workflow_dispatch:
+
+jobs:
+  ping:
+    name: Ping Render Backend
+    runs-on: ubuntu-latest
+    steps:
+      - name: Ping Health Endpoint
+        run: |
+          echo "Pinging Veyra backend on Render..."
+          STATUS=$(curl -s -o /dev/null -w "%{http_code}" --max-time 60 "https://veyra-habit-tracker.onrender.com/ping")
+          echo "HTTP Response Status: $STATUS"
+          if [ "$STATUS" -ge 200 ] && [ "$STATUS" -lt 400 ]; then
+            echo "✅ Backend is healthy and awake!"
+          else
+            echo "⚠️ Unexpected status code: $STATUS (Container might still be waking up)"
+          fi
