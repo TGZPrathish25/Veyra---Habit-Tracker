@@ -246,8 +246,9 @@
 
 | Component | Target URL / Status |
 |---|---|
-| **Production Web App (Hosted)** | [https://veyra-25p10s.web.app](https://veyra-25p10s.web.app) |
-| **Alternative Firebase Domain** | [https://veyra-25p10s.firebaseapp.com](https://veyra-25p10s.firebaseapp.com) |
+| **Production Web App (Vercel)** | [https://veyra-habit-tracker.vercel.app](https://veyra-habit-tracker.vercel.app) |
+| **Production Backend API (Render)** | [https://veyra-habit-tracker.onrender.com](https://veyra-habit-tracker.onrender.com) |
+| **Alternative Firebase Domain** | [https://veyra-25p10s.web.app](https://veyra-25p10s.web.app) |
 | **Cloud Firestore Database** | Live & Default DB on project `veyra-25p10s` |
 | **Local Development Web App** | `http://localhost:5173` |
 | **Local Development API** | `http://localhost:3001` |

@@ -42,7 +42,7 @@
 |----------|----------|---------|-------------|
 | `DATABASE_URL` | ✅ | `postgresql://...` | PostgreSQL connection string |
 | `FIREBASE_SERVICE_ACCOUNT` | ✅ | `eyJ0eX...` (base64) | Firebase service account JSON (base64-encoded) |
-| `CLIENT_ORIGIN` | ✅ | `https://veyra.app` | Frontend URL for CORS |
+| `CLIENT_ORIGIN` | ✅ | `https://veyra-habit-tracker.vercel.app` | Frontend URL for CORS |
 | `PORT` | ❌ | `3001` | Server port (default: 3001) |
 | `NODE_ENV` | ❌ | `production` | Environment (default: development) |
 | `LOG_LEVEL` | ❌ | `info` | Pino log level (default: info) |
@@ -53,7 +53,7 @@
 2. Set root directory to `veyra-server`
 3. Build command: `npm ci && npm run build && npx prisma migrate deploy`
 4. Start command: `npm start`
-5. Add all environment variables
+5. Add all environment variables (Backend URL: `https://veyra-habit-tracker.onrender.com`)
 
 ### Option B: Railway
 1. Connect GitHub repo
@@ -65,7 +65,7 @@
 ```bash
 cd veyra-server
 fly launch          # Creates fly.toml
-fly secrets set DATABASE_URL="..." FIREBASE_SERVICE_ACCOUNT="..." CLIENT_ORIGIN="..."
+fly secrets set DATABASE_URL="..." FIREBASE_SERVICE_ACCOUNT="..." CLIENT_ORIGIN="https://veyra-habit-tracker.vercel.app"
 fly deploy
 ```
 
@@ -78,8 +78,8 @@ Migrations run automatically via `prisma migrate deploy` in the Dockerfile or bu
 
 | Variable | Required | Example | Description |
 |----------|----------|---------|-------------|
-| `VITE_API_URL` | ✅ | `https://api.veyra.app` | Backend REST API URL |
-| `VITE_SOCKET_URL` | ✅ | `https://api.veyra.app` | Backend Socket.IO URL |
+| `VITE_API_URL` | ✅ | `https://veyra-habit-tracker.onrender.com` | Backend REST API URL |
+| `VITE_SOCKET_URL` | ✅ | `https://veyra-habit-tracker.onrender.com` | Backend Socket.IO URL |
 | `VITE_FIREBASE_API_KEY` | ✅ | `AIza...` | Firebase Web API key |
 | `VITE_FIREBASE_AUTH_DOMAIN` | ✅ | `veyra.firebaseapp.com` | Firebase auth domain |
 | `VITE_FIREBASE_PROJECT_ID` | ✅ | `veyra-prod` | Firebase project ID |

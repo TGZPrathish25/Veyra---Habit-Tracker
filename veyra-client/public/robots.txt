@@ -1,3 +1,4 @@
 User-agent: *
 Allow: /
-Sitemap: https://veyra.app/sitemap.xml
+Sitemap: https://veyra-habit-tracker.vercel.app/sitemap.xml
+

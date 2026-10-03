@@ -20,7 +20,7 @@
 | Social & Challenges | ✅ Complete | 4-tier privacy friends, Challenge sprints, Leaderboard (Phase 4) |
 | Analytics & History | ✅ Complete | Recharts charts, Calendar heatmap, Immutable Snapshots, Archive (Phase 5) |
 | Polish, PWA, Audio & AI | ✅ Complete | Notifications center, Web Audio API, Service Worker, Gemini AI (Phase 6) |
-| Cloud Hosting & Security | ✅ Complete | Firebase Hosting live at https://veyra-25p10s.web.app, Firestore rules (Phase 7) |
+| Cloud Hosting & Security | ✅ Complete | Frontend live at https://veyra-habit-tracker.vercel.app, Backend at https://veyra-habit-tracker.onrender.com |
 | Autonomous Cloud & PWA | ✅ Complete | Autonomous Firestore fallback, DeadlinePopup, Sunday Ritual, PWA prompt (Phase 8) |
 
 ---

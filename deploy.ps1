@@ -42,5 +42,7 @@ npx firebase-tools deploy --only hosting
 
 Write-Host ""
 Write-Host "✨ Deployment Complete! Veyra is live at:" -ForegroundColor Green
-Write-Host "👉 https://veyra-25p10s.web.app" -ForegroundColor Cyan
-Write-Host "👉 https://veyra-25p10s.firebaseapp.com" -ForegroundColor Cyan
+Write-Host "👉 Frontend (Vercel): https://veyra-habit-tracker.vercel.app" -ForegroundColor Cyan
+Write-Host "👉 Backend (Render):  https://veyra-habit-tracker.onrender.com" -ForegroundColor Cyan
+Write-Host "👉 Firebase Mirror:   https://veyra-25p10s.web.app" -ForegroundColor Cyan
+

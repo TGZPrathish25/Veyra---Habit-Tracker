@@ -13,6 +13,11 @@ This repository contains two independent, separately deployable projects:
 
 Each project has its own `package.json`, dependencies, Dockerfile, CI pipeline, and deploy target. There are no shared `node_modules` or npm workspaces.
 
+## Live Deployments
+
+- **Frontend (Vercel)**: [https://veyra-habit-tracker.vercel.app](https://veyra-habit-tracker.vercel.app)
+- **Backend (Render)**: [https://veyra-habit-tracker.onrender.com](https://veyra-habit-tracker.onrender.com)
+
 ## Quick Start
 
 ### Prerequisites

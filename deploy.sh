@@ -24,5 +24,7 @@ npx firebase-tools deploy --only hosting
 
 echo ""
 echo "✨ Deployment Complete! Veyra is live at:"
-echo "👉 https://veyra-25p10s.web.app"
-echo "👉 https://veyra-25p10s.firebaseapp.com"
+echo "👉 Frontend (Vercel): https://veyra-habit-tracker.vercel.app"
+echo "👉 Backend (Render):  https://veyra-habit-tracker.onrender.com"
+echo "👉 Firebase Mirror:   https://veyra-25p10s.web.app"
+

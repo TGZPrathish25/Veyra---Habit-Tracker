@@ -7,9 +7,10 @@ import { logger } from '../config/logger.js';
 let io: Server;
 
 export function setupSocketIO(httpServer: HttpServer): Server {
+  const allowedOrigins = env.CLIENT_ORIGIN.split(',').map((o) => o.trim());
   io = new Server(httpServer, {
     cors: {
-      origin: env.CLIENT_ORIGIN,
+      origin: allowedOrigins.length === 1 ? allowedOrigins[0] : allowedOrigins,
       credentials: true,
     },
     // EXTENSION POINT: Redis adapter for multi-instance scaling
