@@ -2,8 +2,9 @@
 import React, { useState } from 'react';
 import { GlassButton } from '@/components/glass/GlassButton';
 import { GlassInput } from '@/components/glass/GlassInput';
-import { X, Sparkles, Clock, AlertCircle, ChevronDown, ChevronUp } from 'lucide-react';
+import { X, Sparkles, AlertCircle } from 'lucide-react';
 import type { CreateTaskPayload } from '../types';
+import { DailyTimeSelector } from './DailyTimeSelector';
 
 interface CreateTaskModalProps {
   isOpen: boolean;
@@ -20,14 +21,6 @@ const DAYS = [
   { label: 'Thu', value: 4 },
   { label: 'Fri', value: 5 },
   { label: 'Sat', value: 6 },
-];
-
-const PRESET_TIMES = [
-  { label: 'Morning (09:00)', time: '09:00' },
-  { label: 'Noon (12:00)', time: '12:00' },
-  { label: 'Evening (18:00)', time: '18:00' },
-  { label: 'Night (21:00)', time: '21:00' },
-  { label: 'Midnight (23:59)', time: '23:59' },
 ];
 
 export const CreateTaskModal: React.FC<CreateTaskModalProps> = ({ isOpen, onClose, onSubmit }) => {
@@ -51,13 +44,6 @@ export const CreateTaskModal: React.FC<CreateTaskModalProps> = ({ isOpen, onClos
     } else {
       setSelectedDays([...selectedDays, day].sort());
     }
-  };
-
-  const handleDayTimeChange = (dayVal: number, timeVal: string) => {
-    setDayDueTimes((prev) => ({
-      ...prev,
-      [dayVal]: timeVal,
-    }));
   };
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -208,104 +194,18 @@ export const CreateTaskModal: React.FC<CreateTaskModalProps> = ({ isOpen, onClos
             </div>
           </div>
 
-          {/* Daily End Time Adder Section */}
-          <div className="p-4 rounded-xl bg-white/5 border border-white/10 space-y-3">
-            <div className="flex items-center justify-between">
-              <div className="flex items-center gap-2">
-                <Clock size={16} className="text-blue-400" />
-                <span className="text-fluid-sm font-semibold text-white">Daily End Time / Deadline</span>
-              </div>
-              <label className="relative inline-flex items-center cursor-pointer">
-                <input
-                  type="checkbox"
-                  checked={hasEndTime}
-                  onChange={(e) => setHasEndTime(e.target.checked)}
-                  className="sr-only peer"
-                />
-                <div className="w-9 h-5 bg-zinc-700 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-4 after:w-4 after:transition-all peer-checked:bg-blue-600"></div>
-              </label>
-            </div>
-
-            {hasEndTime ? (
-              <div className="space-y-3 pt-1">
-                <div className="flex flex-col sm:flex-row sm:items-center gap-2">
-                  <div className="flex-1">
-                    <label className="block text-[11px] text-zinc-400 mb-1">
-                      {customizePerDay ? 'Default End Time' : 'Complete daily before:'}
-                    </label>
-                    <input
-                      type="time"
-                      value={dueTime}
-                      onChange={(e) => setDueTime(e.target.value)}
-                      className="glass-input w-full p-2 rounded-xl text-fluid-sm font-mono text-white bg-black/30 border border-white/20 focus:border-blue-500 focus:outline-none"
-                    />
-                  </div>
-
-                  <div className="flex flex-wrap gap-1.5 pt-4 sm:pt-0">
-                    {PRESET_TIMES.map((preset) => (
-                      <button
-                        type="button"
-                        key={preset.time}
-                        onClick={() => setDueTime(preset.time)}
-                        className={`px-2 py-1 rounded-lg text-[11px] font-medium transition-colors ${
-                          dueTime === preset.time
-                            ? 'bg-blue-600 text-white font-semibold'
-                            : 'bg-white/5 hover:bg-white/10 text-zinc-300 border border-white/5'
-                        }`}
-                      >
-                        {preset.time}
-                      </button>
-                    ))}
-                  </div>
-                </div>
-
-                {/* Per-Day Customization Toggle */}
-                <div className="pt-1 border-t border-white/5">
-                  <button
-                    type="button"
-                    onClick={() => setCustomizePerDay(!customizePerDay)}
-                    className="flex items-center gap-1.5 text-fluid-xs text-blue-400 hover:text-blue-300 font-medium py-1 transition-colors"
-                  >
-                    <span>{customizePerDay ? 'Hide per-day end times' : 'Customize end time for each day'}</span>
-                    {customizePerDay ? <ChevronUp size={14} /> : <ChevronDown size={14} />}
-                  </button>
-
-                  {customizePerDay && (
-                    <div className="mt-2 space-y-2 p-2.5 rounded-lg bg-black/20 border border-white/5 animate-fade-in">
-                      <p className="text-[11px] text-zinc-400 mb-2">
-                        Specify individual deadlines for days when your schedule differs:
-                      </p>
-                      <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
-                        {DAYS.filter((d) => selectedDays.includes(d.value)).map((d) => (
-                          <div key={d.value} className="flex items-center justify-between gap-2 p-1.5 rounded-lg bg-white/5 border border-white/5">
-                            <span className="text-xs font-semibold text-white w-8">{d.label}</span>
-                            <input
-                              type="time"
-                              value={dayDueTimes[d.value] || dueTime}
-                              onChange={(e) => handleDayTimeChange(d.value, e.target.value)}
-                              className="glass-input p-1 rounded-md text-xs font-mono text-white bg-black/40 border border-white/10 focus:border-blue-500 w-28 text-center"
-                            />
-                          </div>
-                        ))}
-                      </div>
-                    </div>
-                  )}
-                </div>
-
-                {/* Deadline rule explanation */}
-                <div className="p-2.5 rounded-lg bg-blue-500/10 border border-blue-500/20 text-[11px] text-blue-200/90 leading-relaxed flex items-start gap-2">
-                  <AlertCircle size={14} className="text-blue-400 shrink-0 mt-0.5" />
-                  <span>
-                    <strong>Deadline Rule:</strong> Must be marked done before this time each day. If not completed within the time, it will automatically be marked as <strong>Not Done / Missed</strong> for that day.
-                  </span>
-                </div>
-              </div>
-            ) : (
-              <p className="text-fluid-xs text-zinc-400">
-                No strict deadline set. Habit can be completed at any point before midnight.
-              </p>
-            )}
-          </div>
+          {/* Attractive Daily Time Selector */}
+          <DailyTimeSelector
+            hasEndTime={hasEndTime}
+            onToggleHasEndTime={setHasEndTime}
+            dueTime={dueTime}
+            onDueTimeChange={setDueTime}
+            selectedDays={selectedDays}
+            customizePerDay={customizePerDay}
+            onToggleCustomizePerDay={setCustomizePerDay}
+            dayDueTimes={dayDueTimes}
+            onDayDueTimesChange={setDayDueTimes}
+          />
 
           <div className="flex items-center justify-end gap-2 pt-2">
             <button
