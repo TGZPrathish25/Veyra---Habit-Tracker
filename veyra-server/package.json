@@ -9,7 +9,7 @@
   },
   "scripts": {
     "dev": "tsx watch src/server.ts",
-    "build": "tsc -p tsconfig.build.json",
+    "build": "prisma generate && tsc -p tsconfig.build.json",
     "start": "node dist/server.js",
     "lint": "eslint src/ tests/",
     "typecheck": "tsc --noEmit",
@@ -21,11 +21,14 @@
     "db:deploy": "prisma migrate deploy",
     "db:seed": "tsx prisma/seed.ts",
     "db:studio": "prisma studio",
-    "db:generate": "prisma generate",
-    "postinstall": "prisma generate"
+    "db:generate": "prisma generate"
   },
   "dependencies": {
     "@prisma/client": "^6.0.0",
+    "@types/cors": "^2.8.17",
+    "@types/express": "^5.0.0",
+    "@types/node": "^20.17.0",
+    "@types/node-cron": "^3.0.11",
     "cors": "^2.8.5",
     "dotenv": "^18.0.5",
     "express": "^4.21.0",
@@ -37,22 +40,19 @@
     "pino-pretty": "^11.3.0",
     "prisma": "^6.0.0",
     "socket.io": "^4.8.0",
+    "typescript": "^5.6.0",
     "zod": "^3.23.0"
   },
   "devDependencies": {
     "@eslint/js": "^9.12.0",
-    "@types/cors": "^2.8.17",
-    "@types/express": "^5.0.0",
-    "@types/node": "^20.17.0",
-    "@types/node-cron": "^3.0.11",
     "@types/supertest": "^6.0.2",
     "eslint": "^9.12.0",
     "globals": "^15.10.0",
     "prettier": "^3.3.0",
     "supertest": "^7.0.0",
     "tsx": "^4.19.0",
-    "typescript": "^5.6.0",
     "typescript-eslint": "^8.8.0",
     "vitest": "^2.1.0"
   }
 }
+

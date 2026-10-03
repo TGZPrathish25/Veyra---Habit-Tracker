@@ -3,7 +3,8 @@
   "compilerOptions": {
     "declaration": false,
     "declarationMap": false,
-    "sourceMap": false
+    "sourceMap": false,
+    "types": ["node"]
   },
   "exclude": ["node_modules", "dist", "tests", "**/*.test.ts", "vitest.config.ts"]
 }
