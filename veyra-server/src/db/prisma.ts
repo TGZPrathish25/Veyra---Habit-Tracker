@@ -40,13 +40,18 @@ export async function tryPrisma<T>(op: () => Promise<T>, fallback: () => T | Pro
 export async function ensureDatabaseSchema(): Promise<void> {
   if (dbAvailable === false) return;
   try {
-    await prisma.$executeRawUnsafe(`
-      ALTER TABLE "tasks" ADD COLUMN IF NOT EXISTS "due_time" TEXT;
-      ALTER TABLE "tasks" ADD COLUMN IF NOT EXISTS "day_due_times" JSONB;
-      CREATE INDEX IF NOT EXISTS "tasks_user_id_is_active_idx" ON "tasks"("user_id", "is_active");
-      CREATE INDEX IF NOT EXISTS "task_occurrences_user_id_date_idx" ON "task_occurrences"("user_id", "date");
-      CREATE INDEX IF NOT EXISTS "notifications_user_id_read_idx" ON "notifications"("user_id", "read");
-    `);
+    const statements = [
+      'ALTER TABLE "tasks" ADD COLUMN IF NOT EXISTS "due_time" TEXT',
+      'ALTER TABLE "tasks" ADD COLUMN IF NOT EXISTS "day_due_times" JSONB',
+      'CREATE INDEX IF NOT EXISTS "tasks_user_id_is_active_idx" ON "tasks"("user_id", "is_active")',
+      'CREATE INDEX IF NOT EXISTS "task_occurrences_user_id_date_idx" ON "task_occurrences"("user_id", "date")',
+      'CREATE INDEX IF NOT EXISTS "notifications_user_id_read_idx" ON "notifications"("user_id", "read")',
+    ];
+
+    for (const sql of statements) {
+      await prisma.$executeRawUnsafe(sql);
+    }
+
     dbAvailable = true;
     console.info('✅ PostgreSQL schema verified & columns (due_time, day_due_times) synchronized');
   } catch (error: unknown) {
