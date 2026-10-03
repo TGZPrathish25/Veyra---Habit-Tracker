@@ -3,7 +3,7 @@
  * Features atmospheric time-of-day cards, LED digital tuner, quick stepping,
  * per-day schedule matrix, and gamified deadline impact preview.
  */
-import React, { useState, useMemo } from 'react';
+import React, { useState, useMemo, useCallback } from 'react';
 import {
   Clock,
   Sunrise,
@@ -181,37 +181,49 @@ export const DailyTimeSelector: React.FC<DailyTimeSelectorProps> = ({
     };
   }, [dueTime]);
 
-  const updateHour = (delta: number) => {
-    let nextH = (hour24 + delta) % 24;
-    if (nextH < 0) nextH += 24;
-    onDueTimeChange(`${String(nextH).padStart(2, '0')}:${String(minute).padStart(2, '0')}`);
-  };
+  const updateHour = useCallback(
+    (delta: number) => {
+      let nextH = (hour24 + delta) % 24;
+      if (nextH < 0) nextH += 24;
+      onDueTimeChange(`${String(nextH).padStart(2, '0')}:${String(minute).padStart(2, '0')}`);
+    },
+    [hour24, minute, onDueTimeChange]
+  );
 
-  const updateMinute = (delta: number) => {
-    let nextTotal = hour24 * 60 + minute + delta;
-    nextTotal = ((nextTotal % 1440) + 1440) % 1440;
-    const nextH = Math.floor(nextTotal / 60);
-    const nextM = nextTotal % 60;
-    onDueTimeChange(`${String(nextH).padStart(2, '0')}:${String(nextM).padStart(2, '0')}`);
-  };
+  const updateMinute = useCallback(
+    (delta: number) => {
+      let nextTotal = hour24 * 60 + minute + delta;
+      nextTotal = ((nextTotal % 1440) + 1440) % 1440;
+      const nextH = Math.floor(nextTotal / 60);
+      const nextM = nextTotal % 60;
+      onDueTimeChange(`${String(nextH).padStart(2, '0')}:${String(nextM).padStart(2, '0')}`);
+    },
+    [hour24, minute, onDueTimeChange]
+  );
 
-  const togglePeriod = () => {
+  const togglePeriod = useCallback(() => {
     const newH = (hour24 + 12) % 24;
     onDueTimeChange(`${String(newH).padStart(2, '0')}:${String(minute).padStart(2, '0')}`);
-  };
+  }, [hour24, minute, onDueTimeChange]);
 
-  const handleSetMinute = (targetMinute: number) => {
-    onDueTimeChange(`${String(hour24).padStart(2, '0')}:${String(targetMinute).padStart(2, '0')}`);
-  };
+  const handleSetMinute = useCallback(
+    (targetMinute: number) => {
+      onDueTimeChange(`${String(hour24).padStart(2, '0')}:${String(targetMinute).padStart(2, '0')}`);
+    },
+    [hour24, onDueTimeChange]
+  );
 
-  const handleDayTimeChange = (dayVal: number, timeVal: string) => {
-    onDayDueTimesChange({
-      ...dayDueTimes,
-      [dayVal]: timeVal,
-    });
-  };
+  const handleDayTimeChange = useCallback(
+    (dayVal: number, timeVal: string) => {
+      onDayDueTimesChange({
+        ...dayDueTimes,
+        [dayVal]: timeVal,
+      });
+    },
+    [dayDueTimes, onDayDueTimesChange]
+  );
 
-  const applyToAllDays = () => {
+  const applyToAllDays = useCallback(() => {
     const updated: Record<number, string> = {};
     for (const d of selectedDays) {
       updated[d] = dueTime;
@@ -219,23 +231,26 @@ export const DailyTimeSelector: React.FC<DailyTimeSelectorProps> = ({
     onDayDueTimesChange(updated);
     setCopyFeedback('Applied to all days');
     setTimeout(() => setCopyFeedback(null), 2000);
-  };
+  }, [selectedDays, dueTime, onDayDueTimesChange]);
 
-  const applyWeekdayWeekendPreset = (weekdayTime: string, weekendTime: string) => {
-    const updated: Record<number, string> = {};
-    for (const d of selectedDays) {
-      if (d === 0 || d === 6) {
-        updated[d] = weekendTime;
-      } else {
-        updated[d] = weekdayTime;
+  const applyWeekdayWeekendPreset = useCallback(
+    (weekdayTime: string, weekendTime: string) => {
+      const updated: Record<number, string> = {};
+      for (const d of selectedDays) {
+        if (d === 0 || d === 6) {
+          updated[d] = weekendTime;
+        } else {
+          updated[d] = weekdayTime;
+        }
       }
-    }
-    onDayDueTimesChange(updated);
-    setCopyFeedback('Split weekdays & weekends');
-    setTimeout(() => setCopyFeedback(null), 2000);
-  };
+      onDayDueTimesChange(updated);
+      setCopyFeedback('Split weekdays & weekends');
+      setTimeout(() => setCopyFeedback(null), 2000);
+    },
+    [selectedDays, onDayDueTimesChange]
+  );
 
-  const activePreset = PRESETS.find((p) => p.time === dueTime);
+  const activePreset = useMemo(() => PRESETS.find((p) => p.time === dueTime), [dueTime]);
   const relativeText = useMemo(() => getRelativeRemainingText(dueTime), [dueTime]);
 
   return (

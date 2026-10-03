@@ -1,7 +1,7 @@
-/** Express app: middleware stack, route mounting, error handler. No listen() here. */
 import express from 'express';
 import cors from 'cors';
 import helmet from 'helmet';
+import compression from 'compression';
 import { corsOptions } from './config/cors.js';
 import { requestId } from './middleware/requestId.js';
 import { defaultRateLimit } from './middleware/rateLimit.js';
@@ -12,9 +12,10 @@ import { mountRoutes } from './routes/index.js';
 const app = express();
 app.set('trust proxy', 1);
 
-// Security & parsing
+// Performance & security & parsing
 app.use(helmet());
 app.use(cors(corsOptions));
+app.use(compression());
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 

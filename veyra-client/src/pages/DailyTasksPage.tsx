@@ -1,5 +1,5 @@
 /** Daily tasks management page with date switcher, filters, progress ring, and modal. */
-import React, { useState } from 'react';
+import React, { useState, useMemo, useCallback } from 'react';
 import { AppShell } from '@/components/layout/AppShell';
 import { PageHeader } from '@/components/layout/PageHeader';
 import { GlassButton } from '@/components/glass/GlassButton';
@@ -40,53 +40,63 @@ export const DailyTasksPage: React.FC = () => {
   const isToday = selectedDate === todayStr;
   const isPast = selectedDate < todayStr;
 
-  const handlePrevDay = () => {
-    setSelectedDate(shiftDateString(selectedDate, -1));
-  };
+  const handlePrevDay = useCallback(() => {
+    setSelectedDate((prev) => shiftDateString(prev, -1));
+  }, []);
 
-  const handleNextDay = () => {
-    setSelectedDate(shiftDateString(selectedDate, 1));
-  };
+  const handleNextDay = useCallback(() => {
+    setSelectedDate((prev) => shiftDateString(prev, 1));
+  }, []);
 
-  const handleJumpToToday = () => {
+  const handleJumpToToday = useCallback(() => {
     setSelectedDate(todayStr);
-  };
+  }, [todayStr]);
 
-  const checkIsMissed = (occ: typeof occurrences[0]) => {
-    if (occ.completed) return false;
-    if (occ.isExpired !== undefined) return occ.isExpired;
-    const eff = occ.effectiveDueTime || occ.task?.dueTime;
-    if (!eff) return false;
-    if (selectedDate < todayStr) return true;
-    if (selectedDate === todayStr) {
-      const now = new Date();
-      const currentMin = now.getHours() * 60 + now.getMinutes();
-      const [h, m] = eff.split(':').map(Number);
-      return currentMin > h * 60 + m;
-    }
-    return false;
-  };
+  const checkIsMissed = useCallback(
+    (occ: (typeof occurrences)[0]) => {
+      if (occ.completed) return false;
+      if (occ.isExpired !== undefined) return occ.isExpired;
+      const eff = occ.effectiveDueTime || occ.task?.dueTime;
+      if (!eff) return false;
+      if (selectedDate < todayStr) return true;
+      if (selectedDate === todayStr) {
+        const now = new Date();
+        const currentMin = now.getHours() * 60 + now.getMinutes();
+        const [h, m] = eff.split(':').map(Number);
+        return currentMin > h * 60 + m;
+      }
+      return false;
+    },
+    [selectedDate, todayStr]
+  );
 
-  const missedCount =
-    summary.missedTasks !== undefined
+  const missedCount = useMemo(() => {
+    return summary.missedTasks !== undefined
       ? summary.missedTasks
       : occurrences.filter(checkIsMissed).length;
+  }, [summary.missedTasks, occurrences, checkIsMissed]);
 
-  const pendingCount = occurrences.filter((o) => !o.completed && !checkIsMissed(o)).length;
+  const pendingCount = useMemo(() => {
+    return occurrences.filter((o) => !o.completed && !checkIsMissed(o)).length;
+  }, [occurrences, checkIsMissed]);
 
-  const filteredOccurrences = occurrences.filter((occ) => {
-    const isMissed = checkIsMissed(occ);
-    if (filter === 'pending') return !occ.completed && !isMissed;
-    if (filter === 'completed') return occ.completed;
-    if (filter === 'missed') return isMissed;
-    return true;
-  });
+  const filteredOccurrences = useMemo(() => {
+    return occurrences.filter((occ) => {
+      const isMissed = checkIsMissed(occ);
+      if (filter === 'pending') return !occ.completed && !isMissed;
+      if (filter === 'completed') return occ.completed;
+      if (filter === 'missed') return isMissed;
+      return true;
+    });
+  }, [occurrences, checkIsMissed, filter]);
 
-  const formattedDateTitle = new Date(`${selectedDate}T00:00:00`).toLocaleDateString('en-US', {
-    weekday: 'short',
-    month: 'short',
-    day: 'numeric',
-  });
+  const formattedDateTitle = useMemo(() => {
+    return new Date(`${selectedDate}T00:00:00`).toLocaleDateString('en-US', {
+      weekday: 'short',
+      month: 'short',
+      day: 'numeric',
+    });
+  }, [selectedDate]);
 
   return (
     <AppShell>

@@ -84,6 +84,7 @@ model Task {
   user        User             @relation(fields: [userId], references: [id], onDelete: Cascade)
   occurrences TaskOccurrence[]
 
+  @@index([userId, isActive])
   @@map("tasks")
 }
 
@@ -100,6 +101,7 @@ model TaskOccurrence {
   user User @relation(fields: [userId], references: [id], onDelete: Cascade)
 
   @@unique([taskId, date])
+  @@index([userId, date])
   @@map("task_occurrences")
 }
 
@@ -273,6 +275,7 @@ model Notification {
 
   user User @relation(fields: [userId], references: [id], onDelete: Cascade)
 
+  @@index([userId, read])
   @@map("notifications")
 }
 

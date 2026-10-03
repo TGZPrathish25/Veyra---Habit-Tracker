@@ -11,7 +11,7 @@ interface TaskItemCardProps {
   isReadOnly?: boolean;
 }
 
-export const TaskItemCard: React.FC<TaskItemCardProps> = ({
+export const TaskItemCard: React.FC<TaskItemCardProps> = React.memo(({
   occurrence,
   onToggle,
   onDelete,
@@ -154,5 +154,7 @@ export const TaskItemCard: React.FC<TaskItemCardProps> = ({
       </div>
     </div>
   );
-};
+});
+
+TaskItemCard.displayName = 'TaskItemCard';
 
