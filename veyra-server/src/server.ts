@@ -4,7 +4,7 @@ import { app } from './app.js';
 import { env } from './config/env.js';
 import { initFirebase } from './config/firebase.js';
 import { logger } from './config/logger.js';
-import { prisma } from './db/prisma.js';
+import { prisma, ensureDatabaseSchema } from './db/prisma.js';
 import { setupSocketIO } from './sockets/index.js';
 import { startScheduler } from './jobs/scheduler.js';
 
@@ -14,6 +14,11 @@ const server = createServer(app);
 initFirebase();
 setupSocketIO(server);
 startScheduler();
+
+// Self-heal and synchronize schema columns (due_time, day_due_times, and performance indexes)
+ensureDatabaseSchema().catch((err) => {
+  logger.warn({ err }, 'Schema auto-sync error');
+});
 
 // Start listening
 server.listen(env.PORT, () => {
