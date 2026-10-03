@@ -45,6 +45,8 @@ export interface StoredTask {
   color: string | null;
   isRecurring: boolean;
   daysOfWeek: number[];
+  dueTime?: string | null;
+  dayDueTimes?: Record<string, string> | null;
   isActive: boolean;
   sortOrder: number;
   createdAt: string;

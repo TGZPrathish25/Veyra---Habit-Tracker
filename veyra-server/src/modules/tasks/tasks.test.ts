@@ -139,4 +139,44 @@ describe('Tasks Module', () => {
       tasksService.toggleOccurrence(testUserId, pastOcc.id, true, INDIA_TIMEZONE)
     ).rejects.toThrow(ForbiddenError);
   });
+
+  it('marks task as expired/not done and blocks completion after end time has passed', async () => {
+    // Task with an already passed deadline today (00:00)
+    const taskPassed = await tasksService.createTask(testUserId, {
+      title: 'Early Morning Habit',
+      emoji: '🌅',
+      daysOfWeek: [0, 1, 2, 3, 4, 5, 6],
+      dueTime: '00:00',
+    });
+
+    const todayStr = getIndianTodayDateString();
+    const res = await tasksService.getDailyOccurrences(testUserId, todayStr, INDIA_TIMEZONE);
+    const occPassed = res.occurrences.find((o) => o.taskId === taskPassed.id)!;
+
+    expect(occPassed.effectiveDueTime).toBe('00:00');
+    expect(occPassed.isExpired).toBe(true);
+
+    // Attempting to complete should be rejected because deadline passed
+    await expect(
+      tasksService.toggleOccurrence(testUserId, occPassed.id, true, INDIA_TIMEZONE)
+    ).rejects.toThrow(ForbiddenError);
+
+    // Task with a future deadline (23:59) should allow completion
+    const taskFuture = await tasksService.createTask(testUserId, {
+      title: 'Late Night Reflection',
+      emoji: '🌙',
+      daysOfWeek: [0, 1, 2, 3, 4, 5, 6],
+      dueTime: '23:59',
+    });
+
+    const res2 = await tasksService.getDailyOccurrences(testUserId, todayStr, INDIA_TIMEZONE);
+    const occFuture = res2.occurrences.find((o) => o.taskId === taskFuture.id)!;
+
+    expect(occFuture.effectiveDueTime).toBe('23:59');
+    expect(occFuture.isExpired).toBe(false);
+
+    const toggleRes = await tasksService.toggleOccurrence(testUserId, occFuture.id, true, INDIA_TIMEZONE);
+    expect(toggleRes.occurrence.completed).toBe(true);
+  });
 });
+

@@ -8,6 +8,8 @@ export const createTaskSchema = z.object({
   color: z.string().regex(/^#([A-Fa-f0-9]{6}|[A-Fa-f0-9]{3})$/, 'Must be a valid hex color').nullable().optional(),
   isRecurring: z.boolean().default(true),
   daysOfWeek: z.array(z.number().int().min(0).max(6)).default([0, 1, 2, 3, 4, 5, 6]),
+  dueTime: z.string().regex(/^([01]\d|2[0-3]):([0-5]\d)$/, 'Due time must be HH:mm (24-hour)').nullable().optional(),
+  dayDueTimes: z.record(z.string().regex(/^([01]\d|2[0-3]):([0-5]\d)$/)).nullable().optional(),
   sortOrder: z.number().int().default(0),
 });
 
@@ -18,6 +20,8 @@ export const updateTaskSchema = z.object({
   color: z.string().regex(/^#([A-Fa-f0-9]{6}|[A-Fa-f0-9]{3})$/, 'Must be a valid hex color').nullable().optional(),
   isRecurring: z.boolean().optional(),
   daysOfWeek: z.array(z.number().int().min(0).max(6)).optional(),
+  dueTime: z.string().regex(/^([01]\d|2[0-3]):([0-5]\d)$/, 'Due time must be HH:mm (24-hour)').nullable().optional(),
+  dayDueTimes: z.record(z.string().regex(/^([01]\d|2[0-3]):([0-5]\d)$/)).nullable().optional(),
   isActive: z.boolean().optional(),
   sortOrder: z.number().int().optional(),
 });

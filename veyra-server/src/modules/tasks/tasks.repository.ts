@@ -22,6 +22,8 @@ export class TasksRepository {
         return tasks.map((t) => ({
           ...t,
           daysOfWeek: t.daysOfWeek || [0, 1, 2, 3, 4, 5, 6],
+          dueTime: t.dueTime || null,
+          dayDueTimes: (t.dayDueTimes as Record<string, string>) || null,
         })) as TaskDTO[];
       },
       async () => {
@@ -31,6 +33,8 @@ export class TasksRepository {
           for (const s of stored) {
             const t: TaskDTO = {
               ...s,
+              dueTime: s.dueTime || null,
+              dayDueTimes: s.dayDueTimes || null,
               createdAt: new Date(s.createdAt),
               updatedAt: new Date(s.updatedAt),
             };
@@ -53,6 +57,8 @@ export class TasksRepository {
         return {
           ...t,
           daysOfWeek: t.daysOfWeek || [0, 1, 2, 3, 4, 5, 6],
+          dueTime: t.dueTime || null,
+          dayDueTimes: (t.dayDueTimes as Record<string, string>) || null,
         } as TaskDTO;
       },
       () => {
@@ -73,6 +79,8 @@ export class TasksRepository {
             color: data.color || null,
             isRecurring: data.isRecurring ?? true,
             daysOfWeek: data.daysOfWeek || [0, 1, 2, 3, 4, 5, 6],
+            dueTime: data.dueTime || null,
+            dayDueTimes: (data.dayDueTimes as any) || null,
             sortOrder: data.sortOrder || 0,
             isActive: true,
           },
@@ -80,6 +88,8 @@ export class TasksRepository {
         return {
           ...t,
           daysOfWeek: t.daysOfWeek || [0, 1, 2, 3, 4, 5, 6],
+          dueTime: t.dueTime || null,
+          dayDueTimes: (t.dayDueTimes as Record<string, string>) || null,
         } as TaskDTO;
       },
       async () => {
@@ -94,6 +104,8 @@ export class TasksRepository {
           color: data.color || null,
           isRecurring: data.isRecurring ?? true,
           daysOfWeek: data.daysOfWeek || [0, 1, 2, 3, 4, 5, 6],
+          dueTime: data.dueTime || null,
+          dayDueTimes: data.dayDueTimes || null,
           isActive: true,
           sortOrder: data.sortOrder || 0,
           createdAt: now,
@@ -109,6 +121,8 @@ export class TasksRepository {
           color: newTask.color,
           isRecurring: newTask.isRecurring,
           daysOfWeek: newTask.daysOfWeek,
+          dueTime: newTask.dueTime,
+          dayDueTimes: newTask.dayDueTimes,
           isActive: newTask.isActive,
           sortOrder: newTask.sortOrder,
           createdAt: now.toISOString(),
@@ -127,11 +141,15 @@ export class TasksRepository {
           data: {
             ...data,
             daysOfWeek: data.daysOfWeek ? data.daysOfWeek : undefined,
+            dueTime: data.dueTime !== undefined ? data.dueTime : undefined,
+            dayDueTimes: data.dayDueTimes !== undefined ? (data.dayDueTimes as any) : undefined,
           },
         });
         return {
           ...t,
           daysOfWeek: t.daysOfWeek || [0, 1, 2, 3, 4, 5, 6],
+          dueTime: t.dueTime || null,
+          dayDueTimes: (t.dayDueTimes as Record<string, string>) || null,
         } as TaskDTO;
       },
       async () => {
@@ -146,6 +164,8 @@ export class TasksRepository {
           color: data.color !== undefined ? data.color : existing.color,
           isRecurring: data.isRecurring ?? existing.isRecurring,
           daysOfWeek: data.daysOfWeek ?? existing.daysOfWeek,
+          dueTime: data.dueTime !== undefined ? data.dueTime : existing.dueTime,
+          dayDueTimes: data.dayDueTimes !== undefined ? data.dayDueTimes : existing.dayDueTimes,
           isActive: data.isActive ?? existing.isActive,
           sortOrder: data.sortOrder ?? existing.sortOrder,
           updatedAt: now,
@@ -160,6 +180,8 @@ export class TasksRepository {
           color: updated.color,
           isRecurring: updated.isRecurring,
           daysOfWeek: updated.daysOfWeek,
+          dueTime: updated.dueTime,
+          dayDueTimes: updated.dayDueTimes,
           isActive: updated.isActive,
           sortOrder: updated.sortOrder,
           createdAt: updated.createdAt.toISOString(),
@@ -231,6 +253,8 @@ export class TasksRepository {
             ? {
                 ...o.task,
                 daysOfWeek: o.task.daysOfWeek || [0, 1, 2, 3, 4, 5, 6],
+                dueTime: o.task.dueTime || null,
+                dayDueTimes: (o.task.dayDueTimes as Record<string, string>) || null,
               }
             : undefined,
         })) as TaskOccurrenceDTO[];
@@ -273,6 +297,8 @@ export class TasksRepository {
             ? {
                 ...occ.task,
                 daysOfWeek: occ.task.daysOfWeek || [0, 1, 2, 3, 4, 5, 6],
+                dueTime: occ.task.dueTime || null,
+                dayDueTimes: (occ.task.dayDueTimes as Record<string, string>) || null,
               }
             : undefined,
         } as TaskOccurrenceDTO;
@@ -326,6 +352,8 @@ export class TasksRepository {
               ? {
                   ...occ.task,
                   daysOfWeek: occ.task.daysOfWeek || [0, 1, 2, 3, 4, 5, 6],
+                  dueTime: occ.task.dueTime || null,
+                  dayDueTimes: (occ.task.dayDueTimes as Record<string, string>) || null,
                 }
               : undefined,
           });

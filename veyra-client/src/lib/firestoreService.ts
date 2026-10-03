@@ -45,6 +45,8 @@ export interface FirestoreTask {
   customDays?: number[];
   color?: string;
   icon?: string;
+  dueTime?: string | null;
+  dayDueTimes?: Record<string, string> | null;
   archived?: boolean;
   createdAt?: unknown;
   updatedAt?: unknown;

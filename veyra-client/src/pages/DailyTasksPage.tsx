@@ -25,7 +25,7 @@ export const DailyTasksPage: React.FC = () => {
     return getIndianTodayDateString();
   });
   const [isModalOpen, setIsModalOpen] = useState(false);
-  const [filter, setFilter] = useState<'all' | 'pending' | 'completed'>('all');
+  const [filter, setFilter] = useState<'all' | 'pending' | 'completed' | 'missed'>('all');
 
   const {
     occurrences,
@@ -52,9 +52,33 @@ export const DailyTasksPage: React.FC = () => {
     setSelectedDate(todayStr);
   };
 
+  const checkIsMissed = (occ: typeof occurrences[0]) => {
+    if (occ.completed) return false;
+    if (occ.isExpired !== undefined) return occ.isExpired;
+    const eff = occ.effectiveDueTime || occ.task?.dueTime;
+    if (!eff) return false;
+    if (selectedDate < todayStr) return true;
+    if (selectedDate === todayStr) {
+      const now = new Date();
+      const currentMin = now.getHours() * 60 + now.getMinutes();
+      const [h, m] = eff.split(':').map(Number);
+      return currentMin > h * 60 + m;
+    }
+    return false;
+  };
+
+  const missedCount =
+    summary.missedTasks !== undefined
+      ? summary.missedTasks
+      : occurrences.filter(checkIsMissed).length;
+
+  const pendingCount = occurrences.filter((o) => !o.completed && !checkIsMissed(o)).length;
+
   const filteredOccurrences = occurrences.filter((occ) => {
-    if (filter === 'pending') return !occ.completed;
+    const isMissed = checkIsMissed(occ);
+    if (filter === 'pending') return !occ.completed && !isMissed;
     if (filter === 'completed') return occ.completed;
+    if (filter === 'missed') return isMissed;
     return true;
   });
 
@@ -140,9 +164,18 @@ export const DailyTasksPage: React.FC = () => {
               )}
             </div>
           </div>
-          <div className="text-fluid-sm text-zinc-300">
-            <span className="font-semibold text-white">{summary.completedTasks}</span> of{' '}
-            <span className="font-semibold text-white">{summary.totalTasks}</span> habits checked
+          <div className="text-fluid-sm text-zinc-300 flex items-center gap-2">
+            <span>
+              <span className="font-semibold text-white">{summary.completedTasks}</span> done
+            </span>
+            {missedCount > 0 && (
+              <span className="text-rose-400">
+                · <span className="font-semibold">{missedCount}</span> missed
+              </span>
+            )}
+            <span>
+              of <span className="font-semibold text-white">{summary.totalTasks}</span> total
+            </span>
           </div>
         </div>
 
@@ -160,7 +193,7 @@ export const DailyTasksPage: React.FC = () => {
 
       {/* Filter Tabs */}
       <div className="flex items-center justify-between mb-4">
-        <div className="flex rounded-xl p-1 bg-white/5 border border-white/10">
+        <div className="flex flex-wrap gap-1 rounded-xl p-1 bg-white/5 border border-white/10">
           <button
             onClick={() => setFilter('all')}
             className={`py-1.5 px-3 rounded-lg text-fluid-xs font-medium transition-all ${
@@ -179,7 +212,7 @@ export const DailyTasksPage: React.FC = () => {
                 : 'text-zinc-400 hover:text-gray-900 dark:hover:text-white'
             }`}
           >
-            Pending ({occurrences.filter((o) => !o.completed).length})
+            Pending ({pendingCount})
           </button>
           <button
             onClick={() => setFilter('completed')}
@@ -189,7 +222,19 @@ export const DailyTasksPage: React.FC = () => {
                 : 'text-zinc-400 hover:text-gray-900 dark:hover:text-white'
             }`}
           >
-            Completed ({occurrences.filter((o) => o.completed).length})
+            Completed ({summary.completedTasks})
+          </button>
+          <button
+            onClick={() => setFilter('missed')}
+            className={`py-1.5 px-3 rounded-lg text-fluid-xs font-medium transition-all ${
+              filter === 'missed'
+                ? 'bg-rose-700/60 text-white shadow-sm'
+                : missedCount > 0
+                ? 'text-rose-400 hover:text-rose-300'
+                : 'text-zinc-400 hover:text-gray-900 dark:hover:text-white'
+            }`}
+          >
+            Missed ({missedCount})
           </button>
         </div>
 

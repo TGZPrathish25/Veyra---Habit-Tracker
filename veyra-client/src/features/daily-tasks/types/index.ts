@@ -9,6 +9,8 @@ export interface Task {
   color: string | null;
   isRecurring: boolean;
   daysOfWeek: number[]; // 0-6 Sun-Sat
+  dueTime?: string | null;
+  dayDueTimes?: Record<string, string> | null;
   isActive: boolean;
   sortOrder: number;
   createdAt: string;
@@ -23,6 +25,8 @@ export interface TaskOccurrence {
   completed: boolean;
   completedAt: string | null;
   xpAwarded: number;
+  effectiveDueTime?: string | null;
+  isExpired?: boolean;
   task?: Task;
 }
 
@@ -32,6 +36,7 @@ export interface DailyOccurrencesResponse {
   summary: {
     totalTasks: number;
     completedTasks: number;
+    missedTasks?: number;
     completionPercentage: number;
     isPastDate: boolean;
     isToday: boolean;
@@ -45,5 +50,8 @@ export interface CreateTaskPayload {
   color?: string | null;
   isRecurring?: boolean;
   daysOfWeek?: number[];
+  dueTime?: string | null;
+  dayDueTimes?: Record<string, string> | null;
   sortOrder?: number;
 }
+

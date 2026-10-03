@@ -114,8 +114,37 @@ export class TasksService {
       return (a.task?.title || '').localeCompare(b.task?.title || '');
     });
 
+    const now = new Date();
+    // Current time in HH:mm in user timezone
+    const nowTimeParts = new Intl.DateTimeFormat('en-GB', {
+      timeZone: userTimezone,
+      hour: '2-digit',
+      minute: '2-digit',
+      hour12: false,
+    }).format(now);
+
+    for (const occ of existingOccurrences) {
+      const day = getDayOfWeek(occ.date);
+      const effectiveDueTime = (occ.task?.dayDueTimes as Record<string, string>)?.[day] || occ.task?.dueTime || null;
+      let isExpired = false;
+
+      if (!occ.completed) {
+        if (occ.date < todayStr) {
+          isExpired = true;
+        } else if (occ.date === todayStr && effectiveDueTime) {
+          if (nowTimeParts > effectiveDueTime) {
+            isExpired = true;
+          }
+        }
+      }
+
+      occ.effectiveDueTime = effectiveDueTime;
+      occ.isExpired = isExpired;
+    }
+
     const totalTasks = existingOccurrences.length;
     const completedTasks = existingOccurrences.filter((o) => o.completed).length;
+    const missedTasks = existingOccurrences.filter((o) => o.isExpired).length;
     const completionPercentage = totalTasks > 0 ? Math.round((completedTasks / totalTasks) * 100) : 0;
     const isPastDate = dateStr < todayStr;
     const isToday = dateStr === todayStr;
@@ -126,6 +155,7 @@ export class TasksService {
       summary: {
         totalTasks,
         completedTasks,
+        missedTasks,
         completionPercentage,
         isPastDate,
         isToday,
@@ -153,6 +183,28 @@ export class TasksService {
     }
 
     const nextCompleted = completedOverride !== undefined ? completedOverride : !occ.completed;
+
+    // If attempting to complete, verify if the daily deadline/end time has passed
+    if (nextCompleted && occ.date === todayStr) {
+      const day = getDayOfWeek(occ.date);
+      const effectiveDueTime = (occ.task?.dayDueTimes as Record<string, string>)?.[day] || occ.task?.dueTime || null;
+      if (effectiveDueTime) {
+        const now = new Date();
+        const nowTimeParts = new Intl.DateTimeFormat('en-GB', {
+          timeZone: userTimezone,
+          hour: '2-digit',
+          minute: '2-digit',
+          hour12: false,
+        }).format(now);
+
+        if (nowTimeParts > effectiveDueTime) {
+          throw new ForbiddenError(
+            `The deadline for this habit has passed for today (due by ${effectiveDueTime}). It is marked as not done.`
+          );
+        }
+      }
+    }
+
     const now = new Date();
     const completedAt = nextCompleted ? now : null;
     const xpAwarded = nextCompleted ? 10 : 0;

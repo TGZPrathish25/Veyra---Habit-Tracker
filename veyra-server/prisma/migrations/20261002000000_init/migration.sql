@@ -44,6 +44,8 @@ CREATE TABLE "tasks" (
     "color" TEXT,
     "is_recurring" BOOLEAN NOT NULL DEFAULT true,
     "days_of_week" INTEGER[],
+    "due_time" TEXT,
+    "day_due_times" JSONB,
     "is_active" BOOLEAN NOT NULL DEFAULT true,
     "sort_order" INTEGER NOT NULL DEFAULT 0,
     "created_at" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,

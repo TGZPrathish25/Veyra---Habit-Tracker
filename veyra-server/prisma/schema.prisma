@@ -74,6 +74,8 @@ model Task {
   color       String?
   isRecurring Boolean  @default(true) @map("is_recurring")
   daysOfWeek  Int[]    @map("days_of_week") // 0-6 Sun-Sat
+  dueTime     String?  @map("due_time") // HH:mm format, e.g. "21:00"
+  dayDueTimes Json?    @map("day_due_times") // Optional per-day overrides, e.g. { "0": "18:00" }
   isActive    Boolean  @default(true) @map("is_active")
   sortOrder   Int      @default(0) @map("sort_order")
   createdAt   DateTime @default(now()) @map("created_at")

@@ -26,12 +26,23 @@ export class DeadlinesService {
 
     const deadlines: TaskDeadlineStatus[] = [];
 
-    // End-of-day default deadline in IST (23:59:59 IST = 18:29:59 UTC)
+    // Task-specific deadline or end-of-day default in IST (23:59:59 IST = 18:29:59 UTC)
     for (const occ of occurrences) {
       if (occ.completed) continue;
 
       const [y, m, d] = occ.date.split('-').map(Number);
-      const dueAt = new Date(Date.UTC(y, m - 1, d, 18, 29, 59));
+      const day = new Date(y, m - 1, d).getDay();
+      const effectiveDueTime = (occ.task?.dayDueTimes as Record<string, string>)?.[day] || occ.task?.dueTime || null;
+
+      let dueAt: Date;
+      if (effectiveDueTime) {
+        const [dueH, dueM] = effectiveDueTime.split(':').map(Number);
+        // Translate IST (UTC+5:30) to UTC
+        dueAt = new Date(Date.UTC(y, m - 1, d, dueH - 5, dueM - 30, 0));
+      } else {
+        dueAt = new Date(Date.UTC(y, m - 1, d, 18, 29, 59));
+      }
+
       const { minutesRemaining, urgency } = calculateUrgency(now, dueAt);
 
       deadlines.push({

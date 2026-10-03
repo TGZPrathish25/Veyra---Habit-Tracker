@@ -30,9 +30,9 @@ export const DeadlinePopup: React.FC = () => {
       for (const occ of occurrences) {
         if (occ.completed || dismissed[occ.id]) continue;
 
-        // Default evening deadline at 21:00 for daily habits
-        const dueMin = 21 * 60;
-        const dueStr = '21:00';
+        const dueStr = occ.effectiveDueTime || occ.task?.dueTime || '21:00';
+        const [dh, dm] = dueStr.split(':').map(Number);
+        const dueMin = (isNaN(dh) ? 21 : dh) * 60 + (isNaN(dm) ? 0 : dm);
         const taskTitle = occ.task?.title || 'Daily Habit';
 
         const diffMin = dueMin - currentTotalMin;

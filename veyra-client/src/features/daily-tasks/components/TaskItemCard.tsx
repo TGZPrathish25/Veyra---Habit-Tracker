@@ -1,7 +1,8 @@
-/** Glassmorphic task occurrence card with animated checkbox and details. */
+/** Glassmorphic task occurrence card with animated checkbox, deadline badges, and missed state. */
 import React from 'react';
-import { Check, Trash2, Calendar, Lock } from 'lucide-react';
+import { Check, Trash2, Calendar, Lock, Clock, AlertCircle, X } from 'lucide-react';
 import type { TaskOccurrence } from '../types';
+import { getIndianTodayDateString } from '@/lib/date';
 
 interface TaskItemCardProps {
   occurrence: TaskOccurrence;
@@ -17,31 +18,75 @@ export const TaskItemCard: React.FC<TaskItemCardProps> = ({
   isReadOnly = false,
 }) => {
   const { completed, task } = occurrence;
+  const effectiveDueTime = occurrence.effectiveDueTime || occurrence.task?.dueTime || null;
+
+  const isMissed = React.useMemo(() => {
+    if (completed) return false;
+    if (occurrence.isExpired !== undefined) return occurrence.isExpired;
+    if (!effectiveDueTime) return false;
+    const todayStr = getIndianTodayDateString();
+    if (occurrence.date < todayStr) return true;
+    if (occurrence.date === todayStr) {
+      const now = new Date();
+      const currentMin = now.getHours() * 60 + now.getMinutes();
+      const [h, m] = effectiveDueTime.split(':').map(Number);
+      return currentMin > h * 60 + m;
+    }
+    return false;
+  }, [completed, occurrence.isExpired, occurrence.date, effectiveDueTime]);
+
+  const isUrgent = React.useMemo(() => {
+    if (completed || isMissed || !effectiveDueTime) return false;
+    const todayStr = getIndianTodayDateString();
+    if (occurrence.date !== todayStr) return false;
+    const now = new Date();
+    const currentMin = now.getHours() * 60 + now.getMinutes();
+    const [h, m] = effectiveDueTime.split(':').map(Number);
+    const diff = h * 60 + m - currentMin;
+    return diff >= 0 && diff <= 60;
+  }, [completed, isMissed, occurrence.date, effectiveDueTime]);
+
+  const cardBorderClass = completed
+    ? 'border-emerald-500/30 bg-emerald-500/5'
+    : isMissed
+    ? 'border-rose-500/30 bg-rose-500/5'
+    : 'border-white/10 hover:border-blue-500/30 hover:bg-white/5';
+
+  const checkboxButtonClass = completed
+    ? 'bg-gradient-to-tr from-emerald-500 to-teal-400 text-white shadow-md shadow-emerald-500/20'
+    : isMissed
+    ? 'border border-rose-500/40 bg-rose-500/10 text-rose-400 cursor-not-allowed'
+    : isReadOnly
+    ? 'border border-white/20 bg-white/5 opacity-50 cursor-not-allowed'
+    : 'border border-white/20 hover:border-blue-500 bg-white/5 active:scale-95';
+
+  const checkboxTitle = isMissed
+    ? `Deadline passed at ${effectiveDueTime}. Marked as not done for today.`
+    : isReadOnly
+    ? 'Historical entries cannot be modified'
+    : completed
+    ? 'Mark incomplete'
+    : 'Mark complete';
 
   return (
-    <div
-      className={`glass p-4 rounded-xl transition-all duration-200 flex items-center justify-between gap-3 border ${
-        completed
-          ? 'border-emerald-500/30 bg-emerald-500/5'
-          : 'border-white/10 hover:border-blue-500/30 hover:bg-white/5'
-      }`}
-    >
+    <div className={`glass p-4 rounded-xl transition-all duration-200 flex items-center justify-between gap-3 border ${cardBorderClass}`}>
       <div className="flex items-center gap-3.5 flex-1 min-w-0">
         {/* Interactive Checkbox */}
         <button
           type="button"
-          onClick={() => !isReadOnly && onToggle(occurrence.id, !completed)}
-          disabled={isReadOnly}
-          className={`w-7 h-7 rounded-lg flex items-center justify-center transition-all shrink-0 ${
-            completed
-              ? 'bg-gradient-to-tr from-emerald-500 to-teal-400 text-white shadow-md shadow-emerald-500/20'
-              : isReadOnly
-              ? 'border border-white/20 bg-white/5 opacity-50 cursor-not-allowed'
-              : 'border border-white/20 hover:border-blue-500 bg-white/5 active:scale-95'
-          }`}
-          title={isReadOnly ? 'Historical entries cannot be modified' : completed ? 'Mark incomplete' : 'Mark complete'}
+          onClick={() => !isReadOnly && !isMissed && onToggle(occurrence.id, !completed)}
+          disabled={isReadOnly || isMissed}
+          className={`w-7 h-7 rounded-lg flex items-center justify-center transition-all shrink-0 ${checkboxButtonClass}`}
+          title={checkboxTitle}
+          aria-label={checkboxTitle}
         >
-          {completed ? <Check size={16} strokeWidth={3} /> : isReadOnly ? <Lock size={12} className="text-zinc-500" /> : null}
+          {completed ? (
+            <Check size={16} strokeWidth={3} />
+          ) : isMissed ? (
+            <X size={14} strokeWidth={2.5} className="text-rose-400" />
+          ) : isReadOnly ? (
+            <Lock size={12} className="text-zinc-500" />
+          ) : null}
         </button>
 
         {/* Task Info */}
@@ -50,7 +95,11 @@ export const TaskItemCard: React.FC<TaskItemCardProps> = ({
             <span className="text-base select-none shrink-0">{task?.emoji || '✨'}</span>
             <span
               className={`text-fluid-sm font-medium truncate ${
-                completed ? 'line-through text-zinc-400' : 'text-white'
+                completed
+                  ? 'line-through text-zinc-400'
+                  : isMissed
+                  ? 'text-rose-200/70'
+                  : 'text-white'
               }`}
             >
               {task?.title || 'Daily Habit'}
@@ -68,6 +117,18 @@ export const TaskItemCard: React.FC<TaskItemCardProps> = ({
         {completed ? (
           <span className="text-[11px] font-semibold px-2 py-0.5 rounded-full bg-emerald-500/20 text-emerald-300 border border-emerald-500/30">
             +10 XP
+          </span>
+        ) : isMissed ? (
+          <span className="text-[11px] font-semibold px-2.5 py-0.5 rounded-full bg-rose-500/20 text-rose-300 border border-rose-500/30 flex items-center gap-1">
+            <AlertCircle size={11} /> Missed {effectiveDueTime ? `(${effectiveDueTime})` : ''}
+          </span>
+        ) : isUrgent ? (
+          <span className="text-[11px] font-semibold px-2.5 py-0.5 rounded-full bg-amber-500/20 text-amber-300 border border-amber-500/30 flex items-center gap-1 animate-pulse">
+            <Clock size={11} /> Due {effectiveDueTime}
+          </span>
+        ) : effectiveDueTime ? (
+          <span className="text-[11px] px-2.5 py-0.5 rounded-full bg-blue-500/10 text-blue-300 border border-blue-500/20 flex items-center gap-1">
+            <Clock size={11} /> Due {effectiveDueTime}
           </span>
         ) : (
           <span className="text-[11px] px-2 py-0.5 rounded-full bg-white/5 text-zinc-400 border border-white/10 hidden sm:inline-flex items-center gap-1">
@@ -94,3 +155,4 @@ export const TaskItemCard: React.FC<TaskItemCardProps> = ({
     </div>
   );
 };
+

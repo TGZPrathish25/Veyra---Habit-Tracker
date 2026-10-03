@@ -9,6 +9,8 @@ export interface TaskDTO {
   color: string | null;
   isRecurring: boolean;
   daysOfWeek: number[]; // 0-6 (0=Sun, 1=Mon... 6=Sat)
+  dueTime: string | null;
+  dayDueTimes: Record<string, string> | null;
   isActive: boolean;
   sortOrder: number;
   createdAt: Date;
@@ -22,6 +24,8 @@ export interface CreateTaskInput {
   color?: string | null;
   isRecurring?: boolean;
   daysOfWeek?: number[];
+  dueTime?: string | null;
+  dayDueTimes?: Record<string, string> | null;
   sortOrder?: number;
 }
 
@@ -32,6 +36,8 @@ export interface UpdateTaskInput {
   color?: string | null;
   isRecurring?: boolean;
   daysOfWeek?: number[];
+  dueTime?: string | null;
+  dayDueTimes?: Record<string, string> | null;
   isActive?: boolean;
   sortOrder?: number;
 }
@@ -44,6 +50,8 @@ export interface TaskOccurrenceDTO {
   completed: boolean;
   completedAt: Date | null;
   xpAwarded: number;
+  effectiveDueTime?: string | null;
+  isExpired?: boolean;
   task?: TaskDTO;
 }
 
@@ -53,6 +61,7 @@ export interface DailyOccurrencesResponse {
   summary: {
     totalTasks: number;
     completedTasks: number;
+    missedTasks: number;
     completionPercentage: number;
     isPastDate: boolean;
     isToday: boolean;
