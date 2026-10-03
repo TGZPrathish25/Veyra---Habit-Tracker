@@ -15,6 +15,7 @@ export interface AuthApiResponse {
   data: {
     user: User;
     settings: UserSettings | null;
+    token?: string;
   };
 }
 

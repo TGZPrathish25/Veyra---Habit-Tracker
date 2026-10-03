@@ -9,11 +9,13 @@ interface AuthStoreState {
   token: string | null;
   isAuthenticated: boolean;
   isLoading: boolean;
+  isInitialized: boolean;
   setAuth: (user: User, settings: UserSettings | null, token: string) => void;
   clearAuth: () => void;
   updateUser: (user: Partial<User>) => void;
   updateSettings: (settings: Partial<UserSettings>) => void;
   setLoading: (loading: boolean) => void;
+  setInitialized: (initialized: boolean) => void;
 }
 
 export const useAuthStore = create<AuthStoreState>()(
@@ -24,6 +26,7 @@ export const useAuthStore = create<AuthStoreState>()(
       token: null,
       isAuthenticated: false,
       isLoading: false,
+      isInitialized: false,
       setAuth: (user, settings, token) =>
         set({
           user,
@@ -31,6 +34,7 @@ export const useAuthStore = create<AuthStoreState>()(
           token,
           isAuthenticated: true,
           isLoading: false,
+          isInitialized: true,
         }),
       clearAuth: () =>
         set({
@@ -39,6 +43,7 @@ export const useAuthStore = create<AuthStoreState>()(
           token: null,
           isAuthenticated: false,
           isLoading: false,
+          isInitialized: true,
         }),
       updateUser: (fields) =>
         set((state) => ({
@@ -57,6 +62,7 @@ export const useAuthStore = create<AuthStoreState>()(
               } as UserSettings),
         })),
       setLoading: (isLoading) => set({ isLoading }),
+      setInitialized: (isInitialized) => set({ isInitialized }),
     }),
     {
       name: 'veyra-auth',

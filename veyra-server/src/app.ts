@@ -2,6 +2,8 @@ import express from 'express';
 import cors from 'cors';
 import helmet from 'helmet';
 import compression from 'compression';
+import cookieParser from 'cookie-parser';
+import { env } from './config/env.js';
 import { corsOptions } from './config/cors.js';
 import { requestId } from './middleware/requestId.js';
 import { defaultRateLimit } from './middleware/rateLimit.js';
@@ -16,6 +18,7 @@ app.set('trust proxy', 1);
 app.use(helmet());
 app.use(cors(corsOptions));
 app.use(compression());
+app.use(cookieParser(env.SESSION_SECRET));
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 

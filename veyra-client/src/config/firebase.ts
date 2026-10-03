@@ -1,6 +1,6 @@
 /** Firebase Web SDK initialization, Auth and Firestore helpers. */
 import { initializeApp, getApps, type FirebaseApp } from 'firebase/app';
-import { getAuth, GoogleAuthProvider, type Auth } from 'firebase/auth';
+import { getAuth, GoogleAuthProvider, setPersistence, browserLocalPersistence, type Auth } from 'firebase/auth';
 import { getFirestore, type Firestore } from 'firebase/firestore';
 import { env } from './env';
 
@@ -27,6 +27,10 @@ if (isFirebaseConfigured()) {
       : getApps()[0];
 
     auth = getAuth(app);
+    // Ensure persistence across browser closures and sessions
+    setPersistence(auth, browserLocalPersistence).catch((err) => {
+      console.warn('Failed to set Firebase auth browser persistence:', err);
+    });
     db = getFirestore(app);
   } catch (error) {
     console.warn('Failed to initialize Firebase Web SDK:', error);

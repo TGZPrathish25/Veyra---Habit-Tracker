@@ -1,3 +1,6 @@
 /** auth feature — public API. */
-// Re-export hooks, types, and components that other features may use
-export {};
+export { useAuth } from './hooks/useAuth';
+export { useAuthInit } from './hooks/useAuthInit';
+export { useAuthStore } from './store/authStore';
+export * from './types';
+

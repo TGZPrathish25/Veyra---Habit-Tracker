@@ -12,6 +12,7 @@ const envSchema = z.object({
   GEMINI_API_KEY: z.string().optional(),
   ALLOW_DEV_AUTH: z.string().default('true').transform((v) => v.toLowerCase() === 'true'),
   APP_TIMEZONE: z.string().default('Asia/Kolkata'),
+  SESSION_SECRET: z.string().default('veyra-secure-session-secret-2025-habit-tracker-key'),
 });
 
 export type Env = z.infer<typeof envSchema>;
