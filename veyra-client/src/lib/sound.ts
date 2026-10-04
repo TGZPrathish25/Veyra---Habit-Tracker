@@ -139,3 +139,30 @@ export function playStreakWhoosh(): void {
   osc.start(now);
   osc.stop(now + 0.31);
 }
+
+/**
+ * Play a gentle, elegant dual-tone chime when a notification pops up.
+ */
+export function playNotificationChime(): void {
+  if (!isSoundEnabled()) return;
+  triggerHaptic([30, 50, 40]);
+
+  const ctx = getAudioContext();
+  if (!ctx) return;
+
+  const now = ctx.currentTime;
+  const osc = ctx.createOscillator();
+  const gain = ctx.createGain();
+
+  osc.type = 'sine';
+  osc.frequency.setValueAtTime(587.33, now); // D5
+  osc.frequency.setValueAtTime(880, now + 0.1); // A5
+  gain.gain.setValueAtTime(0.12, now);
+  gain.gain.exponentialRampToValueAtTime(0.001, now + 0.4);
+
+  osc.connect(gain);
+  gain.connect(ctx.destination);
+
+  osc.start(now);
+  osc.stop(now + 0.41);
+}

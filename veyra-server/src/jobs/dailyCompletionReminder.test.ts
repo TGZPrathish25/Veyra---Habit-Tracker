@@ -1,11 +1,11 @@
-/** Unit tests for the 9:10 PM IST daily habit completion reminder scheduler. */
+/** Unit tests for the 9:30 PM IST daily habit completion reminder scheduler. */
 import { describe, it, expect, beforeAll } from 'vitest';
 import { runDailyCompletionReminder } from './dailyCompletionReminder.job.js';
 import { tasksRepository } from '../modules/tasks/tasks.repository.js';
 import { notificationsRepository } from '../modules/notifications/notifications.repository.js';
 import { persistentStore } from '../db/persistentStore.js';
 
-describe('9:10 PM IST Daily Completion Reminder Job', () => {
+describe('9:30 PM IST Daily Completion Reminder Job', () => {
   const testUserId = 'usr_test_ist_reminder';
   const testDate = '2026-10-04';
 
@@ -59,7 +59,7 @@ describe('9:10 PM IST Daily Completion Reminder Job', () => {
     // Verify created notification content
     const notifs = await notificationsRepository.findUserNotifications(testUserId, false, 5);
     const reminderNotif = notifs.find(
-      (n) => (n.data as any)?.scheduledNotification === 'evening_910pm_ist' && (n.data as any)?.date === testDate
+      (n) => (n.data as any)?.scheduledNotification === 'evening_930pm_ist' && (n.data as any)?.date === testDate
     );
 
     expect(reminderNotif).toBeDefined();
@@ -114,7 +114,7 @@ describe('9:10 PM IST Daily Completion Reminder Job', () => {
 
     const notifs = await notificationsRepository.findUserNotifications(perfectUserId, false, 5);
     const reminderNotif = notifs.find(
-      (n) => (n.data as any)?.scheduledNotification === 'evening_910pm_ist' && (n.data as any)?.date === perfectDate
+      (n) => (n.data as any)?.scheduledNotification === 'evening_930pm_ist' && (n.data as any)?.date === perfectDate
     );
 
     expect(reminderNotif).toBeDefined();

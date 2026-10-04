@@ -7,7 +7,7 @@ import { startDailyCompletionScheduler } from './dailyCompletionReminder.job.js'
 export function startScheduler(): void {
   logger.info('📅 Scheduler started');
 
-  // Daily 9:10 PM IST (Asia/Kolkata) completion reminder
+  // Daily 9:30 PM IST (Asia/Kolkata) completion reminder
   startDailyCompletionScheduler();
 
   // Keep-alive job: pings the public endpoint every 10 minutes in production

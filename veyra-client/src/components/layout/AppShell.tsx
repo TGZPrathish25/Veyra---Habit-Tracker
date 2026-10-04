@@ -4,6 +4,7 @@ import { TopBar } from './TopBar';
 import { MobileBottomNav } from './MobileBottomNav';
 import { MobileNavDrawer } from './MobileNavDrawer';
 import { DeadlinePopup } from '@/features/dashboard/components/DeadlinePopup';
+import { NotificationPopup } from '@/features/notifications/components/NotificationPopup';
 import { InstallAppPrompt } from '@/components/pwa/InstallAppPrompt';
 
 interface AppShellProps {
@@ -52,6 +53,9 @@ export const AppShell: React.FC<AppShellProps> = ({ children }) => {
 
       {/* Global Proactive Deadline Alerts */}
       <DeadlinePopup />
+
+      {/* Global Floating Realtime Notification Toast Popup */}
+      <NotificationPopup />
 
       {/* Progressive Web App Install Prompt Banner */}
       <InstallAppPrompt />
