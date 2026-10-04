@@ -41,15 +41,19 @@ export const LeaderboardPage: React.FC = () => {
   const seenUsernames = new Set<string>();
   const sanitizedEntries: typeof leaderboardEntries = [];
 
+  const BANNED_IDS = ['usr_demo', 'demo', 'mock', 'usr_sarahkim', 'usr_jordanlee', 'usr_alexrivera', 'usr_samtaylor', 'usr_mayachen'];
+  const BANNED_USERNAMES = ['demo', 'friend', 'sarah_k', 'sarahkim', 'jordan_lee', 'jordanlee', 'alex_r', 'alexrivera', 'sam_t', 'samtaylor', 'mayachen'];
+  const BANNED_NAMES = ['demo user', 'friend', 'sarah kim', 'jordan lee', 'alex rivera', 'sam taylor', 'maya chen'];
+
   for (const entry of leaderboardEntries) {
+    const eid = entry.id?.toLowerCase().trim();
+    const euser = entry.username?.toLowerCase().trim();
+    const ename = entry.name?.toLowerCase().trim();
+
     if (
-      entry.id === 'usr_demo' ||
-      entry.id === 'demo' ||
-      entry.id === 'mock' ||
-      entry.username?.toLowerCase() === 'demo' ||
-      entry.username?.toLowerCase() === 'friend' ||
-      entry.name === 'Demo User' ||
-      entry.name === 'Friend'
+      (eid && BANNED_IDS.includes(eid)) ||
+      (euser && BANNED_USERNAMES.includes(euser)) ||
+      (ename && BANNED_NAMES.includes(ename))
     ) {
       continue;
     }

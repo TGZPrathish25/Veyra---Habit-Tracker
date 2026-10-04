@@ -6,8 +6,8 @@ import { tasksRepository } from '../tasks/tasks.repository.js';
 
 describe('Friends Module', () => {
   const userId = 'usr_test_social_main';
-  const friend1 = 'usr_test_friend_1'; // Alex Rivera (detailed)
-  const friend2 = 'usr_test_friend_2'; // Maya Chen (counts)
+  const friend1 = 'usr_test_friend_1'; // Test Friend Alpha (detailed)
+  const friend2 = 'usr_test_friend_2'; // Test Friend Beta (counts)
 
   beforeAll(async () => {
     friendsRepository.seedTestUser({
@@ -22,8 +22,8 @@ describe('Friends Module', () => {
 
     friendsRepository.seedTestUser({
       id: friend1,
-      name: 'Alex Rivera',
-      username: 'arivera',
+      name: 'Test Friend Alpha',
+      username: 'friend_alpha',
       avatarUrl: null,
       level: 4,
       totalXp: 950,
@@ -32,8 +32,8 @@ describe('Friends Module', () => {
 
     friendsRepository.seedTestUser({
       id: friend2,
-      name: 'Maya Chen',
-      username: 'mchen',
+      name: 'Test Friend Beta',
+      username: 'friend_beta',
       avatarUrl: null,
       level: 6,
       totalXp: 1800,

@@ -8,7 +8,7 @@ describe('ChallengeCard', () => {
   const mockChallenge: Challenge = {
     id: 'chal-1',
     creatorId: 'user-1',
-    creatorName: 'Alex Rivera',
+    creatorName: 'Champion Guide',
     title: '30-Day Morning Habit Sprint',
     description: 'Wake up early and complete 3 morning habits',
     type: 'daily_streak',

@@ -12,8 +12,8 @@ describe('FriendCard', () => {
     createdAt: '2026-10-01T10:00:00Z',
     friend: {
       id: 'friend-1',
-      name: 'Maya Chen',
-      username: 'mayachen',
+      name: 'Jamie Vance',
+      username: 'jamievance',
       avatarUrl: null,
       level: 5,
       totalXp: 2100,
@@ -35,8 +35,8 @@ describe('FriendCard', () => {
       />
     );
 
-    expect(screen.getByText('Maya Chen')).toBeInTheDocument();
-    expect(screen.getByText('@mayachen')).toBeInTheDocument();
+    expect(screen.getByText('Jamie Vance')).toBeInTheDocument();
+    expect(screen.getByText('@jamievance')).toBeInTheDocument();
     expect(screen.getByText('Lv. 5')).toBeInTheDocument();
     expect(screen.getByText('14d')).toBeInTheDocument();
     expect(screen.getByText('L3: Detailed')).toBeInTheDocument();

@@ -131,15 +131,29 @@ export const firestoreService = {
         const username = data.username?.toLowerCase().trim();
         const email = data.email?.toLowerCase().trim();
 
-        // Filter out dummy/demo accounts
-        if (
+        const nameLower = (data.name || '').toLowerCase().trim();
+        const BANNED_NAMES = ['sarah kim', 'jordan lee', 'alex rivera', 'sam taylor', 'maya chen'];
+        const BANNED_USERNAMES = ['sarah_k', 'sarahkim', 'jordan_lee', 'jordanlee', 'alex_r', 'alexrivera', 'sam_t', 'samtaylor', 'mayachen', 'demo'];
+        const BANNED_IDS = ['usr_sarahkim', 'usr_jordanlee', 'usr_alexrivera', 'usr_samtaylor', 'usr_mayachen', 'usr_demo', 'demo'];
+
+        // Filter out dummy/demo/banned accounts
+        const isBanned =
+          BANNED_IDS.includes(d.id) ||
+          BANNED_IDS.includes(uid) ||
+          (username && BANNED_USERNAMES.includes(username)) ||
+          BANNED_NAMES.includes(nameLower) ||
           d.id === 'usr_demo' ||
           uid === 'usr_demo' ||
           uid === 'demo' ||
           username === 'demo' ||
           data.name === 'Demo User' ||
-          email?.includes('demo@')
-        ) {
+          email?.includes('demo@');
+
+        if (isBanned) {
+          // Attempt cleanup from Firestore
+          if (db) {
+            deleteDoc(doc(db, 'users', d.id)).catch(() => {});
+          }
           return;
         }
 

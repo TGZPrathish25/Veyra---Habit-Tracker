@@ -11,9 +11,17 @@ interface ApiResponse<T> {
 
 function isDummy(u: { id?: string; username?: string | null; name?: string | null }): boolean {
   if (!u) return true;
-  if (u.id === 'usr_demo' || u.id === 'demo' || u.id === 'mock') return true;
-  if (u.username?.toLowerCase() === 'demo' || u.username?.toLowerCase() === 'friend') return true;
-  if (u.name === 'Demo User' || u.name === 'Friend') return true;
+  const BANNED_IDS = ['usr_demo', 'demo', 'mock', 'usr_sarahkim', 'usr_jordanlee', 'usr_alexrivera', 'usr_samtaylor', 'usr_mayachen'];
+  const BANNED_USERNAMES = ['demo', 'friend', 'sarah_k', 'sarahkim', 'jordan_lee', 'jordanlee', 'alex_r', 'alexrivera', 'sam_t', 'samtaylor', 'mayachen'];
+  const BANNED_NAMES = ['demo user', 'friend', 'sarah kim', 'jordan lee', 'alex rivera', 'sam taylor', 'maya chen'];
+
+  const id = u.id?.toLowerCase().trim();
+  const uname = u.username?.toLowerCase().trim();
+  const name = u.name?.toLowerCase().trim();
+
+  if (id && BANNED_IDS.includes(id)) return true;
+  if (uname && BANNED_USERNAMES.includes(uname)) return true;
+  if (name && BANNED_NAMES.includes(name)) return true;
   return false;
 }
 

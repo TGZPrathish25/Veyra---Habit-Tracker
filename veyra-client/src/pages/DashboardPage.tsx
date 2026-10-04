@@ -15,12 +15,10 @@ import {
 import {
   useAnalytics,
   useHeatmap,
-  CompletionTrendChart,
   WeekdayBreakdownChart,
   CategoryPieChart,
   CalendarHeatmap,
 } from '@/features/analytics';
-import { AiProductivityInsightsCard } from '@/features/ai';
 import {
   Flame,
   Zap,
@@ -31,11 +29,11 @@ import {
   Sparkles,
   CheckCircle2,
   Trophy,
-  TrendingUp,
   BarChart3,
   PieChart as PieIcon,
   Calendar as CalendarIcon,
   Activity,
+  TrendingUp,
 } from 'lucide-react';
 import { cn } from '@/lib/cn';
 
@@ -53,7 +51,6 @@ export const DashboardPage: React.FC = () => {
 
   const [period, setPeriod] = useState<'7d' | '30d' | '90d'>('30d');
   const {
-    trends,
     weekdayBreakdown,
     categoryDistribution,
     averageCompletionRate,
@@ -296,7 +293,7 @@ export const DashboardPage: React.FC = () => {
                 Productivity & Performance Analytics
               </h2>
               <p className="text-fluid-xs text-zinc-400">
-                Visualize completion trends, discover peak performance days, and track habit consistency.
+                Discover peak performance days, category distribution, and track habit consistency.
               </p>
             </div>
           </div>
@@ -382,17 +379,17 @@ export const DashboardPage: React.FC = () => {
           </div>
         </div>
 
-        {/* Charts Row 1: Trend Over Time (2 cols) & Category Distribution (1 col) */}
-        <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 mb-6">
-          <div className="glass p-5 md:p-6 rounded-3xl border border-white/10 lg:col-span-2">
+        {/* Charts Row: Day of Week Performance & Category Distribution */}
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-6">
+          <div className="glass p-5 md:p-6 rounded-3xl border border-white/10">
             <div className="flex items-center justify-between mb-4">
               <div className="flex items-center gap-2">
-                <TrendingUp size={18} className="text-blue-500" />
-                <h3 className="text-fluid-base font-bold text-white">Completion Rate Trend</h3>
+                <BarChart3 size={18} className="text-blue-500" />
+                <h3 className="text-fluid-base font-bold text-white">Day of Week Performance</h3>
               </div>
-              <span className="text-fluid-xs text-zinc-400">Daily trajectory</span>
+              <span className="text-fluid-xs text-zinc-400">Monday — Sunday</span>
             </div>
-            <CompletionTrendChart data={trends} />
+            <WeekdayBreakdownChart data={weekdayBreakdown} />
           </div>
 
           <div className="glass p-5 md:p-6 rounded-3xl border border-white/10">
@@ -406,39 +403,19 @@ export const DashboardPage: React.FC = () => {
           </div>
         </div>
 
-        {/* Charts Row 2: Weekday Breakdown & Calendar Heatmap */}
-        <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-6">
-          <div className="glass p-5 md:p-6 rounded-3xl border border-white/10">
-            <div className="flex items-center justify-between mb-4">
-              <div className="flex items-center gap-2">
-                <BarChart3 size={18} className="text-blue-500" />
-                <h3 className="text-fluid-base font-bold text-white">Day of Week Performance</h3>
-              </div>
-              <span className="text-fluid-xs text-zinc-400">Monday — Sunday</span>
+        {/* Consistency Calendar Heatmap */}
+        <div className="glass p-5 md:p-6 rounded-3xl border border-white/10 mb-6">
+          <div className="flex items-center justify-between mb-4">
+            <div className="flex items-center gap-2">
+              <CalendarIcon size={18} className="text-amber-400" />
+              <h3 className="text-fluid-base font-bold text-white">Consistency Calendar Heatmap</h3>
             </div>
-            <WeekdayBreakdownChart data={weekdayBreakdown} />
+            <span className="text-fluid-xs text-zinc-400">Density matrix</span>
           </div>
-
-          <div className="glass p-5 md:p-6 rounded-3xl border border-white/10 flex flex-col justify-between">
-            <div>
-              <div className="flex items-center justify-between mb-4">
-                <div className="flex items-center gap-2">
-                  <CalendarIcon size={18} className="text-amber-400" />
-                  <h3 className="text-fluid-base font-bold text-white">Consistency Calendar Heatmap</h3>
-                </div>
-                <span className="text-fluid-xs text-zinc-400">Density matrix</span>
-              </div>
-              <p className="text-fluid-xs text-zinc-400 mb-4 leading-relaxed">
-                Every square represents a day of habit tracking. Darker shades indicate higher completion rates.
-              </p>
-            </div>
-            <CalendarHeatmap data={heatmap} />
-          </div>
-        </div>
-
-        {/* AI Productivity Insights */}
-        <div>
-          <AiProductivityInsightsCard days={period === '7d' ? 7 : period === '90d' ? 90 : 30} />
+          <p className="text-fluid-xs text-zinc-400 mb-4 leading-relaxed">
+            Every square represents a day of habit tracking. Darker shades indicate higher completion rates.
+          </p>
+          <CalendarHeatmap data={heatmap} />
         </div>
       </div>
 

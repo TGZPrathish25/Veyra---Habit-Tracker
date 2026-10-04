@@ -3,13 +3,29 @@ import { prisma, tryPrisma } from '../../db/prisma.js';
 import { persistentStore } from '../../db/persistentStore.js';
 import type { LeaderboardEntryDTO, LeaderboardSortMetric } from './leaderboard.types.js';
 
+const BANNED_PATTERNS = [
+  'mayachen', 'sam_t', 'samtaylor', 'alex_r', 'alexrivera',
+  'jordan_lee', 'jordanlee', 'sarah_k', 'sarahkim',
+  'elena_r', 'marcus_v', 'priya_s', 'demo'
+];
+const BANNED_IDS = [
+  'usr_mayachen', 'usr_samtaylor', 'usr_alexrivera', 'usr_jordanlee', 'usr_sarahkim',
+  'usr_elena_r', 'usr_marcus_v', 'usr_priya_sharma', 'usr_demo', 'demo', 'mock'
+];
+const BANNED_NAMES = [
+  'sarah kim', 'jordan lee', 'alex rivera', 'sam taylor', 'maya chen',
+  'elena rostova', 'marcus vance', 'priya sharma', 'demo user'
+];
+
 export class LeaderboardRepository {
   private isDummyUser(u: { id?: string; username?: string | null; email?: string | null; name?: string | null }): boolean {
     if (!u) return true;
-    if (u.id === 'usr_demo' || u.id === 'demo') return true;
-    if (u.username?.toLowerCase() === 'demo') return true;
-    if (u.name === 'Demo User') return true;
-    if (u.email?.toLowerCase().includes('demo@')) return true;
+    if (u.id && BANNED_IDS.includes(u.id)) return true;
+    const uName = u.username?.toLowerCase().trim() || '';
+    const name = u.name?.toLowerCase().trim() || '';
+    if (BANNED_PATTERNS.some((p) => uName === p || (p === 'demo' && uName.includes('demo')))) return true;
+    if (BANNED_NAMES.some((n) => name === n)) return true;
+    if (u.email && u.email.toLowerCase().includes('demo@')) return true;
     return false;
   }
 
@@ -18,9 +34,19 @@ export class LeaderboardRepository {
       async () => {
         const users = await prisma.user.findMany({
           where: {
-            OR: [
-              { settings: null },
-              { settings: { leaderboardOptIn: true } },
+            AND: [
+              {
+                OR: [
+                  { settings: null },
+                  { settings: { leaderboardOptIn: true } },
+                ],
+              },
+              {
+                id: { notIn: BANNED_IDS },
+              },
+              {
+                username: { notIn: BANNED_PATTERNS },
+              },
             ],
           },
           include: {

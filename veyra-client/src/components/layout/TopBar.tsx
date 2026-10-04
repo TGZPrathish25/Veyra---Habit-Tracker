@@ -52,26 +52,14 @@ export const TopBar: React.FC<TopBarProps> = ({ onOpenMobileNav }) => {
           </div>
         </div>
 
-        {/* Right: Quick Telemetry, Notification Bell & Profile Avatar */}
-        <div className="flex items-center gap-2.5 sm:gap-3">
-          {/* Quick Streak Pill */}
-          {dailyStreak > 0 && (
-            <Link
-              to="/dashboard"
-              className="flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-orange-500/10 border border-orange-500/25 text-orange-300 hover:bg-orange-500/20 transition-all text-[11px] font-bold"
-              title="Current Daily Streak"
-            >
-              <Flame size={13} className="text-orange-400" />
-              <span>{dailyStreak}d streak</span>
-            </Link>
-          )}
-
+        {/* Right: Notification Bell & Profile Avatar with Streak */}
+        <div className="flex items-center gap-2 sm:gap-2.5">
           {/* Notification Bell Button */}
           <button
             type="button"
             onClick={() => setIsDrawerOpen(true)}
             aria-label="Open notifications drawer"
-            className="relative p-2 rounded-xl text-zinc-300 hover:text-gray-900 dark:hover:text-white hover:bg-white/10 border border-white/5 transition-all"
+            className="relative p-2 rounded-xl text-zinc-300 hover:text-white hover:bg-white/10 border border-white/5 transition-all"
           >
             <Bell size={18} />
             {unreadCount > 0 && (
@@ -81,12 +69,21 @@ export const TopBar: React.FC<TopBarProps> = ({ onOpenMobileNav }) => {
             )}
           </button>
 
-          {/* User Profile Mini Pill */}
+          {/* User Profile Pill with Streak directly before our name */}
           {user && (
             <Link
               to="/profile"
-              className="flex items-center gap-2 p-1 pl-2 rounded-xl bg-white/5 hover:bg-white/10 border border-white/5 text-fluid-xs transition-colors"
+              className="flex items-center gap-2 p-1 pl-2 sm:pl-2.5 rounded-xl bg-white/5 hover:bg-white/10 border border-white/5 text-fluid-xs transition-colors group"
             >
+              {/* Daily Streak Badge directly before our name */}
+              <div
+                className="flex items-center gap-1 px-2 py-0.5 rounded-lg bg-orange-500/15 border border-orange-500/30 text-orange-300 font-bold text-[11px] group-hover:bg-orange-500/25 group-hover:border-orange-500/40 transition-colors"
+                title={`Current Daily Streak: ${dailyStreak} day${dailyStreak === 1 ? '' : 's'}`}
+              >
+                <Flame size={12} className="text-orange-400 fill-orange-500/30" />
+                <span className="tabular-nums">{dailyStreak}d</span>
+              </div>
+
               <span className="font-medium text-white hidden sm:inline max-w-[120px] truncate">
                 {user.name || user.username || 'Adventurer'}
               </span>
