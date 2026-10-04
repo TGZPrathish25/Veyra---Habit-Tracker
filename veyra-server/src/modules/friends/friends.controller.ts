@@ -20,6 +20,18 @@ export class FriendsController {
     }
   }
 
+  async discoverUsers(req: Request, res: Response, next: NextFunction): Promise<void> {
+    try {
+      const users = await friendsService.discoverUsers(req.user!.id);
+      res.json({
+        status: 'success',
+        data: users,
+      });
+    } catch (error) {
+      next(error);
+    }
+  }
+
   async listRequests(req: Request, res: Response, next: NextFunction): Promise<void> {
     try {
       const requests = await friendsService.listRequests(req.user!.id);

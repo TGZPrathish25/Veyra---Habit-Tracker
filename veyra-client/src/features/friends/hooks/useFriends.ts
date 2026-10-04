@@ -6,6 +6,7 @@ import type {
   FriendRequest,
   FriendProgress,
   FriendActivityFeedItem,
+  DiscoverUser,
   SendFriendRequestPayload,
   PrivacyLevel,
 } from '../types';
@@ -35,6 +36,16 @@ export function useFriends() {
     staleTime: 1000 * 30,
   });
 
+  const {
+    data: discoverUsers = [],
+    isLoading: isLoadingDiscover,
+    refetch: refetchDiscover,
+  } = useQuery<DiscoverUser[]>({
+    queryKey: ['friends', 'discover'],
+    queryFn: friendsApi.getDiscoverUsers,
+    staleTime: 1000 * 30,
+  });
+
   const { data: feed = [], isLoading: isLoadingFeed } = useQuery<FriendActivityFeedItem[]>({
     queryKey: ['friend-feed'],
     queryFn: friendsApi.getFeed,
@@ -45,6 +56,7 @@ export function useFriends() {
     mutationFn: (payload: SendFriendRequestPayload) => friendsApi.sendRequest(payload),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['friend-requests'] });
+      queryClient.invalidateQueries({ queryKey: ['friends', 'discover'] });
     },
   });
 
@@ -54,6 +66,7 @@ export function useFriends() {
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['friends'] });
       queryClient.invalidateQueries({ queryKey: ['friend-requests'] });
+      queryClient.invalidateQueries({ queryKey: ['friends', 'discover'] });
     },
   });
 
@@ -69,21 +82,25 @@ export function useFriends() {
     mutationFn: (friendId: string) => friendsApi.removeFriend(friendId),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['friends'] });
+      queryClient.invalidateQueries({ queryKey: ['friends', 'discover'] });
     },
   });
 
   return {
     friends,
+    discoverUsers,
     incomingRequests: requestsData?.incoming ?? [],
     outgoingRequests: requestsData?.outgoing ?? [],
     pendingCount: requestsData?.incoming?.length ?? 0,
     feed,
     isLoading: isLoading || isLoadingRequests,
+    isLoadingDiscover,
     isLoadingFeed,
     isError,
     error,
     refetch,
     refetchRequests,
+    refetchDiscover,
     sendRequest: sendRequestMutation.mutateAsync,
     respondToRequest: respondMutation.mutateAsync,
     updatePrivacy: updatePrivacyMutation.mutateAsync,

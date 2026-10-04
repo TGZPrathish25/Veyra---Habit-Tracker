@@ -113,4 +113,18 @@ describe('Friends Module', () => {
     const feed = await friendsService.getActivityFeed(userId);
     expect(Array.isArray(feed)).toBe(true);
   });
+
+  it('discovers all users with friendship status and add button state', async () => {
+    const discovered = await friendsService.discoverUsers(userId);
+    expect(Array.isArray(discovered)).toBe(true);
+    expect(discovered.length).toBeGreaterThan(0);
+
+    // Current user should not be in the list
+    expect(discovered.some((u) => u.id === userId)).toBe(false);
+
+    // friend1 should have status 'friends'
+    const f1 = discovered.find((u) => u.id === friend1);
+    expect(f1).toBeDefined();
+    expect(f1?.friendshipStatus).toBe('friends');
+  });
 });

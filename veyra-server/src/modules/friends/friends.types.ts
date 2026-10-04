@@ -12,6 +12,11 @@ export interface FriendUserDTO {
   currentStreak: number;
 }
 
+export interface DiscoverUserDTO extends FriendUserDTO {
+  friendshipStatus: 'none' | 'pending_sent' | 'pending_received' | 'friends';
+  requestId?: string;
+}
+
 export interface FriendshipDTO {
   id: string;
   userId: string;

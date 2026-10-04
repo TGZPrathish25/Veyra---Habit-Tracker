@@ -7,8 +7,9 @@ export const friendsRouter = Router();
 
 friendsRouter.use(authenticate);
 
-// Friends listing & feed
+// Friends listing, discover & feed
 friendsRouter.get('/', (req, res, next) => friendsController.listFriends(req, res, next));
+friendsRouter.get('/discover', (req, res, next) => friendsController.discoverUsers(req, res, next));
 friendsRouter.get('/feed', (req, res, next) => friendsController.getFeed(req, res, next));
 
 // Requests

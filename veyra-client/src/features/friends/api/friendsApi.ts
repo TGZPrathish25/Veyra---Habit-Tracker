@@ -5,6 +5,7 @@ import type {
   FriendRequest,
   FriendProgress,
   FriendActivityFeedItem,
+  DiscoverUser,
   SendFriendRequestPayload,
   PrivacyLevel,
 } from '../types';
@@ -18,6 +19,11 @@ interface ApiResponse<T> {
 export const friendsApi = {
   getFriends: async (): Promise<Friendship[]> => {
     const res = await apiClient.get<ApiResponse<Friendship[]>>('/friends');
+    return res.data.data;
+  },
+
+  getDiscoverUsers: async (): Promise<DiscoverUser[]> => {
+    const res = await apiClient.get<ApiResponse<DiscoverUser[]>>('/friends/discover');
     return res.data.data;
   },
 

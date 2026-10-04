@@ -12,6 +12,11 @@ export interface FriendUser {
   currentStreak: number;
 }
 
+export interface DiscoverUser extends FriendUser {
+  friendshipStatus: 'none' | 'pending_sent' | 'pending_received' | 'friends';
+  requestId?: string;
+}
+
 export interface Friendship {
   id: string;
   userId: string;

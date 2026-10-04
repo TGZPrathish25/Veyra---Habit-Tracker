@@ -5,6 +5,7 @@ import type {
   FriendRequestDTO,
   FriendProgressDTO,
   FriendActivityFeedDTO,
+  DiscoverUserDTO,
   SendFriendRequestInput,
   PrivacyLevel,
 } from './friends.types.js';
@@ -12,6 +13,50 @@ import type {
 export class FriendsService {
   async listFriends(userId: string): Promise<FriendshipDTO[]> {
     return friendsRepository.listFriends(userId);
+  }
+
+  async discoverUsers(userId: string): Promise<DiscoverUserDTO[]> {
+    const [allUsers, friendships, requests] = await Promise.all([
+      friendsRepository.listAllUsers(userId),
+      friendsRepository.listFriends(userId),
+      friendsRepository.listFriendRequests(userId),
+    ]);
+
+    const friendIds = new Set(friendships.map((f) => f.friendId));
+    const pendingSentMap = new Map<string, string>();
+    for (const req of requests.outgoing) {
+      if (req.status === 'pending') {
+        pendingSentMap.set(req.receiverId, req.id);
+      }
+    }
+
+    const pendingReceivedMap = new Map<string, string>();
+    for (const req of requests.incoming) {
+      if (req.status === 'pending') {
+        pendingReceivedMap.set(req.senderId, req.id);
+      }
+    }
+
+    return allUsers.map((u) => {
+      let friendshipStatus: 'none' | 'pending_sent' | 'pending_received' | 'friends' = 'none';
+      let requestId: string | undefined = undefined;
+
+      if (friendIds.has(u.id)) {
+        friendshipStatus = 'friends';
+      } else if (pendingSentMap.has(u.id)) {
+        friendshipStatus = 'pending_sent';
+        requestId = pendingSentMap.get(u.id);
+      } else if (pendingReceivedMap.has(u.id)) {
+        friendshipStatus = 'pending_received';
+        requestId = pendingReceivedMap.get(u.id);
+      }
+
+      return {
+        ...u,
+        friendshipStatus,
+        requestId,
+      };
+    });
   }
 
   async sendFriendRequest(senderId: string, input: SendFriendRequestInput): Promise<FriendRequestDTO> {
