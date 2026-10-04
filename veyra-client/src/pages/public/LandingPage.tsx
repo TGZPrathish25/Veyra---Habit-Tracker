@@ -1,8 +1,17 @@
 /** Landing page with hero, features, and CTA. */
 import React from 'react';
+import { Link, Navigate } from 'react-router-dom';
+import { ROUTES } from '@/config/routes';
+import { useAuthStore } from '@/features/auth/store/authStore';
 import { PublicLayout } from '@/components/layout/PublicLayout';
 
 export const LandingPage: React.FC = () => {
+  const { isAuthenticated } = useAuthStore();
+
+  if (isAuthenticated) {
+    return <Navigate to={ROUTES.DASHBOARD} replace />;
+  }
+
   return (
     <PublicLayout>
       <section className="flex-1 flex items-center justify-center px-4 sm:px-6 lg:px-8 py-12 sm:py-20">
@@ -28,12 +37,12 @@ export const LandingPage: React.FC = () => {
             social challenges, and beautiful analytics.
           </p>
           <div className="flex flex-col sm:flex-row items-center justify-center gap-3 sm:gap-4">
-            <a href="/register" className="glass-button glass-button-primary w-full sm:w-auto px-8 py-3 text-fluid-base">
+            <Link to="/register" className="glass-button glass-button-primary w-full sm:w-auto px-8 py-3 text-fluid-base">
               Get Started Free
-            </a>
-            <a href="/login" className="glass-button glass-button-ghost w-full sm:w-auto px-8 py-3 text-fluid-base">
+            </Link>
+            <Link to="/login" className="glass-button glass-button-ghost w-full sm:w-auto px-8 py-3 text-fluid-base">
               Sign In
-            </a>
+            </Link>
           </div>
           <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 sm:gap-6 mt-16 sm:mt-20">
             <div className="glass p-4 sm:p-6 text-center"><div className="text-3xl sm:text-4xl mb-3">🎯</div><h3 className="text-fluid-lg font-semibold mb-1" style={{ color: 'var(--color-text)' }}>Daily Habits</h3><p className="text-fluid-sm" style={{ color: 'var(--color-text-muted)' }}>Build routines that stick</p></div>

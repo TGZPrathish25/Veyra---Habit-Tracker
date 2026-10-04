@@ -19,7 +19,10 @@ export function useAuthInit(): void {
     if (isStartedRef.current) return;
     isStartedRef.current = true;
 
-    setLoading(true);
+    // Only toggle loading if not already authenticated from persistent storage
+    if (!useAuthStore.getState().isAuthenticated) {
+      setLoading(true);
+    }
 
     let isMounted = true;
     let unsubscribe: (() => void) | undefined;
@@ -37,9 +40,11 @@ export function useAuthInit(): void {
           return true;
         }
       } catch (err: unknown) {
-        // If 401 or invalid session and not a local demo session, clear auth
+        // Only clear credentials if the backend explicitly returned a 401 Unauthorized
+        // (Do NOT clear on network timeouts, offline mode, or Render cold starts)
+        const is401 = (err as { response?: { status?: number } })?.response?.status === 401;
         const isDemo = useAuthStore.getState().user?.email === 'demo@veyra.app';
-        if (!isDemo && isMounted) {
+        if (is401 && !isDemo && isMounted) {
           clearAuth();
         }
       }

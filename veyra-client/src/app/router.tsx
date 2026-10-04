@@ -1,9 +1,9 @@
-/** Route table — lazy-loaded pages with ProtectedRoute and PublicOnlyRoute guards. */
 import React, { lazy, Suspense } from 'react';
 import { createBrowserRouter, RouterProvider, Navigate } from 'react-router-dom';
 import { ROUTES } from '@/config/routes';
 import { ProtectedRoute } from './guards/ProtectedRoute';
 import { PublicOnlyRoute } from './guards/PublicOnlyRoute';
+import { useAuthStore } from '@/features/auth/store/authStore';
 
 const LandingPage = lazy(() => import('@/pages/public/LandingPage').then((m) => ({ default: m.LandingPage })));
 const LoginPage = lazy(() => import('@/pages/public/LoginPage').then((m) => ({ default: m.LoginPage })));
@@ -58,14 +58,28 @@ const Loading = () => (
   </div>
 );
 
+/**
+ * Automatically redirects logged-in users directly to /dashboard.
+ * Non-authenticated visitors see the LandingPage immediately.
+ */
+const HomeRoute: React.FC = () => {
+  const { isAuthenticated } = useAuthStore();
+
+  if (isAuthenticated) {
+    return <Navigate to={ROUTES.DASHBOARD} replace />;
+  }
+
+  return (
+    <Suspense fallback={<Loading />}>
+      <LandingPage />
+    </Suspense>
+  );
+};
+
 const router = createBrowserRouter([
   {
     path: ROUTES.HOME,
-    element: (
-      <Suspense fallback={<Loading />}>
-        <LandingPage />
-      </Suspense>
-    ),
+    element: <HomeRoute />,
   },
   {
     path: ROUTES.ABOUT,

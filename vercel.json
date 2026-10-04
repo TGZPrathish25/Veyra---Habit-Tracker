@@ -1,0 +1,7 @@
+{
+  "buildCommand": "cd veyra-client && npm run build",
+  "outputDirectory": "veyra-client/dist",
+  "rewrites": [
+    { "source": "/(.*)", "destination": "/index.html" }
+  ]
+}

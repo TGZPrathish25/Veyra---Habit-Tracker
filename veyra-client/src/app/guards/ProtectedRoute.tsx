@@ -11,6 +11,12 @@ export const ProtectedRoute: React.FC<ProtectedRouteProps> = ({ children }) => {
   const { isAuthenticated, isLoading, isInitialized } = useAuthStore();
   const location = useLocation();
 
+  // If already authenticated via persisted session, allow immediate rendering
+  if (isAuthenticated) {
+    return <>{children}</>;
+  }
+
+  // If unauthenticated, wait while session initialization (cookie/Firebase) is in progress
   if (isLoading || !isInitialized) {
     return (
       <div className="min-h-screen flex items-center justify-center" style={{ background: 'var(--color-bg)' }}>
@@ -22,9 +28,7 @@ export const ProtectedRoute: React.FC<ProtectedRouteProps> = ({ children }) => {
     );
   }
 
-  if (!isAuthenticated) {
-    return <Navigate to="/login" replace state={{ from: location }} />;
-  }
+  return <Navigate to="/login" replace state={{ from: location }} />;
 
   return <>{children}</>;
 };
