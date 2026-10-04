@@ -70,8 +70,14 @@ export class TasksService {
 
     // 2. Fetch already generated occurrences for target date
     let existingOccurrences = await tasksRepository.findOccurrencesByDate(userId, targetDate);
-    // Ensure occurrences for deactivated tasks are filtered out
-    existingOccurrences = existingOccurrences.filter((o) => o.task && o.task.isActive);
+    // Ensure past history and completed occurrences are preserved, while uncompleted inactive tasks for today/future are omitted
+    const isPastQuery = targetDateStr ? targetDateStr < todayStr : false;
+    existingOccurrences = existingOccurrences.filter((o) => {
+      if (!o.task) return false;
+      if (o.task.isActive) return true;
+      // Retain past history or completed achievements
+      return isPastQuery || o.completed;
+    });
 
     // Ensure strict uniqueness by taskId
     const seenTaskIds = new Set<string>();

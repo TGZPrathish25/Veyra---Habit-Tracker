@@ -1,8 +1,8 @@
-/** Glassmorphic task occurrence card with animated checkbox, deadline badges, and missed state. */
 import React from 'react';
 import { Check, Trash2, Calendar, Lock, Clock, AlertCircle, X } from 'lucide-react';
 import type { TaskOccurrence } from '../types';
 import { getIndianTodayDateString } from '@/lib/date';
+import { ConfirmDeleteModal } from '@/components/common/ConfirmDeleteModal';
 
 interface TaskItemCardProps {
   occurrence: TaskOccurrence;
@@ -18,6 +18,7 @@ export const TaskItemCard: React.FC<TaskItemCardProps> = React.memo(({
   isReadOnly = false,
 }) => {
   const { completed, task } = occurrence;
+  const [showDeleteModal, setShowDeleteModal] = React.useState(false);
   const effectiveDueTime = occurrence.effectiveDueTime || occurrence.task?.dueTime || null;
 
   const isMissed = React.useMemo(() => {
@@ -141,8 +142,7 @@ export const TaskItemCard: React.FC<TaskItemCardProps> = React.memo(({
             type="button"
             onClick={(e) => {
               e.stopPropagation();
-              const idToDelete = task?.id || occurrence.taskId;
-              if (idToDelete) onDelete(idToDelete);
+              setShowDeleteModal(true);
             }}
             className="p-1.5 rounded-lg text-zinc-500 hover:text-red-400 hover:bg-red-500/10 transition-colors"
             title="Delete habit"
@@ -152,6 +152,20 @@ export const TaskItemCard: React.FC<TaskItemCardProps> = React.memo(({
           </button>
         )}
       </div>
+
+      {/* Confirmation Modal before deleting */}
+      <ConfirmDeleteModal
+        isOpen={showDeleteModal}
+        title="Delete Habit?"
+        itemName={task?.title || 'Daily Habit'}
+        itemType="habit"
+        onClose={() => setShowDeleteModal(false)}
+        onConfirm={() => {
+          const idToDelete = task?.id || occurrence.taskId;
+          if (idToDelete && onDelete) onDelete(idToDelete);
+          setShowDeleteModal(false);
+        }}
+      />
     </div>
   );
 });

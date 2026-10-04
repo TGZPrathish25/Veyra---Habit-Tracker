@@ -193,10 +193,21 @@ export class TasksRepository {
   }
 
   async deleteTask(taskId: string): Promise<void> {
+    const today = new Date();
+    today.setHours(0, 0, 0, 0);
+
     return tryPrisma(
       async () => {
+        // Delete only future uncompleted occurrences (or uncompleted today).
+        // PAST occurrences and COMPLETED occurrences are strictly preserved in task history!
         await prisma.taskOccurrence.deleteMany({
-          where: { taskId },
+          where: {
+            taskId,
+            OR: [
+              { date: { gt: today } },
+              { date: { gte: today }, completed: false },
+            ],
+          },
         });
         await prisma.task.update({
           where: { id: taskId },
@@ -212,13 +223,25 @@ export class TasksRepository {
         for (const [key, occId] of Array.from(memOccurrenceByTaskDate.entries())) {
           const occ = memOccurrences.get(occId);
           if (occ && occ.taskId === taskId) {
-            memOccurrenceByTaskDate.delete(key);
-            memOccurrences.delete(occId);
+            const occDate = new Date(occ.date);
+            occDate.setHours(0, 0, 0, 0);
+            const isFutureOrUncompleted =
+              occDate > today || (occDate.getTime() === today.getTime() && !occ.completed);
+            if (isFutureOrUncompleted) {
+              memOccurrenceByTaskDate.delete(key);
+              memOccurrences.delete(occId);
+            }
           }
         }
         for (const [occId, occ] of Array.from(memOccurrences.entries())) {
           if (occ.taskId === taskId) {
-            memOccurrences.delete(occId);
+            const occDate = new Date(occ.date);
+            occDate.setHours(0, 0, 0, 0);
+            const isFutureOrUncompleted =
+              occDate > today || (occDate.getTime() === today.getTime() && !occ.completed);
+            if (isFutureOrUncompleted) {
+              memOccurrences.delete(occId);
+            }
           }
         }
       }
@@ -233,9 +256,6 @@ export class TasksRepository {
           where: {
             userId,
             date,
-            task: {
-              isActive: true,
-            },
           },
           include: {
             task: true,
@@ -264,7 +284,7 @@ export class TasksRepository {
         for (const occ of memOccurrences.values()) {
           if (occ.userId === userId && occ.date === dateStr) {
             const task = memTasks.get(occ.taskId);
-            if (task && task.isActive) {
+            if (task) {
               results.push({
                 ...occ,
                 task,

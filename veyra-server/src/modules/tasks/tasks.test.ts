@@ -65,6 +65,36 @@ describe('Tasks Module', () => {
     expect(afterDelete.occurrences.some((o) => o.taskId === task.id)).toBe(false);
   });
 
+  it('preserves past history and completed occurrences when a task is deleted', async () => {
+    const task = await tasksService.createTask(testUserId, {
+      title: 'Historical Task',
+      daysOfWeek: [0, 1, 2, 3, 4, 5, 6],
+    });
+
+    const pastDateStr = '2026-10-01';
+    const pastOcc = await tasksRepository.createOccurrences([
+      { taskId: task.id, userId: testUserId, date: new Date(pastDateStr) },
+    ]);
+    await tasksRepository.updateOccurrence(pastOcc[0].id, {
+      completed: true,
+      completedAt: new Date(),
+      xpAwarded: 10,
+    });
+
+    // Delete the task today
+    await tasksService.deleteTask(testUserId, task.id);
+
+    // Verify that past occurrence still exists in database and repository
+    const pastOccurrences = await tasksRepository.findOccurrencesByDate(testUserId, new Date(pastDateStr));
+    const matchingPast = pastOccurrences.find((o) => o.taskId === task.id);
+    expect(matchingPast).toBeDefined();
+    expect(matchingPast?.completed).toBe(true);
+
+    // And verify past daily occurrences still show it in past history
+    const pastDaily = await tasksService.getDailyOccurrences(testUserId, pastDateStr, INDIA_TIMEZONE);
+    expect(pastDaily.occurrences.some((o) => o.taskId === task.id)).toBe(true);
+  });
+
   it('creates a task and ensures it appears exactly once in daily occurrences without duplicates', async () => {
     const task = await tasksService.createTask(testUserId, {
       title: 'Unique Task Check',

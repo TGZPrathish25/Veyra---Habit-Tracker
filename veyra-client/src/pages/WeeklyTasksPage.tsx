@@ -9,6 +9,7 @@ import { apiClient } from '@/lib/apiClient';
 import { Calendar, Plus, Target, CheckCircle2, Lock, Save, Trash2, Sparkles } from 'lucide-react';
 import { SundayPlanningModal } from '@/features/weekly-tasks/components/SundayPlanningModal';
 import { getWeekMondayDateString } from '@/lib/date';
+import { ConfirmDeleteModal } from '@/components/common/ConfirmDeleteModal';
 
 interface WeeklyGoal {
   id?: string;
@@ -35,6 +36,7 @@ export const WeeklyTasksPage: React.FC = () => {
   const [reflectionText, setReflectionText] = useState('');
   const [isReflectionDirty, setIsReflectionDirty] = useState(false);
   const [isRitualOpen, setIsRitualOpen] = useState(false);
+  const [goalToDelete, setGoalToDelete] = useState<{ index: number; title: string } | null>(null);
 
   const { data: plan, isLoading } = useQuery<WeeklyPlan>({
     queryKey: ['weekly-current'],
@@ -293,8 +295,10 @@ export const WeeklyTasksPage: React.FC = () => {
                           </button>
                           <button
                             type="button"
-                            onClick={() => handleDeleteGoal(idx)}
+                            onClick={() => setGoalToDelete({ index: idx, title: goal.title })}
                             className="p-1.5 rounded-lg text-zinc-500 hover:text-red-400 hover:bg-red-500/10 transition-colors"
+                            title="Delete weekly goal"
+                            aria-label="Delete weekly goal"
                           >
                             <Trash2 size={15} />
                           </button>
@@ -361,6 +365,21 @@ export const WeeklyTasksPage: React.FC = () => {
           }));
           setReflectionText(intention);
           await saveMutation.mutateAsync(formatted);
+        }}
+      />
+
+      {/* Confirmation Modal before deleting goal */}
+      <ConfirmDeleteModal
+        isOpen={!!goalToDelete}
+        title="Delete Weekly Goal?"
+        itemName={goalToDelete?.title || 'Weekly Goal'}
+        itemType="goal"
+        onClose={() => setGoalToDelete(null)}
+        onConfirm={async () => {
+          if (goalToDelete !== null) {
+            await handleDeleteGoal(goalToDelete.index);
+            setGoalToDelete(null);
+          }
         }}
       />
     </AppShell>

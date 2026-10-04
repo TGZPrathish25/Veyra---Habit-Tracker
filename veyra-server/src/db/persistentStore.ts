@@ -351,7 +351,7 @@ class PersistentStore {
     const db = getFirestoreAdmin();
     if (db) {
       try {
-        await db.collection('tasks').doc(taskId).delete();
+        await db.collection('tasks').doc(taskId).set({ isActive: false }, { merge: true });
       } catch (err) {
         console.debug('Cloud Firestore deleteTask:', err);
       }

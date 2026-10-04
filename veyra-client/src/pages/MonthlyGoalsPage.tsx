@@ -9,6 +9,7 @@ import { apiClient } from '@/lib/apiClient';
 import { Calendar, Plus, Trophy, CheckCircle2, Lock, Save, Trash2, Sparkles } from 'lucide-react';
 import { AiReflectionModal } from '@/features/ai';
 import { getCurrentYearAndMonth } from '@/lib/date';
+import { ConfirmDeleteModal } from '@/components/common/ConfirmDeleteModal';
 
 interface MonthlyGoal {
   id?: string;
@@ -41,6 +42,7 @@ export const MonthlyGoalsPage: React.FC = () => {
   const [reflectionText, setReflectionText] = useState('');
   const [isReflectionDirty, setIsReflectionDirty] = useState(false);
   const [isAiModalOpen, setIsAiModalOpen] = useState(false);
+  const [goalToDelete, setGoalToDelete] = useState<{ index: number; title: string } | null>(null);
 
   const { data: plan, isLoading } = useQuery<MonthlyPlan>({
     queryKey: ['monthly-current'],
@@ -293,8 +295,10 @@ export const MonthlyGoalsPage: React.FC = () => {
                             </button>
                             <button
                               type="button"
-                              onClick={() => handleDeleteGoal(idx)}
+                              onClick={() => setGoalToDelete({ index: idx, title: goal.title })}
                               className="p-1.5 rounded-lg text-zinc-500 hover:text-red-400 hover:bg-red-500/10 transition-colors"
+                              title="Delete monthly goal"
+                              aria-label="Delete monthly goal"
                             >
                               <Trash2 size={15} />
                             </button>
@@ -388,6 +392,21 @@ export const MonthlyGoalsPage: React.FC = () => {
           }}
         />
       )}
+
+      {/* Confirmation Modal before deleting monthly goal */}
+      <ConfirmDeleteModal
+        isOpen={!!goalToDelete}
+        title="Delete Monthly Goal?"
+        itemName={goalToDelete?.title || 'Monthly Goal'}
+        itemType="goal"
+        onClose={() => setGoalToDelete(null)}
+        onConfirm={async () => {
+          if (goalToDelete !== null) {
+            await handleDeleteGoal(goalToDelete.index);
+            setGoalToDelete(null);
+          }
+        }}
+      />
     </AppShell>
   );
 };
