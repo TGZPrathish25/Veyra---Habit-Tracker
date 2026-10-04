@@ -24,21 +24,59 @@ export const LeaderboardPage: React.FC = () => {
   const [activeTab, setActiveTab] = useState<LeaderboardSortMetric>('xp');
   const { entries: leaderboardEntries, isLoading } = useLeaderboard(activeTab);
 
-  // Combine leaderboard entries with current user status
   const currentUserId = user?.id;
-  const currentUsername = user?.username?.toLowerCase();
+  const currentFirebaseUid = user?.firebaseUid;
+  const currentUsername = user?.username?.toLowerCase()?.trim();
 
-  const userFoundInLeaderboard = leaderboardEntries.some(
-    (e) => (currentUserId && e.id === currentUserId) || (currentUsername && e.username.toLowerCase() === currentUsername)
-  );
+  const isCurrentMe = (e: { id: string; username?: string | null }) => {
+    if (!user) return false;
+    if (currentUserId && e.id === currentUserId) return true;
+    if (currentFirebaseUid && e.id === currentFirebaseUid) return true;
+    if (currentUsername && e.username && e.username.toLowerCase().trim() === currentUsername) return true;
+    return false;
+  };
 
-  const combinedEntries = leaderboardEntries.map((e) => {
-    const isMe = (currentUserId && e.id === currentUserId) || (currentUsername && e.username.toLowerCase() === currentUsername);
+  // Filter dummy accounts and deduplicate by ID, username, and identity
+  const seenIds = new Set<string>();
+  const seenUsernames = new Set<string>();
+  const sanitizedEntries: typeof leaderboardEntries = [];
+
+  for (const entry of leaderboardEntries) {
+    if (
+      entry.id === 'usr_demo' ||
+      entry.id === 'demo' ||
+      entry.id === 'mock' ||
+      entry.username?.toLowerCase() === 'demo' ||
+      entry.username?.toLowerCase() === 'friend' ||
+      entry.name === 'Demo User' ||
+      entry.name === 'Friend'
+    ) {
+      continue;
+    }
+
+    const normUser = entry.username?.toLowerCase().trim();
+    if (seenIds.has(entry.id)) continue;
+    if (normUser && seenUsernames.has(normUser)) continue;
+
+    if (isCurrentMe(entry)) {
+      if (seenIds.has('CURRENT_USER_SEEN')) continue;
+      seenIds.add('CURRENT_USER_SEEN');
+    }
+
+    seenIds.add(entry.id);
+    if (normUser) seenUsernames.add(normUser);
+    sanitizedEntries.push(entry);
+  }
+
+  const userFoundInLeaderboard = seenIds.has('CURRENT_USER_SEEN') || sanitizedEntries.some(isCurrentMe);
+
+  const combinedEntries = sanitizedEntries.map((e) => {
+    const isMe = isCurrentMe(e);
     return {
       id: e.id,
-      name: e.name || e.username || 'Adventurer',
+      name: isMe ? (user?.name || user?.username || e.name) : e.name || e.username || 'Adventurer',
       username: e.username,
-      avatarUrl: e.avatarUrl,
+      avatarUrl: isMe ? (user?.avatarUrl || e.avatarUrl) : e.avatarUrl,
       level: isMe ? Math.max(e.level, level || 1) : e.level,
       xp: isMe ? Math.max(e.totalXp, totalXp || 0) : e.totalXp,
       streak: isMe ? Math.max(e.currentStreak, dailyStreak || 0) : e.currentStreak,
@@ -46,10 +84,10 @@ export const LeaderboardPage: React.FC = () => {
     };
   });
 
-  // If authenticated user is not yet indexed in leaderboard, include them
+  // If authenticated user is not yet indexed in leaderboard, include them once
   if (!userFoundInLeaderboard && user) {
     combinedEntries.push({
-      id: user.id || 'me',
+      id: user.id || user.firebaseUid || 'me',
       name: user.name || user.username || 'You',
       username: user.username || 'you',
       avatarUrl: user.avatarUrl || null,

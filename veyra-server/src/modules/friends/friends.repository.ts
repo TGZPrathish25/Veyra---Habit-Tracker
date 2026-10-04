@@ -130,6 +130,15 @@ export class FriendsRepository {
     );
   }
 
+  private isDummyUser(u: { id?: string; username?: string | null; email?: string | null; name?: string | null }): boolean {
+    if (!u) return true;
+    if (u.id === 'usr_demo' || u.id === 'demo') return true;
+    if (u.username?.toLowerCase() === 'demo') return true;
+    if (u.name === 'Demo User') return true;
+    if (u.email?.toLowerCase().includes('demo@')) return true;
+    return false;
+  }
+
   async listAllUsers(excludeUserId: string): Promise<FriendUserDTO[]> {
     return tryPrisma(
       async () => {
@@ -143,32 +152,58 @@ export class FriendsRepository {
           orderBy: { createdAt: 'desc' },
         });
 
-        const mapped: FriendUserDTO[] = users.map((u) => ({
-          id: u.id,
-          name: u.name,
-          username: u.username,
-          avatarUrl: u.avatarUrl,
-          level: u.gamification?.level ?? 1,
-          totalXp: u.gamification?.totalXp ?? 0,
-          currentStreak: u.streaks[0]?.current ?? 0,
-        }));
+        const seenIds = new Set<string>();
+        const seenUsernames = new Set<string>();
+        const mapped: FriendUserDTO[] = [];
+
+        seenIds.add(excludeUserId);
+
+        for (const u of users) {
+          if (this.isDummyUser(u)) continue;
+          if (u.id === excludeUserId || u.firebaseUid === excludeUserId) continue;
+
+          const normUser = u.username?.toLowerCase().trim();
+          if (seenIds.has(u.id) || (u.firebaseUid && seenIds.has(u.firebaseUid))) continue;
+          if (normUser && seenUsernames.has(normUser)) continue;
+
+          seenIds.add(u.id);
+          if (u.firebaseUid) seenIds.add(u.firebaseUid);
+          if (normUser) seenUsernames.add(normUser);
+
+          mapped.push({
+            id: u.id,
+            name: u.name,
+            username: u.username,
+            avatarUrl: u.avatarUrl,
+            level: u.gamification?.level ?? 1,
+            totalXp: u.gamification?.totalXp ?? 0,
+            currentStreak: u.streaks[0]?.current ?? 0,
+          });
+        }
 
         // Merge any registered users from persistent store not yet in Prisma
-        const existingIds = new Set(mapped.map((u) => u.id));
         const storedUsers = persistentStore.getAllUsers();
         for (const u of storedUsers) {
-          if (u.id !== excludeUserId && !existingIds.has(u.id)) {
-            existingIds.add(u.id);
-            mapped.push({
-              id: u.id,
-              name: u.name,
-              username: u.username,
-              avatarUrl: u.avatarUrl,
-              level: u.level || 1,
-              totalXp: u.xp || 0,
-              currentStreak: 0,
-            });
-          }
+          if (this.isDummyUser(u)) continue;
+          if (u.id === excludeUserId || u.firebaseUid === excludeUserId) continue;
+
+          const normUser = u.username?.toLowerCase().trim();
+          if (seenIds.has(u.id) || (u.firebaseUid && seenIds.has(u.firebaseUid))) continue;
+          if (normUser && seenUsernames.has(normUser)) continue;
+
+          seenIds.add(u.id);
+          if (u.firebaseUid) seenIds.add(u.firebaseUid);
+          if (normUser) seenUsernames.add(normUser);
+
+          mapped.push({
+            id: u.id,
+            name: u.name,
+            username: u.username,
+            avatarUrl: u.avatarUrl,
+            level: u.level || 1,
+            totalXp: u.xp || 0,
+            currentStreak: 0,
+          });
         }
 
         return mapped;
@@ -176,30 +211,47 @@ export class FriendsRepository {
       () => {
         const result: FriendUserDTO[] = [];
         const seenIds = new Set<string>();
+        const seenUsernames = new Set<string>();
+
+        seenIds.add(excludeUserId);
 
         // 1. PersistentStore registered users
         const storedUsers = persistentStore.getAllUsers();
         for (const u of storedUsers) {
-          if (u.id !== excludeUserId && !seenIds.has(u.id)) {
-            seenIds.add(u.id);
-            result.push({
-              id: u.id,
-              name: u.name,
-              username: u.username,
-              avatarUrl: u.avatarUrl,
-              level: u.level || 1,
-              totalXp: u.xp || 0,
-              currentStreak: 0,
-            });
-          }
+          if (this.isDummyUser(u)) continue;
+          if (u.id === excludeUserId || u.firebaseUid === excludeUserId) continue;
+
+          const normUser = u.username?.toLowerCase().trim();
+          if (seenIds.has(u.id) || (u.firebaseUid && seenIds.has(u.firebaseUid))) continue;
+          if (normUser && seenUsernames.has(normUser)) continue;
+
+          seenIds.add(u.id);
+          if (u.firebaseUid) seenIds.add(u.firebaseUid);
+          if (normUser) seenUsernames.add(normUser);
+
+          result.push({
+            id: u.id,
+            name: u.name,
+            username: u.username,
+            avatarUrl: u.avatarUrl,
+            level: u.level || 1,
+            totalXp: u.xp || 0,
+            currentStreak: 0,
+          });
         }
 
         // 2. In-memory demoUsersMap (unit tests)
         for (const u of demoUsersMap.values()) {
-          if (u.id !== excludeUserId && !seenIds.has(u.id)) {
-            seenIds.add(u.id);
-            result.push(u);
-          }
+          if (this.isDummyUser(u)) continue;
+          if (u.id === excludeUserId) continue;
+
+          const normUser = u.username?.toLowerCase().trim();
+          if (seenIds.has(u.id)) continue;
+          if (normUser && seenUsernames.has(normUser)) continue;
+
+          seenIds.add(u.id);
+          if (normUser) seenUsernames.add(normUser);
+          result.push(u);
         }
 
         return result;
@@ -221,40 +273,44 @@ export class FriendsRepository {
             },
           },
         });
-        return rows.map((r) => ({
-          id: r.id,
-          userId: r.userId,
-          friendId: r.friendId,
-          privacyLevel: (r.privacyLevel as PrivacyLevel) || 'basic',
-          createdAt: r.createdAt.toISOString(),
-          friend: {
-            id: r.friend.id,
-            name: r.friend.name,
-            username: r.friend.username,
-            avatarUrl: r.friend.avatarUrl,
-            level: r.friend.gamification?.level ?? 1,
-            totalXp: r.friend.gamification?.totalXp ?? 0,
-            currentStreak: r.friend.streaks[0]?.current ?? 0,
-          },
-        }));
+        return rows
+          .filter((r) => !this.isDummyUser(r.friend))
+          .map((r) => ({
+            id: r.id,
+            userId: r.userId,
+            friendId: r.friendId,
+            privacyLevel: (r.privacyLevel as PrivacyLevel) || 'basic',
+            createdAt: r.createdAt.toISOString(),
+            friend: {
+              id: r.friend.id,
+              name: r.friend.name,
+              username: r.friend.username,
+              avatarUrl: r.friend.avatarUrl,
+              level: r.friend.gamification?.level ?? 1,
+              totalXp: r.friend.gamification?.totalXp ?? 0,
+              currentStreak: r.friend.streaks[0]?.current ?? 0,
+            },
+          }));
       },
       () => {
         const userFriendships = memFriendships.filter((f) => f.userId === userId);
-        return userFriendships.map((f) => {
-          const friend = demoUsersMap.get(f.friendId) || {
-            id: f.friendId,
-            name: 'Friend',
-            username: 'friend',
-            avatarUrl: null,
-            level: 1,
-            totalXp: 0,
-            currentStreak: 0,
-          };
-          return {
-            ...f,
-            friend,
-          };
-        });
+        return userFriendships
+          .map((f) => {
+            const friend = demoUsersMap.get(f.friendId) || {
+              id: f.friendId,
+              name: 'Friend',
+              username: 'friend',
+              avatarUrl: null,
+              level: 1,
+              totalXp: 0,
+              currentStreak: 0,
+            };
+            return {
+              ...f,
+              friend,
+            };
+          })
+          .filter((f) => !this.isDummyUser(f.friend));
       }
     );
   }

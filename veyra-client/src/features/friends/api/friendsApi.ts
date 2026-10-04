@@ -49,60 +49,90 @@ function getLocalFriendships(): Set<string> {
   }
 }
 
+function isDummyUser(u: { id?: string; username?: string | null; name?: string | null; email?: string | null }): boolean {
+  if (!u) return true;
+  if (u.id === 'usr_demo' || u.id === 'demo' || u.id === 'mock') return true;
+  if (u.username?.toLowerCase() === 'demo' || u.username?.toLowerCase() === 'friend') return true;
+  if (u.name === 'Demo User' || u.name === 'Friend') return true;
+  if (u.email?.toLowerCase().includes('demo@')) return true;
+  return false;
+}
+
 export const friendsApi = {
   getFriends: async (): Promise<Friendship[]> => {
     try {
       const res = await apiClient.get<ApiResponse<Friendship[]>>('/friends');
-      return res.data.data;
+      return (res.data?.data || []).filter((f) => !isDummyUser(f.friend));
     } catch {
       return [];
     }
   },
 
   getDiscoverUsers: async (): Promise<DiscoverUser[]> => {
+    const currentUser = useAuthStore.getState().user;
+    const currentUserId = currentUser?.id;
+    const currentFirebaseUid = currentUser?.firebaseUid;
+    const currentUsername = currentUser?.username?.toLowerCase();
+
+    const isCaller = (u: { id: string; username?: string | null }) => {
+      if (currentUserId && u.id === currentUserId) return true;
+      if (currentFirebaseUid && u.id === currentFirebaseUid) return true;
+      if (currentUsername && u.username && u.username.toLowerCase() === currentUsername) return true;
+      return false;
+    };
+
+    let rawList: DiscoverUser[] = [];
+
     try {
       const res = await apiClient.get<ApiResponse<DiscoverUser[]>>('/friends/discover');
       if (res.data?.data && res.data.data.length > 0) {
-        return res.data.data;
+        rawList = res.data.data;
       }
     } catch (err) {
       console.warn('API /friends/discover unavailable, checking registered profiles in Firestore:', err);
     }
 
-    // Direct Firestore community users lookup (verified/registered accounts only)
-    const currentUser = useAuthStore.getState().user;
-    const pendingSent = getLocalPendingRequests();
-    const currentFriendships = getLocalFriendships();
-
-    let community: DiscoverUser[] = [];
-
-    try {
-      const firestoreUsers = await firestoreService.getAllCommunityUsers(currentUser?.id);
-      if (firestoreUsers.length > 0) {
-        community = firestoreUsers
-          .filter((u) => {
-            if (!u.uid) return false;
-            if (currentUser?.id && u.uid === currentUser.id) return false;
-            if (currentUser?.username && u.username?.toLowerCase() === currentUser.username.toLowerCase()) return false;
-            return true;
-          })
-          .map((u) => ({
-            id: u.uid,
-            name: u.name || u.username || 'Adventurer',
-            username: u.username || 'user',
-            avatarUrl: u.avatarUrl || null,
-            level: u.level || 1,
-            totalXp: u.xp || 0,
-            currentStreak: u.currentStreak || 0,
-            friendshipStatus: 'none',
-          }));
+    if (rawList.length === 0) {
+      try {
+        const firestoreUsers = await firestoreService.getAllCommunityUsers(currentUser?.id);
+        rawList = firestoreUsers.map((u) => ({
+          id: u.uid,
+          name: u.name || u.username || 'Adventurer',
+          username: u.username || 'user',
+          avatarUrl: u.avatarUrl || null,
+          level: u.level || 1,
+          totalXp: u.xp || 0,
+          currentStreak: u.currentStreak || 0,
+          friendshipStatus: 'none',
+        }));
+      } catch {
+        // Ignore
       }
-    } catch {
-      // Ignore
+    }
+
+    // Filter dummy accounts, caller's own account, and deduplicate
+    const seenIds = new Set<string>();
+    const seenUsernames = new Set<string>();
+    const filtered: DiscoverUser[] = [];
+
+    for (const u of rawList) {
+      if (isDummyUser(u)) continue;
+      if (isCaller(u)) continue;
+
+      const normUser = u.username?.toLowerCase().trim();
+      if (seenIds.has(u.id)) continue;
+      if (normUser && seenUsernames.has(normUser)) continue;
+
+      seenIds.add(u.id);
+      if (normUser) seenUsernames.add(normUser);
+      filtered.push(u);
     }
 
     // Overlay pending sent & confirmed friend states
-    return community.map((u) => {
+    const pendingSent = getLocalPendingRequests();
+    const currentFriendships = getLocalFriendships();
+
+    return filtered.map((u) => {
       let status = u.friendshipStatus;
       if (currentFriendships.has(u.id) || (u.username && currentFriendships.has(u.username.toLowerCase()))) {
         status = 'friends';
@@ -121,7 +151,10 @@ export const friendsApi = {
       const res = await apiClient.get<ApiResponse<{ incoming: FriendRequest[]; outgoing: FriendRequest[] }>>(
         '/friends/requests'
       );
-      return res.data.data;
+      return {
+        incoming: (res.data?.data?.incoming || []).filter((r) => !isDummyUser(r.sender)),
+        outgoing: (res.data?.data?.outgoing || []).filter((r) => !isDummyUser(r.receiver)),
+      };
     } catch {
       return { incoming: [], outgoing: [] };
     }
@@ -129,15 +162,14 @@ export const friendsApi = {
 
   sendRequest: async (payload: SendFriendRequestPayload): Promise<FriendRequest> => {
     const target = payload.targetUserId || payload.targetUsername || '';
+    saveLocalPendingRequest(target);
+
     try {
       const res = await apiClient.post<ApiResponse<FriendRequest>>('/friends/requests', payload);
-      saveLocalPendingRequest(target);
       return res.data.data;
     } catch {
-      // Save local pending state so UI updates immediately
-      saveLocalPendingRequest(target);
       return {
-        id: `req_${Date.now()}`,
+        id: 'req_' + Date.now(),
         senderId: useAuthStore.getState().user?.id || 'me',
         receiverId: target,
         status: 'pending',
@@ -165,23 +197,11 @@ export const friendsApi = {
   },
 
   respondToRequest: async (requestId: string, action: 'accept' | 'reject'): Promise<FriendRequest> => {
-    try {
-      const res = await apiClient.post<ApiResponse<FriendRequest>>(
-        `/friends/requests/${requestId}/respond`,
-        { action }
-      );
-      return res.data.data;
-    } catch {
-      return {
-        id: requestId,
-        senderId: 'mock',
-        receiverId: 'me',
-        status: action === 'accept' ? 'accepted' : 'rejected',
-        createdAt: new Date().toISOString(),
-        sender: { id: 'mock', name: 'Friend', username: 'friend', avatarUrl: null, level: 1, totalXp: 0, currentStreak: 0 },
-        receiver: { id: 'me', name: 'You', username: 'you', avatarUrl: null, level: 1, totalXp: 0, currentStreak: 0 },
-      };
-    }
+    const res = await apiClient.post<ApiResponse<FriendRequest>>(
+      `/friends/requests/${requestId}/respond`,
+      { action }
+    );
+    return res.data.data;
   },
 
   updatePrivacy: async (friendId: string, privacyLevel: PrivacyLevel): Promise<Friendship> => {

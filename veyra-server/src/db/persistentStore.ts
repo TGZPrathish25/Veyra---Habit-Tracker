@@ -137,30 +137,10 @@ class PersistentStore {
       console.warn('⚠️  Could not read local data store:', err);
     }
 
-    // Seed default demo user if not present
-    if (!this.data.users['usr_demo']) {
-      this.data.users['usr_demo'] = {
-        id: 'usr_demo',
-        firebaseUid: 'demo',
-        email: 'demo@veyra.app',
-        name: 'Demo User',
-        username: 'demo',
-        avatarUrl: null,
-        timezone: 'Asia/Kolkata',
-        xp: 0,
-        level: 1,
-        createdAt: new Date('2026-01-01').toISOString(),
-        updatedAt: new Date().toISOString(),
-      };
-      this.data.settings['usr_demo'] = {
-        theme: 'dark',
-        friendVisibilityLevel: 2,
-        leaderboardOptIn: true,
-        deadlineAlertPrefs: null,
-        notificationPrefs: null,
-        challengePrefs: null,
-        weekStartDay: 1,
-      };
+    // Purge any stale demo/dummy user
+    if (this.data.users['usr_demo']) {
+      delete this.data.users['usr_demo'];
+      delete this.data.settings['usr_demo'];
       this.scheduleSave();
     }
   }
@@ -190,14 +170,12 @@ class PersistentStore {
     this.data.users[user.id] = user;
     this.scheduleSave();
 
-    // Mirror to Cloud Firestore
+    // Mirror to Cloud Firestore under a single canonical document key (firebaseUid or id)
     const db = getFirestoreAdmin();
     if (db) {
       try {
-        await db.collection('users').doc(user.id).set(user, { merge: true });
-        if (user.firebaseUid && user.firebaseUid !== user.id) {
-          await db.collection('users').doc(user.firebaseUid).set(user, { merge: true });
-        }
+        const canonicalDocId = user.firebaseUid || user.id;
+        await db.collection('users').doc(canonicalDocId).set(user, { merge: true });
       } catch (err) {
         console.debug('Cloud Firestore user write:', err);
       }

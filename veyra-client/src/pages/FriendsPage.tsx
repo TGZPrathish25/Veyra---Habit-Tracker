@@ -37,9 +37,20 @@ export const FriendsPage: React.FC = () => {
     removeFriend,
   } = useFriends();
 
-  const totalStreakWithFriends = friends.reduce((sum, f) => sum + f.friend.currentStreak, 0);
+  const isDummy = (u: { id?: string; username?: string | null; name?: string | null }) => {
+    if (!u) return true;
+    if (u.id === 'usr_demo' || u.id === 'demo' || u.id === 'mock') return true;
+    if (u.username?.toLowerCase() === 'demo' || u.username?.toLowerCase() === 'friend') return true;
+    if (u.name === 'Demo User' || u.name === 'Friend') return true;
+    return false;
+  };
 
-  const filteredDiscoverUsers = discoverUsers.filter((u) => {
+  const realFriends = friends.filter((f) => !isDummy(f.friend));
+  const realDiscoverUsers = discoverUsers.filter((u) => !isDummy(u));
+
+  const totalStreakWithFriends = realFriends.reduce((sum, f) => sum + f.friend.currentStreak, 0);
+
+  const filteredDiscoverUsers = realDiscoverUsers.filter((u) => {
     if (!searchFilter.trim()) return true;
     const q = searchFilter.toLowerCase();
     return u.name?.toLowerCase().includes(q) || u.username?.toLowerCase().includes(q);
@@ -182,7 +193,7 @@ export const FriendsPage: React.FC = () => {
                 <div key={i} className="glass p-5 rounded-2xl border border-white/5 h-48 animate-pulse" />
               ))}
             </div>
-          ) : friends.length === 0 ? (
+          ) : realFriends.length === 0 ? (
             <div className="space-y-6">
               <div className="glass p-8 sm:p-10 rounded-3xl border border-white/10 text-center relative overflow-hidden">
                 <div className="w-16 h-16 rounded-2xl bg-blue-500/20 border border-blue-500/30 mx-auto flex items-center justify-center text-blue-400 mb-3 shadow-inner">
@@ -193,12 +204,12 @@ export const FriendsPage: React.FC = () => {
                   Connect with members of the Veyra community below to stay accountable, compare streaks, and share progress.
                 </p>
                 <GlassButton variant="primary" onClick={() => setActiveTab('find')}>
-                  <UserPlus size={14} className="mr-1.5" /> View Community Directory ({discoverUsers.length})
+                  <UserPlus size={14} className="mr-1.5" /> View Community Directory ({realDiscoverUsers.length})
                 </GlassButton>
               </div>
 
               {/* Directly list community users with Add Friend buttons right on the page */}
-              {discoverUsers.length > 0 && (
+              {realDiscoverUsers.length > 0 && (
                 <div>
                   <div className="flex items-center justify-between mb-3">
                     <div className="flex items-center gap-2">
@@ -208,7 +219,7 @@ export const FriendsPage: React.FC = () => {
                     <span className="text-fluid-xs text-zinc-400">Click Add Friend to connect</span>
                   </div>
                   <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3">
-                    {discoverUsers.map((user) => (
+                    {realDiscoverUsers.map((user) => (
                       <DiscoverUserCard
                         key={user.id}
                         user={user}
@@ -227,7 +238,7 @@ export const FriendsPage: React.FC = () => {
           ) : (
             <div className="space-y-6">
               <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-                {friends.map((friendship) => (
+                {realFriends.map((friendship) => (
                   <FriendCard
                     key={friendship.id}
                     friendship={friendship}
@@ -241,7 +252,7 @@ export const FriendsPage: React.FC = () => {
               </div>
 
               {/* Suggestions Section below active friends */}
-              {discoverUsers.some((u) => u.friendshipStatus === 'none') && (
+              {realDiscoverUsers.some((u) => u.friendshipStatus === 'none') && (
                 <div className="pt-6 border-t border-white/10">
                   <div className="flex items-center justify-between mb-3">
                     <div className="flex items-center gap-2">
@@ -253,11 +264,11 @@ export const FriendsPage: React.FC = () => {
                       onClick={() => setActiveTab('find')}
                       className="text-fluid-xs text-blue-400 hover:text-blue-300 font-medium"
                     >
-                      View All ({discoverUsers.length}) →
+                      View All ({realDiscoverUsers.length}) →
                     </button>
                   </div>
                   <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3">
-                    {discoverUsers
+                    {realDiscoverUsers
                       .filter((u) => u.friendshipStatus === 'none')
                       .slice(0, 3)
                       .map((user) => (

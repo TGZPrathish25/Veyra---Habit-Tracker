@@ -1,9 +1,18 @@
-/** Leaderboard repository — queries all registered users with opt-in status. */
+/** Leaderboard repository — queries all registered users with opt-in status and deduplication. */
 import { prisma, tryPrisma } from '../../db/prisma.js';
 import { persistentStore } from '../../db/persistentStore.js';
 import type { LeaderboardEntryDTO, LeaderboardSortMetric } from './leaderboard.types.js';
 
 export class LeaderboardRepository {
+  private isDummyUser(u: { id?: string; username?: string | null; email?: string | null; name?: string | null }): boolean {
+    if (!u) return true;
+    if (u.id === 'usr_demo' || u.id === 'demo') return true;
+    if (u.username?.toLowerCase() === 'demo') return true;
+    if (u.name === 'Demo User') return true;
+    if (u.email?.toLowerCase().includes('demo@')) return true;
+    return false;
+  }
+
   async getGlobalLeaderboard(metric: LeaderboardSortMetric = 'xp', limit = 100): Promise<LeaderboardEntryDTO[]> {
     return tryPrisma(
       async () => {
@@ -22,49 +31,85 @@ export class LeaderboardRepository {
           take: limit,
         });
 
-        const entries: LeaderboardEntryDTO[] = users.map((u) => ({
-          id: u.id,
-          name: u.name,
-          username: u.username,
-          avatarUrl: u.avatarUrl,
-          level: u.gamification?.level ?? u.level ?? 1,
-          totalXp: u.gamification?.totalXp ?? u.xp ?? 0,
-          currentStreak: u.streaks[0]?.current ?? 0,
-          longestStreak: u.streaks[0]?.longest ?? 0,
-          rank: 0,
-        }));
+        const seenIds = new Set<string>();
+        const seenUsernames = new Set<string>();
+        const entries: LeaderboardEntryDTO[] = [];
+
+        for (const u of users) {
+          if (this.isDummyUser(u)) continue;
+
+          const normUser = u.username?.toLowerCase().trim();
+          if (seenIds.has(u.id) || (u.firebaseUid && seenIds.has(u.firebaseUid))) continue;
+          if (normUser && seenUsernames.has(normUser)) continue;
+
+          seenIds.add(u.id);
+          if (u.firebaseUid) seenIds.add(u.firebaseUid);
+          if (normUser) seenUsernames.add(normUser);
+
+          entries.push({
+            id: u.id,
+            name: u.name,
+            username: u.username,
+            avatarUrl: u.avatarUrl,
+            level: u.gamification?.level ?? u.level ?? 1,
+            totalXp: u.gamification?.totalXp ?? u.xp ?? 0,
+            currentStreak: u.streaks[0]?.current ?? 0,
+            longestStreak: u.streaks[0]?.longest ?? 0,
+            rank: 0,
+          });
+        }
 
         // Merge persistentStore users if any exist only there
-        const existingIds = new Set(entries.map((e) => e.id));
         const storedUsers = persistentStore.getAllUsers();
         for (const su of storedUsers) {
-          if (!existingIds.has(su.id)) {
-            const settings = await persistentStore.getSettings(su.id);
-            if (settings?.leaderboardOptIn !== false) {
-              const streak = await persistentStore.getStreak(su.id, 'daily');
-              entries.push({
-                id: su.id,
-                name: su.name,
-                username: su.username,
-                avatarUrl: su.avatarUrl,
-                level: su.level || 1,
-                totalXp: su.xp || 0,
-                currentStreak: streak?.current ?? 0,
-                longestStreak: streak?.longest ?? 0,
-                rank: 0,
-              });
-            }
+          if (this.isDummyUser(su)) continue;
+
+          const normUser = su.username?.toLowerCase().trim();
+          if (seenIds.has(su.id) || (su.firebaseUid && seenIds.has(su.firebaseUid))) continue;
+          if (normUser && seenUsernames.has(normUser)) continue;
+
+          const settings = await persistentStore.getSettings(su.id);
+          if (settings?.leaderboardOptIn !== false) {
+            seenIds.add(su.id);
+            if (su.firebaseUid) seenIds.add(su.firebaseUid);
+            if (normUser) seenUsernames.add(normUser);
+
+            const streak = await persistentStore.getStreak(su.id, 'daily');
+            entries.push({
+              id: su.id,
+              name: su.name,
+              username: su.username,
+              avatarUrl: su.avatarUrl,
+              level: su.level || 1,
+              totalXp: su.xp || 0,
+              currentStreak: streak?.current ?? 0,
+              longestStreak: streak?.longest ?? 0,
+              rank: 0,
+            });
           }
         }
 
         return this.sortAndRank(entries, metric);
       },
       async () => {
+        const seenIds = new Set<string>();
+        const seenUsernames = new Set<string>();
         const entries: LeaderboardEntryDTO[] = [];
+
         const storedUsers = persistentStore.getAllUsers();
         for (const su of storedUsers) {
+          if (this.isDummyUser(su)) continue;
+
+          const normUser = su.username?.toLowerCase().trim();
+          if (seenIds.has(su.id) || (su.firebaseUid && seenIds.has(su.firebaseUid))) continue;
+          if (normUser && seenUsernames.has(normUser)) continue;
+
           const settings = await persistentStore.getSettings(su.id);
           if (settings?.leaderboardOptIn !== false) {
+            seenIds.add(su.id);
+            if (su.firebaseUid) seenIds.add(su.firebaseUid);
+            if (normUser) seenUsernames.add(normUser);
+
             const streak = await persistentStore.getStreak(su.id, 'daily');
             entries.push({
               id: su.id,

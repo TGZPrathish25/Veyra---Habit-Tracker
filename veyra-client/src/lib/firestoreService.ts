@@ -119,14 +119,44 @@ export const firestoreService = {
     if (!db) return [];
     try {
       const usersColl = collection(db, 'users');
-      const q = query(usersColl, limit(50));
+      const q = query(usersColl, limit(100));
       const snap = await getDocs(q);
       const results: FirestoreUserProfile[] = [];
+      const seenIds = new Set<string>();
+      const seenUsernames = new Set<string>();
+
       snap.forEach((d) => {
         const data = d.data() as FirestoreUserProfile;
-        if (data.uid !== excludeUserId) {
-          results.push({ ...data, uid: d.id });
+        const uid = data.uid || d.id;
+        const username = data.username?.toLowerCase().trim();
+        const email = data.email?.toLowerCase().trim();
+
+        // Filter out dummy/demo accounts
+        if (
+          d.id === 'usr_demo' ||
+          uid === 'usr_demo' ||
+          uid === 'demo' ||
+          username === 'demo' ||
+          data.name === 'Demo User' ||
+          email?.includes('demo@')
+        ) {
+          return;
         }
+
+        // Exclude caller's own ID
+        if (excludeUserId && (d.id === excludeUserId || uid === excludeUserId)) {
+          return;
+        }
+
+        // Deduplicate across documents that may share uid or username
+        if (seenIds.has(d.id) || (data.uid && seenIds.has(data.uid))) return;
+        if (username && seenUsernames.has(username)) return;
+
+        seenIds.add(d.id);
+        if (data.uid) seenIds.add(data.uid);
+        if (username) seenUsernames.add(username);
+
+        results.push({ ...data, uid });
       });
       return results;
     } catch {
