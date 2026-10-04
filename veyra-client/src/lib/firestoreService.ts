@@ -113,6 +113,28 @@ export const firestoreService = {
   },
 
   /**
+   * Fetch all community user profiles for discovery
+   */
+  async getAllCommunityUsers(excludeUserId?: string): Promise<FirestoreUserProfile[]> {
+    if (!db) return [];
+    try {
+      const usersColl = collection(db, 'users');
+      const q = query(usersColl, limit(50));
+      const snap = await getDocs(q);
+      const results: FirestoreUserProfile[] = [];
+      snap.forEach((d) => {
+        const data = d.data() as FirestoreUserProfile;
+        if (data.uid !== excludeUserId) {
+          results.push({ ...data, uid: d.id });
+        }
+      });
+      return results;
+    } catch {
+      return [];
+    }
+  },
+
+  /**
    * Save User Settings to `users/{userId}/settings/preferences`
    */
   async saveUserSettings(userId: string, settings: Record<string, unknown>): Promise<void> {
