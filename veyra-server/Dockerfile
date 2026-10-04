@@ -25,10 +25,12 @@ RUN apk add --no-cache openssl
 WORKDIR /app
 RUN addgroup --system --gid 1001 veyra && \
     adduser --system --uid 1001 veyra
-COPY --from=deps /app/node_modules ./node_modules
-COPY --from=deps /app/prisma ./prisma
-COPY --from=builder /app/dist ./dist
-COPY package.json ./
+COPY --from=deps --chown=veyra:veyra /app/node_modules ./node_modules
+COPY --from=deps --chown=veyra:veyra /app/prisma ./prisma
+COPY --from=builder --chown=veyra:veyra /app/dist ./dist
+COPY --chown=veyra:veyra package.json ./
+
+RUN mkdir -p /app/data && chown -R veyra:veyra /app/data
 
 USER veyra
 EXPOSE 3001
