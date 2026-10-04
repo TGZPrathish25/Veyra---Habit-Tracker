@@ -51,7 +51,7 @@ export const InstallAppPrompt: React.FC = () => {
     <aside
       role="banner"
       aria-label="Install Veyra Application"
-      className="fixed bottom-20 lg:bottom-6 left-4 sm:left-6 z-40 max-w-sm w-[calc(100%-2rem)] glass p-4 rounded-2xl border border-blue-500/30 bg-blue-950/40 shadow-2xl backdrop-blur-xl animate-slideUp"
+      className="fixed bottom-[calc(var(--bottom-nav-height,64px)+env(safe-area-inset-bottom,0px)+0.75rem)] lg:bottom-6 left-4 sm:left-6 z-40 max-w-sm w-[calc(100%-2rem)] glass p-4 rounded-2xl border border-blue-500/30 bg-blue-950/40 shadow-2xl backdrop-blur-xl animate-slideUp"
     >
       <div className="flex items-start justify-between gap-2 mb-2">
         <div className="flex items-center gap-2">

@@ -126,12 +126,12 @@ export const FriendsPage: React.FC = () => {
         </div>
       </div>
 
-      {/* Navigation Tabs */}
-      <div className="flex items-center gap-2 border-b border-white/10 pb-3 mb-6">
+      {/* Navigation Tabs (Smooth horizontal scroll on mobile, no page overflow) */}
+      <div className="flex items-center gap-2 border-b border-white/10 pb-3 mb-6 overflow-x-auto no-scrollbar -mx-2 px-2 sm:mx-0 sm:px-0">
         <button
           onClick={() => setActiveTab('friends')}
           className={cn(
-            'px-4 py-2 rounded-xl text-fluid-xs font-semibold transition-all flex items-center gap-2 border',
+            'px-4 py-2 rounded-xl text-fluid-xs font-semibold transition-all flex items-center gap-2 border shrink-0',
             activeTab === 'friends'
               ? 'bg-blue-500/20 text-blue-300 border-blue-500/40 shadow-sm'
               : 'text-zinc-400 border-transparent hover:text-gray-900 dark:hover:text-white hover:bg-white/5'
@@ -147,7 +147,7 @@ export const FriendsPage: React.FC = () => {
         <button
           onClick={() => setActiveTab('find')}
           className={cn(
-            'px-4 py-2 rounded-xl text-fluid-xs font-semibold transition-all flex items-center gap-2 border',
+            'px-4 py-2 rounded-xl text-fluid-xs font-semibold transition-all flex items-center gap-2 border shrink-0',
             activeTab === 'find'
               ? 'bg-blue-500/20 text-blue-300 border-blue-500/40 shadow-sm'
               : 'text-zinc-400 border-transparent hover:text-gray-900 dark:hover:text-white hover:bg-white/5'
@@ -163,7 +163,7 @@ export const FriendsPage: React.FC = () => {
         <button
           onClick={() => setActiveTab('requests')}
           className={cn(
-            'px-4 py-2 rounded-xl text-fluid-xs font-semibold transition-all flex items-center gap-2 border relative',
+            'px-4 py-2 rounded-xl text-fluid-xs font-semibold transition-all flex items-center gap-2 border relative shrink-0',
             activeTab === 'requests'
               ? 'bg-blue-500/20 text-blue-300 border-blue-500/40 shadow-sm'
               : 'text-zinc-400 border-transparent hover:text-gray-900 dark:hover:text-white hover:bg-white/5'
@@ -181,7 +181,7 @@ export const FriendsPage: React.FC = () => {
         <button
           onClick={() => setActiveTab('feed')}
           className={cn(
-            'px-4 py-2 rounded-xl text-fluid-xs font-semibold transition-all flex items-center gap-2 border',
+            'px-4 py-2 rounded-xl text-fluid-xs font-semibold transition-all flex items-center gap-2 border shrink-0',
             activeTab === 'feed'
               ? 'bg-blue-500/20 text-blue-300 border-blue-500/40 shadow-sm'
               : 'text-zinc-400 border-transparent hover:text-gray-900 dark:hover:text-white hover:bg-white/5'

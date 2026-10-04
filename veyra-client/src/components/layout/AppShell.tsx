@@ -35,7 +35,7 @@ export const AppShell: React.FC<AppShellProps> = ({ children }) => {
           id="main-content"
           tabIndex={-1}
           role="main"
-          className="flex-1 p-[var(--page-padding)] pb-24 lg:pb-[var(--page-padding)] focus:outline-none"
+          className="flex-1 p-[var(--page-padding)] pb-[calc(var(--bottom-nav-height,64px)+env(safe-area-inset-bottom,0px)+1.5rem)] lg:pb-[var(--page-padding)] focus:outline-none"
         >
           {children}
         </main>
