@@ -1,10 +1,11 @@
-/** User profile view with XP, level progression, and stats overview. */
-import React from 'react';
+import React, { useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { AppShell } from '@/components/layout/AppShell';
 import { PageHeader } from '@/components/layout/PageHeader';
 import { GlassButton } from '@/components/glass/GlassButton';
+import { GlassModal } from '@/components/glass/GlassModal';
 import { useAuth } from '@/features/auth/hooks/useAuth';
+import { usePwa } from '@/lib/pwa';
 import {
   User as UserIcon,
   Shield,
@@ -14,15 +15,30 @@ import {
   Zap,
   LogOut,
   Settings as SettingsIcon,
+  Smartphone,
+  Share,
+  PlusSquare,
+  Sparkles,
+  X,
+  CheckCircle2,
 } from 'lucide-react';
 
 export const ProfilePage: React.FC = () => {
   const { user, settings, logout } = useAuth();
+  const { isStandalone, isIos, promptInstall } = usePwa();
+  const [showInstallGuide, setShowInstallGuide] = useState(false);
   const navigate = useNavigate();
 
   const handleLogout = async () => {
     await logout();
     navigate('/login');
+  };
+
+  const handleInstall = async () => {
+    const result = await promptInstall();
+    if (result === 'manual_ios' || result === 'manual_browser') {
+      setShowInstallGuide(true);
+    }
   };
 
   const level = user?.level || 1;
@@ -124,6 +140,16 @@ export const ProfilePage: React.FC = () => {
               <span>Quick Actions</span>
             </h3>
             <div className="flex flex-col gap-2 pt-1">
+              {!isStandalone && (
+                <GlassButton
+                  variant="primary"
+                  onClick={handleInstall}
+                  className="w-full justify-start gap-2.5 min-h-[44px] bg-gradient-to-r from-blue-600/30 to-violet-600/30 hover:from-blue-600/40 hover:to-violet-600/40 border-blue-500/40 text-blue-100 hover:text-white transition-all shadow-sm"
+                >
+                  <Smartphone size={16} className="text-blue-400" />
+                  <span>Add to Home Screen</span>
+                </GlassButton>
+              )}
               <Link to="/settings">
                 <GlassButton variant="ghost" className="w-full justify-start gap-2 min-h-[44px]">
                   <SettingsIcon size={16} />
@@ -142,6 +168,107 @@ export const ProfilePage: React.FC = () => {
           </div>
         </div>
       </div>
+
+      {/* PWA Install Guide Modal (Shown when manual browser install step is needed) */}
+      <GlassModal open={showInstallGuide} onClose={() => setShowInstallGuide(false)}>
+        <div className="space-y-4">
+          <div className="flex items-center justify-between pb-3 border-b border-white/10">
+            <div className="flex items-center gap-2.5">
+              <div
+                className="w-8 h-8 rounded-xl flex items-center justify-center font-bold text-sm text-white shadow-md"
+                style={{ background: 'linear-gradient(135deg, var(--color-primary), var(--color-accent))' }}
+              >
+                V
+              </div>
+              <div>
+                <h3 className="text-fluid-base font-bold text-white flex items-center gap-1.5">
+                  <Sparkles size={14} className="text-yellow-400" />
+                  Install Veyra App
+                </h3>
+                <p className="text-[11px] text-zinc-400">Add to your home screen for the full app experience</p>
+              </div>
+            </div>
+            <button
+              type="button"
+              onClick={() => setShowInstallGuide(false)}
+              className="p-1.5 rounded-lg text-zinc-400 hover:text-white hover:bg-white/10 transition-colors"
+            >
+              <X size={16} />
+            </button>
+          </div>
+
+          {isIos ? (
+            <div className="space-y-3 py-1 text-fluid-xs">
+              <p className="text-zinc-300">Follow these 2 simple steps in Safari to add Veyra to your home screen:</p>
+              <div className="space-y-2.5">
+                <div className="flex items-start gap-3 p-3 rounded-xl bg-white/5 border border-white/10">
+                  <span className="w-6 h-6 rounded-lg bg-blue-500/20 text-blue-400 font-bold flex items-center justify-center shrink-0 text-xs">
+                    1
+                  </span>
+                  <div className="text-zinc-200">
+                    Tap the <strong className="text-white">Share</strong> button{' '}
+                    <Share size={14} className="inline text-blue-400 mx-0.5" /> in the bottom toolbar of Safari.
+                  </div>
+                </div>
+
+                <div className="flex items-start gap-3 p-3 rounded-xl bg-white/5 border border-white/10">
+                  <span className="w-6 h-6 rounded-lg bg-blue-500/20 text-blue-400 font-bold flex items-center justify-center shrink-0 text-xs">
+                    2
+                  </span>
+                  <div className="text-zinc-200">
+                    Scroll down and tap{' '}
+                    <strong className="text-white">Add to Home Screen</strong>{' '}
+                    <PlusSquare size={14} className="inline text-blue-400 mx-0.5" />.
+                  </div>
+                </div>
+
+                <div className="flex items-start gap-3 p-3 rounded-xl bg-white/5 border border-white/10">
+                  <span className="w-6 h-6 rounded-lg bg-emerald-500/20 text-emerald-400 font-bold flex items-center justify-center shrink-0 text-xs">
+                    ✓
+                  </span>
+                  <div className="text-zinc-200">
+                    Tap <strong className="text-white">Add</strong> in the top right. Veyra will appear on your home screen with its app icon!
+                  </div>
+                </div>
+              </div>
+            </div>
+          ) : (
+            <div className="space-y-3 py-1 text-fluid-xs">
+              <p className="text-zinc-300">To install Veyra on your device:</p>
+              <div className="space-y-2.5">
+                <div className="flex items-start gap-3 p-3 rounded-xl bg-white/5 border border-white/10">
+                  <span className="w-6 h-6 rounded-lg bg-blue-500/20 text-blue-400 font-bold flex items-center justify-center shrink-0 text-xs">
+                    1
+                  </span>
+                  <div className="text-zinc-200">
+                    Tap the browser menu <strong className="text-white">(⋮ or ⋯)</strong> in the top right.
+                  </div>
+                </div>
+
+                <div className="flex items-start gap-3 p-3 rounded-xl bg-white/5 border border-white/10">
+                  <span className="w-6 h-6 rounded-lg bg-blue-500/20 text-blue-400 font-bold flex items-center justify-center shrink-0 text-xs">
+                    2
+                  </span>
+                  <div className="text-zinc-200">
+                    Select <strong className="text-white">"Install app"</strong> or{' '}
+                    <strong className="text-white">"Add to Home screen"</strong>.
+                  </div>
+                </div>
+              </div>
+            </div>
+          )}
+
+          <div className="pt-2">
+            <GlassButton
+              variant="primary"
+              onClick={() => setShowInstallGuide(false)}
+              className="w-full justify-center min-h-[42px]"
+            >
+              Got it
+            </GlassButton>
+          </div>
+        </div>
+      </GlassModal>
     </AppShell>
   );
 };

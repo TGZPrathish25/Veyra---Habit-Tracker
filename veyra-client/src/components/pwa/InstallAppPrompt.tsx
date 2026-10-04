@@ -4,49 +4,39 @@
 import React, { useState, useEffect } from 'react';
 import { Download, X, Smartphone, Sparkles } from 'lucide-react';
 import { GlassButton } from '@/components/glass/GlassButton';
-
-interface BeforeInstallPromptEvent extends Event {
-  prompt: () => Promise<void>;
-  userChoice: Promise<{ outcome: 'accepted' | 'dismissed' }>;
-}
+import { usePwa } from '@/lib/pwa';
 
 export const InstallAppPrompt: React.FC = () => {
-  const [deferredPrompt, setDeferredPrompt] = useState<BeforeInstallPromptEvent | null>(null);
+  const { isStandalone, isIos, hasPrompt, promptInstall } = usePwa();
   const [isVisible, setIsVisible] = useState(false);
   const [isIosPromptVisible, setIsIosPromptVisible] = useState(false);
 
   useEffect(() => {
+    if (isStandalone) {
+      setIsVisible(false);
+      setIsIosPromptVisible(false);
+      return;
+    }
+
     // Check if dismissed in this session
     if (sessionStorage.getItem('veyra_install_dismissed')) return;
 
-    // Detect iOS Safari
-    const isIos = /iPad|iPhone|iPod/.test(navigator.userAgent) && !(window as unknown as { MSStream?: unknown }).MSStream;
-    const isStandalone = window.matchMedia('(display-mode: standalone)').matches;
-
-    if (isIos && !isStandalone) {
+    if (isIos) {
       // Don't show immediately to prevent intrusive feeling; wait 6 seconds
       const timer = setTimeout(() => setIsIosPromptVisible(true), 6000);
       return () => clearTimeout(timer);
     }
 
-    const handler = (e: Event) => {
-      e.preventDefault();
-      setDeferredPrompt(e as BeforeInstallPromptEvent);
+    if (hasPrompt) {
       setIsVisible(true);
-    };
-
-    window.addEventListener('beforeinstallprompt', handler);
-    return () => window.removeEventListener('beforeinstallprompt', handler);
-  }, []);
+    }
+  }, [isStandalone, isIos, hasPrompt]);
 
   const handleInstallClick = async () => {
-    if (!deferredPrompt) return;
-    await deferredPrompt.prompt();
-    const { outcome } = await deferredPrompt.userChoice;
+    const outcome = await promptInstall();
     if (outcome === 'accepted') {
       setIsVisible(false);
     }
-    setDeferredPrompt(null);
   };
 
   const handleDismiss = () => {
@@ -55,7 +45,7 @@ export const InstallAppPrompt: React.FC = () => {
     setIsIosPromptVisible(false);
   };
 
-  if (!isVisible && !isIosPromptVisible) return null;
+  if (isStandalone || (!isVisible && !isIosPromptVisible)) return null;
 
   return (
     <aside
