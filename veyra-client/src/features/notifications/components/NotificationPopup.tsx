@@ -3,7 +3,7 @@
  * or real-time notification arrives (e.g. 9:30 PM IST daily habit completion reminder).
  */
 import React, { useEffect, useState, useRef } from 'react';
-import { Sparkles, Zap, Bell, X, Check, Volume2 } from 'lucide-react';
+import { Sparkles, Zap, Bell, X, Check, Volume2, Clock } from 'lucide-react';
 import { useNotificationPopupStore } from '../store/notificationPopupStore';
 import { useNotifications, requestNotificationPermission } from '../hooks/useNotifications';
 
@@ -77,6 +77,10 @@ export const NotificationPopup: React.FC = () => {
     }
   };
 
+  const is1HourReminder =
+    currentPopup.title.includes('1 Hour Left') ||
+    currentPopup.title.includes('Hour Left') ||
+    currentPopup.type === 'deadline_urgent';
   const is100Percent =
     currentPopup.title.includes('100% Completed') ||
     currentPopup.title.includes('Perfect Day');
@@ -84,7 +88,16 @@ export const NotificationPopup: React.FC = () => {
     currentPopup.title.includes('Not Completed') ||
     currentPopup.title.includes('%');
 
-  const config = is100Percent
+  const config = is1HourReminder
+    ? {
+        border: 'border-orange-500/40',
+        bg: 'bg-orange-950/40',
+        accentBg: 'bg-orange-500/20 text-orange-300',
+        barColor: 'bg-orange-400',
+        icon: <Clock size={16} className="text-orange-400 animate-pulse" />,
+        badgeText: '1-Hour Task Reminder',
+      }
+    : is100Percent
     ? {
         border: 'border-emerald-500/40',
         bg: 'bg-emerald-950/40',
@@ -100,7 +113,7 @@ export const NotificationPopup: React.FC = () => {
         accentBg: 'bg-amber-500/20 text-amber-300',
         barColor: 'bg-amber-400',
         icon: <Zap size={16} className="text-amber-400 animate-bounce" />,
-        badgeText: '9:30 PM Habit Check-in',
+        badgeText: '9:00 PM Habit Check-in',
       }
     : {
         border: 'border-blue-500/40',

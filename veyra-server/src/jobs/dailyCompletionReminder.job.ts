@@ -1,6 +1,6 @@
 /**
- * Daily 9:30 PM IST Scheduled Completion Reminder Job.
- * Evaluates habit completion for every user in Asia/Kolkata timezone.
+ * Daily 9:00 PM IST Scheduled Completion Reminder Job.
+ * Evaluates habit completion for every user in Asia/Kolkata timezone strictly at 9:00 PM.
  * Sends short, motivating notifications stating 100% completion or exact remaining %.
  */
 import cron from 'node-cron';
@@ -8,6 +8,7 @@ import { prisma, tryPrisma } from '../db/prisma.js';
 import { persistentStore } from '../db/persistentStore.js';
 import { tasksService } from '../modules/tasks/tasks.service.js';
 import { notificationsRepository } from '../modules/notifications/notifications.repository.js';
+import { usersRepository } from '../modules/users/users.repository.js';
 import { logger } from '../config/logger.js';
 import { getIO } from '../sockets/index.js';
 
@@ -44,7 +45,7 @@ export interface ReminderJobResult {
 }
 
 /**
- * Core runner that evaluates habit completion and sends 9:30 PM IST notifications.
+ * Core runner that evaluates habit completion and sends 9:00 PM IST notifications.
  * Can be called automatically by cron or manually for preview/tests.
  */
 export async function runDailyCompletionReminder(forceDate?: string, specificUserId?: string): Promise<ReminderJobResult> {
@@ -57,7 +58,7 @@ export async function runDailyCompletionReminder(forceDate?: string, specificUse
       day: '2-digit',
     }).format(new Date());
 
-  logger.info({ targetDate, specificUserId }, '🔔 Starting 9:30 PM IST daily habit completion reminder evaluation...');
+  logger.info({ targetDate, specificUserId }, '🔔 Starting 9:00 PM IST daily habit completion reminder evaluation...');
 
   // 1. Gather all registered, non-dummy users
   const userMap = new Map<string, { id: string; name?: string | null; username?: string | null }>();
@@ -101,14 +102,21 @@ export async function runDailyCompletionReminder(forceDate?: string, specificUse
 
   for (const user of users) {
     try {
-      // 2. Check if user already received today's 9:30 PM reminder
+      // 2. Check user notification settings — default is ON unless explicitly false
+      const userSettings = await usersRepository.getSettings(user.id).catch(() => null);
+      const notifPrefs = (userSettings?.notificationPrefs || {}) as Record<string, unknown>;
+      if (notifPrefs.dailyEveningReminder === false) {
+        continue;
+      }
+
+      // 3. Check if user already received today's 9:00 PM reminder
       const existing = await notificationsRepository.findUserNotifications(user.id, false, 20);
       const alreadySent = existing.some((n) => {
         const data = n.data as Record<string, unknown> | null;
         return (
-          (data?.scheduledNotification === 'evening_930pm_ist' ||
+          (data?.scheduledNotification === 'evening_9pm_ist' ||
            data?.scheduledNotification === 'evening_910pm_ist' ||
-           data?.scheduledNotification === 'evening_9pm_ist') &&
+           data?.scheduledNotification === 'evening_930pm_ist') &&
           data?.date === targetDate
         );
       });
@@ -118,11 +126,11 @@ export async function runDailyCompletionReminder(forceDate?: string, specificUse
         continue;
       }
 
-      // 3. Fetch user's occurrences & habit summary for today in Asia/Kolkata timezone
+      // 4. Fetch user's occurrences & habit summary for today in Asia/Kolkata timezone
       const daily = await tasksService.getDailyOccurrences(user.id, targetDate, 'Asia/Kolkata');
       const { totalTasks, completedTasks, completionPercentage } = daily.summary;
 
-      // 4. Craft short and perfect notification copy
+      // 5. Craft short and perfect notification copy
       let title: string;
       let body: string;
 
@@ -143,14 +151,14 @@ export async function runDailyCompletionReminder(forceDate?: string, specificUse
         }
       }
 
-      // 5. Store notification
+      // 6. Store notification
       await notificationsRepository.createNotification({
         userId: user.id,
         type: 'streak',
         title,
         body,
         data: {
-          scheduledNotification: 'evening_930pm_ist',
+          scheduledNotification: 'evening_9pm_ist',
           date: targetDate,
           totalTasks,
           completedTasks,
@@ -161,7 +169,7 @@ export async function runDailyCompletionReminder(forceDate?: string, specificUse
 
       notificationsSent++;
 
-      // 6. Broadcast via Socket.IO if connected
+      // 7. Broadcast via Socket.IO if connected
       try {
         const io = getIO();
         io.emit(`notification:${user.id}`, {
@@ -174,7 +182,7 @@ export async function runDailyCompletionReminder(forceDate?: string, specificUse
         // Socket.IO may not be initialized in headless test runs
       }
     } catch (err) {
-      logger.warn({ err, userId: user.id }, 'Failed to evaluate 9:30 PM completion reminder for user');
+      logger.warn({ err, userId: user.id }, 'Failed to evaluate 9:00 PM completion reminder for user');
     }
   }
 
@@ -185,23 +193,23 @@ export async function runDailyCompletionReminder(forceDate?: string, specificUse
     skippedAlreadySent,
   };
 
-  logger.info(result, '✅ 9:30 PM IST daily completion reminder evaluation finished');
+  logger.info(result, '✅ 9:00 PM IST daily completion reminder evaluation finished');
   return result;
 }
 
 /**
- * Registers the node-cron scheduler at 9:30 PM (21:30) IST daily.
+ * Registers the node-cron scheduler strictly at 9:00 PM (21:00) IST daily.
  */
 export function startDailyCompletionScheduler(): void {
-  // Cron: '30 21 * * *' = At 21:30 (9:30 PM) every day
+  // Cron: '0 21 * * *' = Strictly at 21:00 (9:00 PM) every day
   cron.schedule(
-    '30 21 * * *',
+    '0 21 * * *',
     async () => {
-      logger.info('⏰ Cron triggered: 9:30 PM India timezone daily habit completion reminder');
+      logger.info('⏰ Cron triggered: 9:00 PM India timezone daily habit completion reminder');
       try {
         await runDailyCompletionReminder();
       } catch (err) {
-        logger.error({ err }, 'Error executing 9:30 PM daily completion reminder cron');
+        logger.error({ err }, 'Error executing 9:00 PM daily completion reminder cron');
       }
     },
     {
@@ -209,5 +217,5 @@ export function startDailyCompletionScheduler(): void {
     }
   );
 
-  logger.info('⏰ Registered 9:30 PM India timezone (Asia/Kolkata) daily completion reminder cron (30 21 * * *)');
+  logger.info('⏰ Registered 9:00 PM India timezone (Asia/Kolkata) daily completion reminder cron (0 21 * * *)');
 }

@@ -1,11 +1,12 @@
-/** Unit tests for the 9:30 PM IST daily habit completion reminder scheduler. */
+/** Unit tests for the 9:00 PM IST daily habit completion reminder scheduler. */
 import { describe, it, expect, beforeAll } from 'vitest';
 import { runDailyCompletionReminder } from './dailyCompletionReminder.job.js';
 import { tasksRepository } from '../modules/tasks/tasks.repository.js';
 import { notificationsRepository } from '../modules/notifications/notifications.repository.js';
+import { usersRepository } from '../modules/users/users.repository.js';
 import { persistentStore } from '../db/persistentStore.js';
 
-describe('9:30 PM IST Daily Completion Reminder Job', () => {
+describe('9:00 PM IST Daily Completion Reminder Job', () => {
   const testUserId = 'usr_test_ist_reminder';
   const testDate = '2026-10-04';
 
@@ -59,7 +60,7 @@ describe('9:30 PM IST Daily Completion Reminder Job', () => {
     // Verify created notification content
     const notifs = await notificationsRepository.findUserNotifications(testUserId, false, 5);
     const reminderNotif = notifs.find(
-      (n) => (n.data as any)?.scheduledNotification === 'evening_930pm_ist' && (n.data as any)?.date === testDate
+      (n) => (n.data as any)?.scheduledNotification === 'evening_9pm_ist' && (n.data as any)?.date === testDate
     );
 
     expect(reminderNotif).toBeDefined();
@@ -73,6 +74,43 @@ describe('9:30 PM IST Daily Completion Reminder Job', () => {
     const result = await runDailyCompletionReminder(testDate, testUserId);
     expect(result.notificationsSent).toBe(0);
     expect(result.skippedAlreadySent).toBe(1);
+  });
+
+  it('skips notification when dailyEveningReminder is disabled in settings', async () => {
+    const disabledUserId = 'usr_test_disabled_reminder';
+    const disabledDate = '2026-10-06';
+
+    await persistentStore.saveUser({
+      id: disabledUserId,
+      firebaseUid: 'uid_disabled_ist',
+      email: 'disabled@test.com',
+      name: 'Opted Out User',
+      username: 'optout_user',
+      avatarUrl: null,
+      timezone: 'Asia/Kolkata',
+      xp: 100,
+      level: 1,
+      createdAt: new Date().toISOString(),
+      updatedAt: new Date().toISOString(),
+    });
+
+    // Turn off dailyEveningReminder
+    await usersRepository.updateSettings(disabledUserId, {
+      notificationPrefs: { dailyEveningReminder: false } as any,
+    });
+
+    const task = await tasksRepository.createTask(disabledUserId, {
+      title: 'Disabled Reminder Habit',
+      daysOfWeek: [0, 1, 2, 3, 4, 5, 6],
+      dueTime: '20:00',
+    });
+
+    await tasksRepository.createOccurrences([
+      { taskId: task.id, userId: disabledUserId, date: new Date(disabledDate) },
+    ]);
+
+    const result = await runDailyCompletionReminder(disabledDate, disabledUserId);
+    expect(result.notificationsSent).toBe(0);
   });
 
   it('sends 100% perfect completion notification when all tasks are complete', async () => {
@@ -114,7 +152,7 @@ describe('9:30 PM IST Daily Completion Reminder Job', () => {
 
     const notifs = await notificationsRepository.findUserNotifications(perfectUserId, false, 5);
     const reminderNotif = notifs.find(
-      (n) => (n.data as any)?.scheduledNotification === 'evening_930pm_ist' && (n.data as any)?.date === perfectDate
+      (n) => (n.data as any)?.scheduledNotification === 'evening_9pm_ist' && (n.data as any)?.date === perfectDate
     );
 
     expect(reminderNotif).toBeDefined();

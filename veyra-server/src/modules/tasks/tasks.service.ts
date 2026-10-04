@@ -135,12 +135,9 @@ export class TasksService {
       let isExpired = false;
 
       if (!occ.completed) {
+        // Only mark as expired/missed after the day is completely over
         if (occ.date < todayStr) {
           isExpired = true;
-        } else if (occ.date === todayStr && effectiveDueTime) {
-          if (nowTimeParts > effectiveDueTime) {
-            isExpired = true;
-          }
         }
       }
 
@@ -184,13 +181,20 @@ export class TasksService {
     }
 
     const todayStr = getLocalDateString(userTimezone);
+
+    // Rule 3: Past data cannot be changed after the day is over
     if (occ.date < todayStr) {
-      throw new ForbiddenError('Historical task occurrences cannot be modified');
+      throw new ForbiddenError('Past tasks cannot be modified after the day is over');
+    }
+    if (occ.date > todayStr) {
+      throw new ForbiddenError('Future tasks cannot be marked completed before the day begins');
     }
 
     const nextCompleted = completedOverride !== undefined ? completedOverride : !occ.completed;
 
-    // If attempting to complete, verify if the daily deadline/end time has passed
+    // Rules 1 & 2: If due time has passed today, DO NOT block or mark as not done until day ends!
+    // Instead, give more points (15 XP) before time, and less points (5 XP) after time.
+    let isLate = false;
     if (nextCompleted && occ.date === todayStr) {
       const day = getDayOfWeek(occ.date);
       const effectiveDueTime = (occ.task?.dayDueTimes as Record<string, string>)?.[day] || occ.task?.dueTime || null;
@@ -204,17 +208,16 @@ export class TasksService {
         }).format(now);
 
         if (nowTimeParts > effectiveDueTime) {
-          throw new ForbiddenError(
-            `The deadline for this habit has passed for today (due by ${effectiveDueTime}). It is marked as not done.`
-          );
+          isLate = true;
         }
       }
     }
 
     const now = new Date();
     const completedAt = nextCompleted ? now : null;
-    const xpAwarded = nextCompleted ? 10 : 0;
-    const xpDelta = xpAwarded - occ.xpAwarded;
+    // On-time completion awards 15 XP; late completion awards 5 XP
+    const xpAwarded = nextCompleted ? (isLate ? 5 : 15) : 0;
+    const xpDelta = nextCompleted ? xpAwarded : -occ.xpAwarded;
 
     const updated = await tasksRepository.updateOccurrence(occurrenceId, {
       completed: nextCompleted,
@@ -223,13 +226,13 @@ export class TasksService {
     });
 
     if (nextCompleted) {
-      await gamificationService.addXp(userId, 10, 1);
+      await gamificationService.addXp(userId, xpAwarded, 1);
       const streakRes = await streaksService.recordDailyActivity(userId, occ.date);
       await gamificationService.evaluateAchievements(userId, {
         currentStreak: streakRes.streak.current,
       });
     } else {
-      await gamificationService.addXp(userId, -10, -1);
+      await gamificationService.addXp(userId, -occ.xpAwarded, -1);
     }
 
     return {

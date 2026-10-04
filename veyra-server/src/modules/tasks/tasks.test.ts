@@ -145,16 +145,16 @@ describe('Tasks Module', () => {
     const result1 = await tasksService.toggleOccurrence(testUserId, occ.id, undefined, INDIA_TIMEZONE);
     expect(result1.occurrence.completed).toBe(true);
     expect(result1.occurrence.completedAt).toBeDefined();
-    expect(result1.xpDelta).toBe(10);
+    expect(result1.xpDelta).toBe(15);
 
     // Toggle back to incomplete
     const result2 = await tasksService.toggleOccurrence(testUserId, occ.id, undefined, INDIA_TIMEZONE);
     expect(result2.occurrence.completed).toBe(false);
     expect(result2.occurrence.completedAt).toBeNull();
-    expect(result2.xpDelta).toBe(-10);
+    expect(result2.xpDelta).toBe(-15);
   });
 
-  it('prevents modifying occurrences from past dates', async () => {
+  it('prevents modifying occurrences from past dates once the day is over', async () => {
     const pastDateStr = shiftDateString(getIndianTodayDateString(), -3, INDIA_TIMEZONE);
 
     const task = await tasksService.createTask(testUserId, {
@@ -170,8 +170,8 @@ describe('Tasks Module', () => {
     ).rejects.toThrow(ForbiddenError);
   });
 
-  it('marks task as expired/not done and blocks completion after end time has passed', async () => {
-    // Task with an already passed deadline today (00:00)
+  it('allows completion after due time until day is over, giving less points (5 XP) vs on-time (15 XP)', async () => {
+    // Task with an already passed due time today (00:00)
     const taskPassed = await tasksService.createTask(testUserId, {
       title: 'Early Morning Habit',
       emoji: '🌅',
@@ -184,14 +184,16 @@ describe('Tasks Module', () => {
     const occPassed = res.occurrences.find((o) => o.taskId === taskPassed.id)!;
 
     expect(occPassed.effectiveDueTime).toBe('00:00');
-    expect(occPassed.isExpired).toBe(true);
+    // Rule 1: Not marked expired / not done until the day is over
+    expect(occPassed.isExpired).toBe(false);
 
-    // Attempting to complete should be rejected because deadline passed
-    await expect(
-      tasksService.toggleOccurrence(testUserId, occPassed.id, true, INDIA_TIMEZONE)
-    ).rejects.toThrow(ForbiddenError);
+    // Rule 2: Completable, but awards less points (5 XP) for completion after time
+    const lateToggle = await tasksService.toggleOccurrence(testUserId, occPassed.id, true, INDIA_TIMEZONE);
+    expect(lateToggle.occurrence.completed).toBe(true);
+    expect(lateToggle.occurrence.xpAwarded).toBe(5);
+    expect(lateToggle.xpDelta).toBe(5);
 
-    // Task with a future deadline (23:59) should allow completion
+    // Task with a future due time (23:59) awards more points (15 XP) before time
     const taskFuture = await tasksService.createTask(testUserId, {
       title: 'Late Night Reflection',
       emoji: '🌙',
@@ -205,8 +207,10 @@ describe('Tasks Module', () => {
     expect(occFuture.effectiveDueTime).toBe('23:59');
     expect(occFuture.isExpired).toBe(false);
 
-    const toggleRes = await tasksService.toggleOccurrence(testUserId, occFuture.id, true, INDIA_TIMEZONE);
-    expect(toggleRes.occurrence.completed).toBe(true);
+    const onTimeToggle = await tasksService.toggleOccurrence(testUserId, occFuture.id, true, INDIA_TIMEZONE);
+    expect(onTimeToggle.occurrence.completed).toBe(true);
+    expect(onTimeToggle.occurrence.xpAwarded).toBe(15);
+    expect(onTimeToggle.xpDelta).toBe(15);
   });
 });
 

@@ -55,16 +55,8 @@ export const DailyTasksPage: React.FC = () => {
   const checkIsMissed = useCallback(
     (occ: (typeof occurrences)[0]) => {
       if (occ.completed) return false;
-      if (occ.isExpired !== undefined) return occ.isExpired;
-      const eff = occ.effectiveDueTime || occ.task?.dueTime;
-      if (!eff) return false;
+      // Rule 1: A task is NOT marked as not done/missed until the day is completely over!
       if (selectedDate < todayStr) return true;
-      if (selectedDate === todayStr) {
-        const now = new Date();
-        const currentMin = now.getHours() * 60 + now.getMinutes();
-        const [h, m] = eff.split(':').map(Number);
-        return currentMin > h * 60 + m;
-      }
       return false;
     },
     [selectedDate, todayStr]

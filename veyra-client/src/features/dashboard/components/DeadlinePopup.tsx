@@ -157,7 +157,9 @@ export const DeadlinePopup: React.FC = () => {
           className="flex-1 flex items-center justify-center gap-1.5 py-1.5"
         >
           <CheckCircle2 size={14} />
-          <span>Mark Completed (+10 XP)</span>
+          <span>
+            {urgentItem.status === 'overdue' ? 'Mark Completed (+5 XP Late)' : 'Mark Completed (+15 XP)'}
+          </span>
         </GlassButton>
         <button
           type="button"

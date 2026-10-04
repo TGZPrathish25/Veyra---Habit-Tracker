@@ -146,16 +146,9 @@ export const tasksApi = {
           const recorded = t.id ? occMap.get(t.id) : undefined;
           const effectiveDueTime = (t.dayDueTimes && t.dayDueTimes[String(dayOfWeek)]) || t.dueTime || null;
           let isExpired = false;
-          if (effectiveDueTime && targetDate <= todayStr && !recorded?.completed) {
-            if (targetDate < todayStr) {
-              isExpired = true;
-            } else {
-              const now = new Date();
-              const [dh, dm] = effectiveDueTime.split(':').map(Number);
-              const currentMin = now.getHours() * 60 + now.getMinutes();
-              const dueMin = dh * 60 + dm;
-              isExpired = currentMin > dueMin;
-            }
+          // Rule 1: A task is not marked as missed/expired until the day is completely over!
+          if (targetDate < todayStr && !recorded?.completed) {
+            isExpired = true;
           }
           return {
             id: recorded?.id || `occ_${user.id}_${t.id}_${targetDate}`,

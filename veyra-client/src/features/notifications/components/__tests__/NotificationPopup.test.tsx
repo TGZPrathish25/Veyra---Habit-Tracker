@@ -30,7 +30,7 @@ describe('NotificationPopup', () => {
     expect(container.firstChild).toBeNull();
   });
 
-  it('renders 9:30 PM uncompleted reminder popup and dismisses on Got it click', () => {
+  it('renders 9:00 PM uncompleted reminder popup and dismisses on Got it click', () => {
     act(() => {
       useNotificationPopupStore.getState().showPopup({
         id: 'notif_1',
@@ -48,7 +48,7 @@ describe('NotificationPopup', () => {
 
     expect(screen.getByText('⚡ 50% Not Completed Today')).toBeDefined();
     expect(screen.getByText('1/2 habits done (50% left). Finish strong before midnight!')).toBeDefined();
-    expect(screen.getByText('9:30 PM Habit Check-in')).toBeDefined();
+    expect(screen.getByText('9:00 PM Habit Check-in')).toBeDefined();
 
     const gotItBtn = screen.getByText('Got it');
     fireEvent.click(gotItBtn);
@@ -74,5 +74,26 @@ describe('NotificationPopup', () => {
 
     expect(screen.getByText('🌟 100% Completed — Perfect Day!')).toBeDefined();
     expect(screen.getByText('Daily Completion Goal Achieved')).toBeDefined();
+  });
+
+  it('renders 1-hour task reminder popup with urgent styling', () => {
+    act(() => {
+      useNotificationPopupStore.getState().showPopup({
+        id: 'notif_due_1',
+        title: '⏰ 1 Hour Left: Deep Work Session',
+        body: '"Deep Work Session" is due at 18:00. Complete it on-time for +15 XP!',
+        type: 'deadline_urgent',
+      });
+    });
+
+    render(
+      <QueryClientProvider client={queryClient}>
+        <NotificationPopup />
+      </QueryClientProvider>
+    );
+
+    expect(screen.getByText('⏰ 1 Hour Left: Deep Work Session')).toBeDefined();
+    expect(screen.getByText('"Deep Work Session" is due at 18:00. Complete it on-time for +15 XP!')).toBeDefined();
+    expect(screen.getByText('1-Hour Task Reminder')).toBeDefined();
   });
 });

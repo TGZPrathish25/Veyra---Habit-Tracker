@@ -18,6 +18,7 @@ import {
   AlertCircle,
   Save,
   Volume2,
+  Clock,
 } from 'lucide-react';
 import { isSoundEnabled, setSoundEnabled, playHabitChime } from '@/lib/sound';
 
@@ -35,6 +36,8 @@ export const SettingsPage: React.FC = () => {
   const [friendVisibility, setFriendVisibility] = useState(settings?.friendVisibilityLevel ?? 2);
   const [leaderboardOptIn, setLeaderboardOptIn] = useState(settings?.leaderboardOptIn ?? true);
 
+  const [dailyEveningReminder, setDailyEveningReminder] = useState(true);
+  const [taskDueReminder, setTaskDueReminder] = useState(true);
   const [pushNotifs, setPushNotifs] = useState(true);
   const [deadlineAlerts, setDeadlineAlerts] = useState(true);
   const [soundEffects, setSoundEffects] = useState(() => isSoundEnabled());
@@ -61,9 +64,16 @@ export const SettingsPage: React.FC = () => {
         setLeaderboardOptIn(settings.leaderboardOptIn);
       }
       if (settings.notificationPrefs && typeof settings.notificationPrefs === 'object') {
-        const notifs = settings.notificationPrefs as { push?: boolean; deadlines?: boolean };
+        const notifs = settings.notificationPrefs as {
+          push?: boolean;
+          deadlines?: boolean;
+          dailyEveningReminder?: boolean;
+          taskDueReminder?: boolean;
+        };
         if (notifs.push !== undefined) setPushNotifs(notifs.push);
         if (notifs.deadlines !== undefined) setDeadlineAlerts(notifs.deadlines);
+        if (notifs.dailyEveningReminder !== undefined) setDailyEveningReminder(notifs.dailyEveningReminder);
+        if (notifs.taskDueReminder !== undefined) setTaskDueReminder(notifs.taskDueReminder);
       }
     }
   }, [settings]);
@@ -124,7 +134,12 @@ export const SettingsPage: React.FC = () => {
       theme,
       friendVisibilityLevel: Number(friendVisibility),
       leaderboardOptIn,
-      notificationPrefs: { push: pushNotifs, deadlines: deadlineAlerts },
+      notificationPrefs: {
+        push: pushNotifs,
+        deadlines: deadlineAlerts,
+        dailyEveningReminder,
+        taskDueReminder,
+      },
     };
     try {
       setTheme(theme);
@@ -377,6 +392,48 @@ export const SettingsPage: React.FC = () => {
         {activeTab === 'notifications' && (
           <div className="space-y-6">
             <div className="space-y-4">
+              <label className="flex items-center justify-between cursor-pointer p-3.5 rounded-xl border border-white/10 hover:border-white/20 transition-all">
+                <div className="pr-4">
+                  <div className="text-fluid-sm font-medium flex items-center gap-2" style={{ color: 'var(--color-text)' }}>
+                    <Clock size={16} className="text-blue-400 shrink-0" />
+                    <span>Scheduled 9:00 PM Habit Check-in</span>
+                    <span className="text-[10px] px-1.5 py-0.5 rounded bg-blue-500/20 text-blue-300 font-semibold uppercase tracking-wider">
+                      ON by default
+                    </span>
+                  </div>
+                  <div className="text-fluid-xs mt-1" style={{ color: 'var(--color-text-muted)' }}>
+                    Receive your daily completion summary, remaining percentage, and streak reminder strictly at 9:00 PM India timezone (Asia/Kolkata).
+                  </div>
+                </div>
+                <input
+                  type="checkbox"
+                  checked={dailyEveningReminder}
+                  onChange={(e) => setDailyEveningReminder(e.target.checked)}
+                  className="w-5 h-5 rounded accent-blue-500 cursor-pointer shrink-0"
+                />
+              </label>
+
+              <label className="flex items-center justify-between cursor-pointer p-3.5 rounded-xl border border-white/10 hover:border-white/20 transition-all">
+                <div className="pr-4">
+                  <div className="text-fluid-sm font-medium flex items-center gap-2" style={{ color: 'var(--color-text)' }}>
+                    <Bell size={16} className="text-orange-400 shrink-0" />
+                    <span>1-Hour Task Due Reminder Pop-up</span>
+                    <span className="text-[10px] px-1.5 py-0.5 rounded bg-orange-500/20 text-orange-300 font-semibold uppercase tracking-wider">
+                      ON by default
+                    </span>
+                  </div>
+                  <div className="text-fluid-xs mt-1" style={{ color: 'var(--color-text-muted)' }}>
+                    Pop up an alert notification 1 hour before each task's scheduled time to remind you to complete it on-time for maximum +15 XP!
+                  </div>
+                </div>
+                <input
+                  type="checkbox"
+                  checked={taskDueReminder}
+                  onChange={(e) => setTaskDueReminder(e.target.checked)}
+                  className="w-5 h-5 rounded accent-blue-500 cursor-pointer shrink-0"
+                />
+              </label>
+
               <label className="flex items-center justify-between cursor-pointer p-3 rounded-xl border border-white/10 hover:border-white/20">
                 <div>
                   <div className="text-fluid-sm font-medium" style={{ color: 'var(--color-text)' }}>

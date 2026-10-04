@@ -3,12 +3,16 @@ import cron from 'node-cron';
 import { logger } from '../config/logger.js';
 import { env } from '../config/env.js';
 import { startDailyCompletionScheduler } from './dailyCompletionReminder.job.js';
+import { startTaskDueReminderScheduler } from './taskDueReminder.job.js';
 
 export function startScheduler(): void {
   logger.info('📅 Scheduler started');
 
-  // Daily 9:30 PM IST (Asia/Kolkata) completion reminder
+  // Daily 9:00 PM IST (Asia/Kolkata) completion reminder
   startDailyCompletionScheduler();
+
+  // 1-Hour task due reminder job (every 5 minutes in Asia/Kolkata)
+  startTaskDueReminderScheduler();
 
   // Keep-alive job: pings the public endpoint every 10 minutes in production
   if (env.NODE_ENV === 'production') {
