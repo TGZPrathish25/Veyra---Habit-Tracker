@@ -1,3 +1,4 @@
-/** leaderboard feature — public API. */
-// Re-export hooks, types, and components that other features may use
-export {};
+/** Leaderboard feature — public API. */
+export * from './types';
+export * from './api/leaderboardApi';
+export * from './hooks/useLeaderboard';

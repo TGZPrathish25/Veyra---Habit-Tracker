@@ -1,6 +1,7 @@
-/** Global and friends leaderboard — route definitions. */
+/** Global leaderboard — route definitions. */
 import { Router } from 'express';
+import { leaderboardController } from './leaderboard.controller.js';
 
 export const leaderboardRouter = Router();
 
-// TODO: Define routes for leaderboard
+leaderboardRouter.get('/', (req, res, next) => leaderboardController.getLeaderboard(req, res, next));

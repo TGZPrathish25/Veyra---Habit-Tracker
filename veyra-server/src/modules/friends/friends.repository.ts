@@ -25,108 +25,32 @@ interface MemFriendRequest {
   createdAt: string;
 }
 
-export const DEFAULT_COMMUNITY_USERS: FriendUserDTO[] = [
-  {
-    id: 'usr_mayachen',
-    name: 'Maya Chen',
-    username: 'mayachen',
-    avatarUrl: 'https://images.unsplash.com/photo-1494790108377-be9c29b29330?w=150',
-    level: 7,
-    totalXp: 2840,
-    currentStreak: 19,
-  },
-  {
-    id: 'usr_samtaylor',
-    name: 'Sam Taylor',
-    username: 'sam_t',
-    avatarUrl: 'https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=150',
-    level: 5,
-    totalXp: 1650,
-    currentStreak: 12,
-  },
-  {
-    id: 'usr_alexrivera',
-    name: 'Alex Rivera',
-    username: 'alex_r',
-    avatarUrl: 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=150',
-    level: 9,
-    totalXp: 4120,
-    currentStreak: 31,
-  },
-  {
-    id: 'usr_jordanlee',
-    name: 'Jordan Lee',
-    username: 'jordan_lee',
-    avatarUrl: 'https://images.unsplash.com/photo-1500648767791-00dcc994a43e?w=150',
-    level: 4,
-    totalXp: 980,
-    currentStreak: 7,
-  },
-  {
-    id: 'usr_sarahkim',
-    name: 'Sarah Kim',
-    username: 'sarah_k',
-    avatarUrl: 'https://images.unsplash.com/photo-1438761681033-6461ffad8d80?w=150',
-    level: 6,
-    totalXp: 2190,
-    currentStreak: 15,
-  },
-];
-
-// In-memory friends catalog
+// In-memory friends catalog (used for testing)
 const demoUsersMap = new Map<string, FriendUserDTO>();
 const memFriendships: MemFriendship[] = [];
 const memRequests: MemFriendRequest[] = [];
 
 export class FriendsRepository {
-  private async ensureCommunityUser(u: FriendUserDTO): Promise<void> {
-    await tryPrisma(
-      async () => {
-        await prisma.user.upsert({
-          where: { id: u.id },
-          update: {},
-          create: {
-            id: u.id,
-            firebaseUid: `uid_${u.username}`,
-            email: `${u.username}@veyra.app`,
-            name: u.name,
-            username: u.username?.toLowerCase() || u.id,
-            avatarUrl: u.avatarUrl,
-            gamification: {
-              create: {
-                level: u.level,
-                totalXp: u.totalXp,
-              },
-            },
-            streaks: {
-              create: {
-                type: 'daily',
-                current: u.currentStreak,
-                longest: u.currentStreak,
-              },
-            },
-          },
-        });
-      },
-      () => {
-        demoUsersMap.set(u.id, u);
-      }
-    );
-  }
-
   async findUserById(userId: string): Promise<FriendUserDTO | null> {
-    const communityFallback = DEFAULT_COMMUNITY_USERS.find((cu) => cu.id === userId);
-    if (communityFallback) {
-      await this.ensureCommunityUser(communityFallback).catch(() => {});
-    }
-
     return tryPrisma(
       async () => {
         const u = await prisma.user.findUnique({
           where: { id: userId },
           include: { gamification: true, streaks: { where: { type: 'daily' } } },
         });
-        if (!u) return communityFallback || null;
+        if (!u) {
+          const stored = await persistentStore.getUserById(userId);
+          if (!stored) return null;
+          return {
+            id: stored.id,
+            name: stored.name,
+            username: stored.username,
+            avatarUrl: stored.avatarUrl,
+            level: stored.level || 1,
+            totalXp: stored.xp || 0,
+            currentStreak: 0,
+          };
+        }
         return {
           id: u.id,
           name: u.name,
@@ -137,16 +61,26 @@ export class FriendsRepository {
           currentStreak: u.streaks[0]?.current ?? 0,
         };
       },
-      () => demoUsersMap.get(userId) || communityFallback || null
+      () => {
+        const mem = demoUsersMap.get(userId);
+        if (mem) return mem;
+        const stored = persistentStore.getAllUsers().find((u) => u.id === userId);
+        if (!stored) return null;
+        return {
+          id: stored.id,
+          name: stored.name,
+          username: stored.username,
+          avatarUrl: stored.avatarUrl,
+          level: stored.level || 1,
+          totalXp: stored.xp || 0,
+          currentStreak: 0,
+        };
+      }
     );
   }
 
   async findUserByUsername(username: string): Promise<FriendUserDTO | null> {
     const clean = username.toLowerCase().trim();
-    const communityFallback = DEFAULT_COMMUNITY_USERS.find((cu) => cu.username?.toLowerCase() === clean);
-    if (communityFallback) {
-      await this.ensureCommunityUser(communityFallback).catch(() => {});
-    }
 
     return tryPrisma(
       async () => {
@@ -154,7 +88,19 @@ export class FriendsRepository {
           where: { username: { equals: clean, mode: 'insensitive' } },
           include: { gamification: true, streaks: { where: { type: 'daily' } } },
         });
-        if (!u) return communityFallback || null;
+        if (!u) {
+          const stored = await persistentStore.getUserByUsername(clean);
+          if (!stored) return null;
+          return {
+            id: stored.id,
+            name: stored.name,
+            username: stored.username,
+            avatarUrl: stored.avatarUrl,
+            level: stored.level || 1,
+            totalXp: stored.xp || 0,
+            currentStreak: 0,
+          };
+        }
         return {
           id: u.id,
           name: u.name,
@@ -169,7 +115,17 @@ export class FriendsRepository {
         for (const u of demoUsersMap.values()) {
           if (u.username?.toLowerCase() === clean) return u;
         }
-        return communityFallback || null;
+        const stored = persistentStore.getAllUsers().find((u) => u.username?.toLowerCase() === clean);
+        if (!stored) return null;
+        return {
+          id: stored.id,
+          name: stored.name,
+          username: stored.username,
+          avatarUrl: stored.avatarUrl,
+          level: stored.level || 1,
+          totalXp: stored.xp || 0,
+          currentStreak: 0,
+        };
       }
     );
   }
@@ -177,20 +133,13 @@ export class FriendsRepository {
   async listAllUsers(excludeUserId: string): Promise<FriendUserDTO[]> {
     return tryPrisma(
       async () => {
-        // Ensure community users exist in database so they can be added
-        for (const cu of DEFAULT_COMMUNITY_USERS) {
-          if (cu.id !== excludeUserId) {
-            await this.ensureCommunityUser(cu).catch(() => {});
-          }
-        }
-
         const users = await prisma.user.findMany({
           where: { id: { not: excludeUserId } },
           include: {
             gamification: true,
             streaks: { where: { type: 'daily' } },
           },
-          take: 50,
+          take: 100,
           orderBy: { createdAt: 'desc' },
         });
 
@@ -204,10 +153,21 @@ export class FriendsRepository {
           currentStreak: u.streaks[0]?.current ?? 0,
         }));
 
+        // Merge any registered users from persistent store not yet in Prisma
         const existingIds = new Set(mapped.map((u) => u.id));
-        for (const cu of DEFAULT_COMMUNITY_USERS) {
-          if (cu.id !== excludeUserId && !existingIds.has(cu.id)) {
-            mapped.push(cu);
+        const storedUsers = persistentStore.getAllUsers();
+        for (const u of storedUsers) {
+          if (u.id !== excludeUserId && !existingIds.has(u.id)) {
+            existingIds.add(u.id);
+            mapped.push({
+              id: u.id,
+              name: u.name,
+              username: u.username,
+              avatarUrl: u.avatarUrl,
+              level: u.level || 1,
+              totalXp: u.xp || 0,
+              currentStreak: 0,
+            });
           }
         }
 
@@ -217,7 +177,7 @@ export class FriendsRepository {
         const result: FriendUserDTO[] = [];
         const seenIds = new Set<string>();
 
-        // 1. PersistentStore users
+        // 1. PersistentStore registered users
         const storedUsers = persistentStore.getAllUsers();
         for (const u of storedUsers) {
           if (u.id !== excludeUserId && !seenIds.has(u.id)) {
@@ -234,19 +194,11 @@ export class FriendsRepository {
           }
         }
 
-        // 2. In-memory demoUsersMap
+        // 2. In-memory demoUsersMap (unit tests)
         for (const u of demoUsersMap.values()) {
           if (u.id !== excludeUserId && !seenIds.has(u.id)) {
             seenIds.add(u.id);
             result.push(u);
-          }
-        }
-
-        // 3. Default community users
-        for (const cu of DEFAULT_COMMUNITY_USERS) {
-          if (cu.id !== excludeUserId && !seenIds.has(cu.id)) {
-            seenIds.add(cu.id);
-            result.push(cu);
           }
         }
 

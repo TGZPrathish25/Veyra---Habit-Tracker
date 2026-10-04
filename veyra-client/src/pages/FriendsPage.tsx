@@ -321,9 +321,13 @@ export const FriendsPage: React.FC = () => {
           ) : filteredDiscoverUsers.length === 0 ? (
             <div className="glass p-12 rounded-3xl border border-white/5 text-center">
               <Users size={40} className="mx-auto text-zinc-600 mb-2" />
-              <h4 className="text-fluid-base font-bold text-white">No users found</h4>
+              <h4 className="text-fluid-base font-bold text-white">
+                {searchFilter ? 'No users found' : 'No other users yet'}
+              </h4>
               <p className="text-fluid-xs text-zinc-400 mt-1">
-                No users matched "{searchFilter}". Clear your filter to view all members.
+                {searchFilter
+                  ? `No users matched "${searchFilter}". Clear your filter to view all members.`
+                  : 'No other registered users found yet. Invite friends to join Veyra and build habits together!'}
               </p>
             </div>
           ) : (
