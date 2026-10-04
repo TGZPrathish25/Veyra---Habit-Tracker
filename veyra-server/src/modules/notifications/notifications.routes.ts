@@ -8,6 +8,7 @@ export const notificationsRouter = Router();
 notificationsRouter.use(authenticate);
 
 notificationsRouter.get('/', notificationsController.getNotifications);
+notificationsRouter.post('/daily-reminder', notificationsController.triggerDailyReminder);
 notificationsRouter.patch('/:id/read', notificationsController.markAsRead);
 notificationsRouter.post('/mark-all-read', notificationsController.markAllAsRead);
 notificationsRouter.delete('/:id', notificationsController.deleteNotification);

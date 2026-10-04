@@ -1,6 +1,6 @@
-/** User notifications controller — HTTP request handlers. */
 import type { Request, Response, NextFunction } from 'express';
 import { notificationsService } from './notifications.service.js';
+import { runDailyCompletionReminder } from '../../jobs/dailyCompletionReminder.job.js';
 
 export const notificationsController = {
   async getNotifications(req: Request, res: Response, next: NextFunction): Promise<void> {
@@ -45,6 +45,19 @@ export const notificationsController = {
 
       const deleted = await notificationsService.deleteNotification(id, userId);
       res.json({ success: true, data: { deleted } });
+    } catch (err) {
+      next(err);
+    }
+  },
+
+  async triggerDailyReminder(req: Request, res: Response, next: NextFunction): Promise<void> {
+    try {
+      const userId = req.user?.id;
+      const targetUser = req.query.all === 'true' ? undefined : userId;
+      const forceDate = req.query.date as string | undefined;
+
+      const stats = await runDailyCompletionReminder(forceDate, targetUser);
+      res.json({ success: true, data: stats });
     } catch (err) {
       next(err);
     }

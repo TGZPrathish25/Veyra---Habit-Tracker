@@ -1,4 +1,4 @@
-/** Notifications TanStack Query hook and Web Notification API integration. */
+import { useEffect, useRef } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { notificationsApi } from '../api/notificationsApi';
 import type { NotificationsListResponse } from '../types';
@@ -6,6 +6,7 @@ import type { NotificationsListResponse } from '../types';
 export function useNotifications(unreadOnly = false) {
   const queryClient = useQueryClient();
   const queryKey = ['notifications', unreadOnly];
+  const notifiedIdsRef = useRef<Set<string>>(new Set());
 
   const {
     data,
@@ -19,6 +20,16 @@ export function useNotifications(unreadOnly = false) {
     staleTime: 1000 * 30, // 30 seconds
     refetchInterval: 1000 * 60, // Poll every minute
   });
+
+  useEffect(() => {
+    if (!data?.notifications) return;
+    for (const notif of data.notifications) {
+      if (!notif.read && !notifiedIdsRef.current.has(notif.id)) {
+        notifiedIdsRef.current.add(notif.id);
+        sendBrowserPushNotification(notif.title, notif.body);
+      }
+    }
+  }, [data?.notifications]);
 
   const markReadMutation = useMutation({
     mutationFn: (id: string) => notificationsApi.markAsRead(id),
